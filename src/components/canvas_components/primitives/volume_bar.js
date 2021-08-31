@@ -6,8 +6,8 @@ export default class VolumeBar extends Layer {
   constructor({ canvas, screenHeightPerc }) {
     super(canvas);
     this.screenHeightPerc = screenHeightPerc;
-    this.upColor = "#009313";
-    this.downColor = "#ce0e0e";
+    this.upColor = "#C4FF4988";
+    this.downColor = "#FE3A6488";
 
     this.maxVolumeOnScreen = this.getMaxVolumeOnScreen();
     this.lastRange = chartState.range;

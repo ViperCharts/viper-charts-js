@@ -5,8 +5,8 @@ import chartState from "../../../state/chart.js";
 export default class Candlestick extends Layer {
   constructor({ canvas }) {
     super(canvas);
-    this.upColor = "#009313";
-    this.downColor = "#ce0e0e";
+    this.upColor = "#C4FF49";
+    this.downColor = "#FE3A64";
   }
 
   draw() {
