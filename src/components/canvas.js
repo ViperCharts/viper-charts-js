@@ -3,7 +3,7 @@ import RenderingEngine from "./rendering_engine.js";
 import chartState from "../state/chart.js";
 
 export default class Canvas {
-  constructor({ id, height, width, cursor = "default" }) {
+  constructor({ id, height, width, cursor = "default", position }) {
     this.height = height;
     this.width = width;
     this.id = id;
@@ -19,10 +19,10 @@ export default class Canvas {
     this.mouseMoveListener = null;
     this.count = 0;
 
-    this.init();
+    this.init({ position });
   }
 
-  init() {
+  init({ position }) {
     this.canvas = document.createElement("canvas");
     this.canvas.id = this.id;
     this.ctx = this.canvas.getContext("2d");
@@ -31,6 +31,8 @@ export default class Canvas {
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.style.cursor = this.cursor;
+    this.canvas.style.position = "absolute";
+    this.canvas.style[position] = "0px";
 
     this.setHeight(this.height);
     this.setWidth(this.width);

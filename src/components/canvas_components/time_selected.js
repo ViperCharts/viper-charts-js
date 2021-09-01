@@ -9,10 +9,7 @@ export default class TimeSelected extends Layer {
   }
 
   draw() {
-    const time = chartState.getTimestampByXCoord(
-      crosshairState.crosshair.x + 1
-    );
-    const d = new Date(time);
+    const d = new Date(crosshairState.crosshair.timestamp);
     const dateText = `${
       d.getMonth() + 1
     }/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${`0${d.getMinutes()}`.slice(
@@ -21,6 +18,6 @@ export default class TimeSelected extends Layer {
 
     const x = crosshairState.crosshair.x;
     this.canvas.drawBox("#424242", [x - 45, 0, 90, 30]);
-    this.canvas.drawText("#fff", [x, 10], dateText);
+    this.canvas.drawText("#fff", [x, 15], dateText);
   }
 }

@@ -11,6 +11,7 @@ export default class TimeScale {
       height: 20,
       width: window.innerWidth,
       cursor: "e-resize",
+      position: "bottom",
     });
     this.background = new Background({
       canvas: this.canvas,
@@ -40,7 +41,7 @@ class TimeScaleLayer extends Layer {
       const d = new Date(time);
       this.canvas.drawTextAtPriceAndTime(
         "#A7A8B3",
-        [time, 10],
+        [time, 15],
         "" + `${d.getHours()}:${`0${d.getMinutes()}`.slice(-2)}`
       );
     }

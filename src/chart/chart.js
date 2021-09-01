@@ -7,8 +7,10 @@ export default class Chart {
   constructor({ data, element }) {
     chartState.data = data;
     chartState.chart = this;
+    element.style.position = "relative";
+    element.style.width = "100%";
+    element.style.height = "100%";
     chartState.chartParentElement = element;
-    chartState.chartParentElement.style.background = "#000";
 
     this.chartState = chartState;
 
