@@ -65,9 +65,9 @@ export default class Canvas {
     // Get percentage of element width
     const w = chartState.pixelsPerElement * width;
 
-    const x = this.getXCoordByTimestamp(coords[0]);
-    const y1 = this.getYCoordByPrice(coords[1]);
-    const y2 = this.getYCoordByPrice(coords[2]);
+    const x = chartState.getXCoordByTimestamp(coords[0]);
+    const y1 = chartState.getYCoordByPrice(coords[1]);
+    const y2 = chartState.getYCoordByPrice(coords[2]);
 
     const h = y2 - y1;
 
@@ -97,11 +97,11 @@ export default class Canvas {
   drawLineByPriceAndTime(color, coords) {
     this.ctx.strokeStyle = color;
     this.ctx.beginPath();
-    const x1 = this.getXCoordByTimestamp(coords[0]);
-    const y1 = this.getYCoordByPrice(coords[1]);
+    const x1 = chartState.getXCoordByTimestamp(coords[0]);
+    const y1 = chartState.getYCoordByPrice(coords[1]);
     this.ctx.moveTo(x1, y1);
-    const x2 = this.getXCoordByTimestamp(coords[2]);
-    const y2 = this.getYCoordByPrice(coords[3]);
+    const x2 = chartState.getXCoordByTimestamp(coords[2]);
+    const y2 = chartState.getYCoordByPrice(coords[3]);
     this.ctx.lineTo(x2, y2);
     this.ctx.stroke();
     this.ctx.closePath();
@@ -110,7 +110,7 @@ export default class Canvas {
   drawTextAtPriceAndTime(color, coords, text) {
     this.ctx.textAlign = "center";
     this.ctx.fillStyle = color;
-    const x = this.getXCoordByTimestamp(coords[0]);
+    const x = chartState.getXCoordByTimestamp(coords[0]);
     this.ctx.fillText(text, x, coords[1]);
   }
 
@@ -126,22 +126,6 @@ export default class Canvas {
     this.canvas.height = height;
     this.canvas.style.height = height;
     if (this.RE) this.RE.draw();
-  }
-
-  getXCoordByTimestamp(timestamp) {
-    const [start, end] = chartState.range;
-    const msInView = end - start;
-    const msFromStart = timestamp - start;
-    const perc = msFromStart / msInView;
-    return Math.floor(perc * this.canvas.width);
-  }
-
-  getYCoordByPrice(price) {
-    const [, , min, max] = chartState.range;
-    const yInView = max - min;
-    const yFromMin = price - min;
-    const perc = yFromMin / yInView;
-    return -Math.floor(perc * this.canvas.height - this.canvas.height);
   }
 
   onMouseDown() {

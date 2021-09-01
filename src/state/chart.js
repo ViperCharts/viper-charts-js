@@ -3,6 +3,7 @@ import Constants from "../constants.js";
 class ChartState {
   constructor() {
     this.data = [];
+    this.chart = null;
     this.chartParentElement = null;
     this.timeframe = Constants.MINUTE;
     this.pixelsPerElement = 50;
@@ -129,6 +130,32 @@ class ChartState {
     const start = end - candlesInView * this.timeframe;
 
     this.setVisibleRange({ start, end });
+  }
+
+  getTimestampByXCoord(x) {
+    const [start, end] = this.range;
+    const msInView = end - start;
+    const perc = x / this.chart.subcharts.main.canvas.width;
+    const time = perc * msInView;
+    return start + time;
+  }
+
+  getXCoordByTimestamp(timestamp) {
+    const [start, end] = this.range;
+    const msInView = end - start;
+    const msFromStart = timestamp - start;
+    const perc = msFromStart / msInView;
+    const w = this.chart.subcharts.main.canvas.width;
+    return Math.floor(perc * w);
+  }
+
+  getYCoordByPrice(price) {
+    const [, , min, max] = this.range;
+    const yInView = max - min;
+    const yFromMin = price - min;
+    const perc = yFromMin / yInView;
+    const h = this.chart.subcharts.main.canvas.height;
+    return -Math.floor(perc * h - h);
   }
 }
 

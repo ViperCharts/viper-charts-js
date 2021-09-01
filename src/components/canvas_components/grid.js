@@ -11,7 +11,7 @@ export default class Grid extends Layer {
   draw() {
     // Loop through all visible candles
     for (const time of chartState.visibleScales.x) {
-      const x = this.canvas.getXCoordByTimestamp(time);
+      const x = chartState.getXCoordByTimestamp(time);
       this.canvas.drawLine(this.color, [x, 0, x, this.canvas.height]);
     }
   }

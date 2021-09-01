@@ -32,7 +32,7 @@ export default class VolumeBar extends Layer {
       const volumePerc = candle.volume / this.maxVolumeOnScreen;
       const h = Math.floor(volumePerc * maxHeight);
 
-      const x = this.canvas.getXCoordByTimestamp(candle.time);
+      const x = chartState.getXCoordByTimestamp(candle.time);
       this.canvas.drawBox(color, [
         x - chartState.pixelsPerElement / 2 + 1,
         this.canvas.height - h,

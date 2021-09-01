@@ -17,9 +17,9 @@ export default class Main {
 
     this.canvas = new Canvas({
       id: `canvas-${this.id}-main`,
-      height: window.innerHeight - 60,
+      height: window.innerHeight - 20,
       width: window.innerWidth,
-      cursor: "none",
+      cursor: "crosshair",
     });
 
     this.background = new Background({

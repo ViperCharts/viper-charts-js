@@ -7,7 +7,7 @@ export default class TimeScale {
   constructor() {
     this.canvas = new Canvas({
       id: `canvas-timescale`,
-      height: 60,
+      height: 20,
       width: window.innerWidth,
       cursor: "e-resize",
     });
@@ -39,7 +39,7 @@ class TimeScaleLayer extends Layer {
       const d = new Date(time);
       this.canvas.drawTextAtPriceAndTime(
         "#A7A8B3",
-        [time, 30],
+        [time, 10],
         "" + `${d.getHours()}:${`0${d.getMinutes()}`.slice(-2)}`
       );
     }

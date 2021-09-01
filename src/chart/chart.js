@@ -6,6 +6,7 @@ import TimeScale from "../components/canvas_components/time_scale.js";
 export default class Chart {
   constructor({ data, element }) {
     chartState.data = data;
+    chartState.chart = this;
     chartState.chartParentElement = element;
     chartState.chartParentElement.style.background = "#000";
 
@@ -22,7 +23,7 @@ export default class Chart {
 
   init() {
     window.addEventListener("resize", () => {
-      this.subcharts.main.canvas.setHeight(window.innerHeight - 60);
+      this.subcharts.main.canvas.setHeight(window.innerHeight - 20);
       this.subcharts.main.canvas.setWidth(window.innerWidth);
       this.subcharts.main.canvas.RE.draw();
       this.subcharts.xScale.canvas.setWidth(window.innerWidth);

@@ -10,7 +10,7 @@ export default class Crosshair extends Layer {
     // Draw horizontal line
     const { x, y } = crosshairState.crosshair;
     if (x < 0 || y < 0) return;
-    this.canvas.drawLine("#fff", [0, y, this.canvas.width, y]);
-    this.canvas.drawLine("#fff", [x, 0, x, this.canvas.height]);
+    this.canvas.drawLine("#ffffff88", [0, y, this.canvas.width, y]);
+    this.canvas.drawLine("#ffffff88", [x, 0, x, this.canvas.height]);
   }
 }
