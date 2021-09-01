@@ -5,8 +5,8 @@ class ChartState {
     this.data = [];
     this.chart = null;
     this.chartParentElement = null;
-    this.timeframe = Constants.MINUTE;
-    this.pixelsPerElement = 50;
+    this.timeframe = Constants.MINUTE5;
+    this.pixelsPerElement = 10;
     this.range = [];
     this.visibleData = [];
     this.visibleScales = {
@@ -18,9 +18,6 @@ class ChartState {
   setVisibleRange({ start, end }) {
     const visibleData = [];
 
-    const leftOffset = start % this.timeframe;
-    const rightOffset = end % this.timeframe;
-
     // Start loop from right to find end candle
     for (let i = this.data.length - 1; i > -1; i--) {
       const candle = this.data[i];
@@ -29,12 +26,12 @@ class ChartState {
       // If right timestamp is not less than right view boundary
       // *We minus the timeframe to the timstamp so we can get data for candles that may be mostly
       // cut off screen
-      if (timestamp - this.timeframe > end - rightOffset) continue;
+      if (timestamp > end + this.timeframe / 2) continue;
 
       visibleData.unshift(candle);
 
       // If last requried timestamp is reached
-      if (timestamp === start - leftOffset) {
+      if (timestamp < start + this.timeframe / 2) {
         break;
       }
     }
@@ -84,7 +81,8 @@ class ChartState {
 
   setInitialVisibleRange(height, width) {
     // End timestamp based on last element
-    const end = this.data[this.data.length - 1].time + this.timeframe;
+    const end = this.data[this.data.length - 1].time + this.timeframe * 5;
+    console.log(new Date(end));
 
     // Calculate start timestamp using width and pixelsPerElement
     const candlesInView = width / this.pixelsPerElement;

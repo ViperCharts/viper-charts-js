@@ -10,6 +10,7 @@ import PriceLine from "../components/canvas_components/primitives/price_line.js"
 import Candlestick from "../components/canvas_components/primitives/candlestick.js";
 import VolumeBar from "../components/canvas_components/primitives/volume_bar.js";
 import Crosshair from "../components/canvas_components/crosshair.js";
+import LastPriceLine from "../components/canvas_components/last_price_line.js";
 
 export default class Main {
   constructor() {
@@ -36,6 +37,7 @@ export default class Main {
     });
     // this.priceLine = new PriceLine({ canvas: this.canvas, color: "#11e067" });
     this.candlestick = new Candlestick({ canvas: this.canvas });
+    this.lastPriceLine = new LastPriceLine({ canvas: this.canvas });
     this.crosshair = new Crosshair({ canvas: this.canvas });
 
     this.scrollListener = null;
