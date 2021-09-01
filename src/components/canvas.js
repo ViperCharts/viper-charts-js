@@ -55,6 +55,12 @@ export default class Canvas {
     );
   }
 
+  drawText(color, [x, y], text) {
+    this.ctx.textAlign = "center";
+    this.ctx.fillStyle = color;
+    this.ctx.fillText(text, x, y);
+  }
+
   /**
    * Draw a rectangle with 2 price coords and a width percentage of element / candle px width
    * @param {string} color Hex color

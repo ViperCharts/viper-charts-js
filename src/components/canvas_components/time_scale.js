@@ -2,6 +2,7 @@ import chartState from "../../state/chart.js";
 import Canvas from "../canvas.js";
 import Background from "./background.js";
 import Layer from "./layer.js";
+import TimeSelected from "./time_selected.js";
 
 export default class TimeScale {
   constructor() {
@@ -15,7 +16,8 @@ export default class TimeScale {
       canvas: this.canvas,
       color: "#080019",
     });
-    this.timeScaleLayer = new TimeScaleLayer(this.canvas);
+    this.timeScaleLayer = new TimeScaleLayer({ canvas: this.canvas });
+    this.timeSelected = new TimeSelected({ canvas: this.canvas });
 
     this.init();
   }
@@ -24,9 +26,8 @@ export default class TimeScale {
 }
 
 class TimeScaleLayer extends Layer {
-  constructor(canvas) {
+  constructor({ canvas }) {
     super(canvas);
-    this.canvas = canvas;
 
     this.renderingQueueId = this.canvas.RE.addToQueue(this.draw.bind(this));
   }

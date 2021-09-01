@@ -1,0 +1,26 @@
+import Layer from "./layer.js";
+
+import chartState from "../../state/chart.js";
+import crosshairState from "../../state/crosshair.js";
+
+export default class TimeSelected extends Layer {
+  constructor({ canvas }) {
+    super(canvas);
+  }
+
+  draw() {
+    const time = chartState.getTimestampByXCoord(
+      crosshairState.crosshair.x + 1
+    );
+    const d = new Date(time);
+    const dateText = `${
+      d.getMonth() + 1
+    }/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${`0${d.getMinutes()}`.slice(
+      -2
+    )}`;
+
+    const x = crosshairState.crosshair.x;
+    this.canvas.drawBox("#424242", [x - 45, 0, 90, 30]);
+    this.canvas.drawText("#fff", [x, 10], dateText);
+  }
+}
