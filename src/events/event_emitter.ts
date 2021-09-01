@@ -1,4 +1,4 @@
-class EventEmitter {
+export default class EventEmitter {
   _events: { [key: string]: Function[] };
 
   constructor() {
@@ -20,5 +20,13 @@ class EventEmitter {
       return;
     }
     this._events[eventName] = this._events[eventName].splice(i, 1);
+  }
+
+  fireEvent(eventName: string, ...args: any[]) {
+    const listeners = this._events[eventName];
+    if (!listeners || !listeners.length) return;
+    for (const callback of listeners) {
+      callback(...args);
+    }
   }
 }
