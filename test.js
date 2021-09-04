@@ -121,3 +121,75 @@ function InputStream(input) {
     croak: input.croak,
   };
 }
+
+// (^*/+-
+const str = "1 + 3 * 6 / 7 - 1 - 3";
+
+const evalTokens = (tokens) => {
+  // Evaluate right to left
+  // Search for
+  const operators = "-+/*";
+
+  if (tokens.length === 1 && tokens[0].type === "number") {
+    return tokens[0];
+  }
+
+  for (let i = 0; i < operators.length; i++) {
+    const operator = operators[i];
+    for (let j = tokens.length - 1; j >= 0; j--) {
+      const token = tokens[j];
+      if (token.type === "operator" && token.value === operator) {
+        // Add method to tree with left and right
+
+        return {
+          type: operator,
+          args: [
+            evalTokens(tokens.slice(0, j)),
+            evalTokens(tokens.slice(j + 1, tokens.length)),
+          ],
+        };
+      }
+    }
+  }
+};
+
+const isOperator = (char) => "/*+-".includes(char);
+const isWhitespace = (char) => " \t\n".includes(char);
+const isDigit = (char) => /[0-9]/i.test(char);
+
+const tokens = [];
+
+function buildTokens(str) {
+  let pos = 0;
+
+  do {
+    const char = str[pos];
+    if (isWhitespace(char)) {
+      pos++;
+      continue;
+    }
+
+    // If is digit
+    if (isDigit(char)) {
+      tokens.push({
+        type: "number",
+        value: parseFloat(char),
+      });
+      pos++;
+      continue;
+    }
+
+    // If is operator
+    if (isOperator(char)) {
+      tokens.push({
+        type: "operator",
+        value: char,
+      });
+      pos++;
+      continue;
+    }
+  } while (pos < str.length);
+}
+
+buildTokens(str);
+console.log(JSON.stringify(evalTokens(tokens)));
