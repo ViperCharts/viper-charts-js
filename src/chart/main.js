@@ -11,6 +11,9 @@ import Candlestick from "../components/canvas_components/primitives/candlestick.
 import VolumeBar from "../components/canvas_components/primitives/volume_bar.js";
 import Crosshair from "../components/canvas_components/crosshair.js";
 import LastPriceLine from "../components/canvas_components/last_price_line.js";
+import ScriptLoader from "../components/canvas_components/script_loader.js";
+
+import TestScript from "../viper_script/default_scripts/test.js";
 
 export default class Main {
   constructor() {
@@ -39,6 +42,10 @@ export default class Main {
     this.candlestick = new Candlestick({ canvas: this.canvas });
     this.lastPriceLine = new LastPriceLine({ canvas: this.canvas });
     this.crosshair = new Crosshair({ canvas: this.canvas });
+    new ScriptLoader({
+      canvas: this.canvas,
+      func: TestScript,
+    });
 
     this.scrollListener = null;
     this.mousemoveListener = null;

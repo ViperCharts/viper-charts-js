@@ -82,7 +82,6 @@ class ChartState {
   setInitialVisibleRange(height, width) {
     // End timestamp based on last element
     const end = this.data[this.data.length - 1].time + this.timeframe * 5;
-    console.log(new Date(end));
 
     // Calculate start timestamp using width and pixelsPerElement
     const candlesInView = width / this.pixelsPerElement;
