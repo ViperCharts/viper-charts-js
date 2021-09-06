@@ -52,7 +52,7 @@ export default class Canvas {
     this.ctx.fillRect(
       Math.floor(x),
       Math.floor(y),
-      Math.floor(w),
+      Math.round(w),
       Math.floor(h)
     );
   }
@@ -79,8 +79,9 @@ export default class Canvas {
 
     const h = y2 - y1;
 
-    if (h >= 0) this.drawBox(color, [x - w / 2, y1, w, Math.max(h, 1)]);
-    else this.drawBox(color, [x - w / 2, y1, w, Math.min(h, 1)]);
+    if (h >= 0)
+      this.drawBox(color, [x - w / 2, y1, Math.max(w, 1), Math.max(h, 1)]);
+    else this.drawBox(color, [x - w / 2, y1, Math.max(w, 1), Math.min(h, 1)]);
   }
 
   /**

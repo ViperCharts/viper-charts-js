@@ -15,6 +15,7 @@ import ScriptLoader from "../components/canvas_components/script_loader.js";
 
 import TestScript from "../viper_script/default_scripts/test.js";
 import VolumeBySideBar from "../components/canvas_components/primitives/volume_by_side_bar.js";
+import VolumeProfile from "../components/canvas_components/primitives/volume_profile.js";
 
 export default class Main {
   constructor() {
@@ -44,7 +45,10 @@ export default class Main {
       screenHeightPerc: 0.2,
     });
     // this.priceLine = new PriceLine({ canvas: this.canvas, color: "#11e067" });
-    this.candlestick = new Candlestick({ canvas: this.canvas });
+    // this.candlestick = new Candlestick({ canvas: this.canvas });
+    new VolumeProfile({
+      canvas: this.canvas,
+    });
     this.lastPriceLine = new LastPriceLine({ canvas: this.canvas });
     this.crosshair = new Crosshair({ canvas: this.canvas });
     // new ScriptLoader({
