@@ -57,8 +57,12 @@ export default class Canvas {
     );
   }
 
-  drawText(color, [x, y], text) {
-    this.ctx.textAlign = "center";
+  drawText(color, [x, y], text, options) {
+    options = {
+      textAlign: "center",
+      ...options,
+    };
+    this.ctx.textAlign = options.textAlign;
     this.ctx.fillStyle = color;
     this.ctx.fillText(text, x, y);
   }
