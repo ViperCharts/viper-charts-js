@@ -5,7 +5,7 @@ class ChartState {
     this.data = [];
     this.chart = null;
     this.chartParentElement = null;
-    this.timeframe = Constants.MINUTE5;
+    this.timeframe = Constants.MINUTE;
     this.pixelsPerElement = 10;
     this.range = [];
     this.visibleData = [];
