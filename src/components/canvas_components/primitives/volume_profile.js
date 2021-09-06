@@ -5,8 +5,8 @@ import chartState from "../../../state/chart.js";
 export default class VolumeProfile extends Layer {
   constructor({ canvas }) {
     super(canvas);
-    this.upColor = "#C4FF4988";
-    this.downColor = "#FE3A6488";
+    this.upColor = "#C4FF49";
+    this.downColor = "#FE3A64";
 
     this.lastRange = chartState.range;
   }
