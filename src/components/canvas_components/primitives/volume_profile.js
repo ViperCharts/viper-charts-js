@@ -17,10 +17,12 @@ export default class VolumeProfile extends Layer {
       const w = chartState.pixelsPerElement;
 
       if (!candle.volumeProfile) continue;
-      for (const profile of candle.volumeProfile) {
-        const x = chartState.getXCoordByTimestamp(candle.time);
+      for (const profile of this.volumeProfile(candle.volumeProfile)) {
+        const x = chartState.getXCoordByTimestamp(
+          candle.time + chartState.timeframe
+        );
         const y = chartState.getYCoordByPrice(profile.price);
-        const y2 = chartState.getYCoordByPrice(profile.price - 1);
+        const y2 = chartState.getYCoordByPrice(profile.price - 5);
 
         const sellPerc = profile.sell_volume / 1000000;
         const sw = sellPerc * w;
@@ -33,5 +35,31 @@ export default class VolumeProfile extends Layer {
         this.canvas.drawBox(this.upColor, [x, y, bw, y - y2]);
       }
     }
+  }
+
+  volumeProfile(profile) {
+    if (!profile) return;
+
+    const newProfile = [];
+    const tf = chartState.timeframe;
+
+    for (let i = 0; i < profile.length; i += 5) {
+      const nv = {
+        price: profile[i].price,
+        buy_volume: 0,
+        sell_volume: 0,
+      };
+
+      for (let j = 0; j < 5; j++) {
+        const node = profile[i + j];
+        if (!node) continue;
+        nv.buy_volume += node.buy_volume;
+        nv.sell_volume += node.sell_volume;
+      }
+
+      newProfile.push(nv);
+    }
+
+    return newProfile;
   }
 }
