@@ -49,12 +49,7 @@ export default class Canvas {
    */
   drawBox(color, [x, y, w, h]) {
     this.ctx.fillStyle = color;
-    this.ctx.fillRect(
-      Math.floor(x),
-      Math.floor(y),
-      Math.round(w),
-      Math.floor(h)
-    );
+    this.ctx.fillRect(x, y, w, h);
   }
 
   drawText(color, [x, y], text, options) {

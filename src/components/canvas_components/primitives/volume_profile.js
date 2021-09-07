@@ -48,31 +48,43 @@ export default class VolumeProfile extends Layer {
 
         const pixelsPerRow = y2 - y;
 
-        const sellPerc = Math.min(profile.sell_volume / 2500000, 1);
+        // const sellPerc = Math.min(profile.sell_volume / 2500000, 1);
+        const sellPerc = profile.sell_volume / 1000000;
         const sw = (sellPerc / 2) * w;
 
         this.canvas.drawBox(this.downColor, [x, y, -sw, y - y2]);
 
-        const buyPerc = Math.min(profile.buy_volume / 2500000, 1);
+        // const buyPerc = Math.min(profile.buy_volume / 2500000, 1);
+        const buyPerc = profile.buy_volume / 1000000;
         const bw = (buyPerc / 2) * w;
 
         this.canvas.drawBox(this.upColor, [x, y, bw, y - y2]);
 
         // If zoomed in on y axis, draw buy / sell values
-        if (pixelsPerRow >= 20) {
-          this.canvas.drawText(
-            "#fff",
-            [x + 5, y - pixelsPerRow / 2],
-            nFormatter(profile.buy_volume),
-            { textAlign: "left", strokeText: true }
-          );
-          this.canvas.drawText(
-            "#fff",
-            [x - 5, y - pixelsPerRow / 2],
-            nFormatter(profile.sell_volume),
-            { textAlign: "right", strokeText: true }
-          );
-        }
+        // if (pixelsPerRow >= 20) {
+        //   this.canvas.drawText(
+        //     "#fff",
+        //     [x + 5, y - pixelsPerRow / 2],
+        //     nFormatter(profile.buy_volume),
+        //     { textAlign: "left", strokeText: true }
+        //   );
+        //   this.canvas.drawText(
+        //     "#fff",
+        //     [x - 5, y - pixelsPerRow / 2],
+        //     nFormatter(profile.sell_volume),
+        //     { textAlign: "right", strokeText: true }
+        //   );
+        // }
+
+        // const barColor =
+        //   candle.close >= candle.open ? this.upColor : this.downColor;
+        // const time = candle.time - chartState.timeframe / 2;
+        // this.canvas.drawLineByPriceAndTime(barColor, [
+        //   time,
+        //   candle.open,
+        //   time,
+        //   candle.close,
+        // ]);
       }
     }
   }
