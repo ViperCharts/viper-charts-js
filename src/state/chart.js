@@ -1,5 +1,7 @@
 import Constants from "../constants.js";
 
+import layoutState from "./layout.js";
+
 class ChartState {
   constructor() {
     this.data = [];
@@ -13,6 +15,14 @@ class ChartState {
       x: [],
       y: [],
     };
+
+    this.init();
+  }
+
+  init() {
+    layoutState.width.addEventListener("setWidth", (width) =>
+      this.resizeXRange(0, width)
+    );
   }
 
   setVisibleRange({ start, end }) {
@@ -132,7 +142,7 @@ class ChartState {
   getTimestampByXCoord(x) {
     const [start, end] = this.range;
     const msInView = end - start;
-    const perc = x / this.chart.subcharts.main.canvas.width;
+    const perc = x / layoutState.width.width;
     const time = perc * msInView;
     return start + time;
   }
@@ -142,7 +152,7 @@ class ChartState {
     const msInView = end - start;
     const msFromStart = timestamp - start;
     const perc = msFromStart / msInView;
-    const w = this.chart.subcharts.main.canvas.width;
+    const w = layoutState.width.width;
     return Math.floor(perc * w);
   }
 
@@ -151,7 +161,7 @@ class ChartState {
     const yInView = max - min;
     const yFromMin = price - min;
     const perc = yFromMin / yInView;
-    const h = this.chart.subcharts.main.canvas.height;
+    const h = layoutState.height.height;
     return -Math.floor(perc * h - h);
   }
 }
