@@ -64,8 +64,8 @@ class ChartState {
 
   buildXAndYVisibleScales() {
     const visibleScales = { x: [], y: [] };
-    let xTimestampInterval = 0;
-    let yTimestampInterval = 0;
+    let xTimeStep = 0;
+    let yPriceStep = 0;
 
     const minPixels = 100;
 
@@ -75,17 +75,27 @@ class ChartState {
         this.pixelsPerElement * (Constants.TIMESCALES[i] / this.timeframe);
 
       if (pixelsPerScale >= minPixels) {
-        xTimestampInterval = Constants.TIMESCALES[i];
+        xTimeStep = Constants.TIMESCALES[i];
         break;
       }
     }
 
+    const yRange = this.range[3] - this.range[2];
+    const exponent = yRange.toExponential().split("e")[1];
+    yPriceStep = Math.pow(10, exponent);
+
     // Build timestamps that are on interval
-    const start = this.range[0] - (this.range[0] % xTimestampInterval);
-    for (let i = start; i < this.range[1]; i += xTimestampInterval) {
+    const start = this.range[0] - (this.range[0] % xTimeStep);
+    for (let i = start; i < this.range[1]; i += xTimeStep) {
       visibleScales.x.push(i);
     }
 
+    const min = this.range[2] - (this.range[2] % yPriceStep);
+    for (let i = min; i < this.range[3]; i += yPriceStep) {
+      visibleScales.y.push(i);
+    }
+
+    console.log(visibleScales.y);
     this.visibleScales = visibleScales;
   }
 
