@@ -11,7 +11,7 @@ export default class TimeScale {
     this.canvas = new Canvas({
       id: `canvas-timescale`,
       height: 20,
-      width: layoutState.width.width,
+      width: layoutState.width.width - 50,
       cursor: "e-resize",
       position: "bottom",
     });
@@ -27,7 +27,7 @@ export default class TimeScale {
 
   init() {
     layoutState.width.addEventListener("setWidth", (width) =>
-      this.canvas.setWidth(width)
+      this.canvas.setWidth(width - 50)
     );
   }
 }

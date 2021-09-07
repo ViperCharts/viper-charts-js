@@ -25,7 +25,7 @@ export default class Main {
     this.canvas = new Canvas({
       id: `canvas-${this.id}-main`,
       height: layoutState.height.height - 20,
-      width: layoutState.width.width,
+      width: layoutState.width.width - 50,
       cursor: "crosshair",
     });
 
@@ -81,7 +81,7 @@ export default class Main {
       this.canvas.setHeight(height - 20)
     );
     layoutState.width.addEventListener("setWidth", (width) =>
-      this.canvas.setWidth(width - 20)
+      this.canvas.setWidth(width - 50)
     );
   }
 
