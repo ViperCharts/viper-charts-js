@@ -192,4 +192,3 @@ function buildTokens(str) {
 }
 
 buildTokens(str);
-console.log(JSON.stringify(evalTokens(tokens)));

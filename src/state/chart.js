@@ -90,12 +90,12 @@ class ChartState {
       visibleScales.x.push(i);
     }
 
+    // TODO build y axis range
     const min = this.range[2] - (this.range[2] % yPriceStep);
     for (let i = min; i < this.range[3]; i += yPriceStep) {
       visibleScales.y.push(i);
     }
 
-    console.log(visibleScales.y);
     this.visibleScales = visibleScales;
   }
 
