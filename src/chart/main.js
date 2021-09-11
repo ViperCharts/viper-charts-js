@@ -5,6 +5,7 @@ import Grid from "../components/canvas_components/grid.js";
 
 import chartState from "../state/chart.js";
 import crosshairState from "../state/crosshair.js";
+import layoutState from "../state/layout.js";
 
 import PriceLine from "../components/canvas_components/primitives/price_line.js";
 import Candlestick from "../components/canvas_components/primitives/candlestick.js";
@@ -23,8 +24,8 @@ export default class Main {
 
     this.canvas = new Canvas({
       id: `canvas-${this.id}-main`,
-      height: window.innerHeight - 20,
-      width: window.innerWidth,
+      height: layoutState.height.height - 20,
+      width: layoutState.width.width - 50,
       cursor: "crosshair",
     });
 
@@ -75,6 +76,12 @@ export default class Main {
     this.mouseleaveListener = this.canvas.canvas.addEventListener(
       "mouseleave",
       () => crosshairState.crosshair.updateCrosshair(-1, -1)
+    );
+    layoutState.height.addEventListener("setHeight", (height) =>
+      this.canvas.setHeight(height - 20)
+    );
+    layoutState.width.addEventListener("setWidth", (width) =>
+      this.canvas.setWidth(width - 50)
     );
   }
 

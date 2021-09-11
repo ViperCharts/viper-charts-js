@@ -1,10 +1,14 @@
-import Main from "./main.js";
-
 import chartState from "../state/chart.js";
+import layoutState from "../state/layout.js";
+
+import Main from "./main.js";
 import TimeScale from "../components/canvas_components/time_scale.js";
 
 export default class Chart {
-  constructor({ data, element }) {
+  constructor({ data, element, height, width }) {
+    layoutState.height.setHeight(height);
+    layoutState.width.setWidth(width);
+
     chartState.data = data;
     chartState.chart = this;
     element.style.position = "relative";
@@ -19,17 +23,13 @@ export default class Chart {
       xScale: new TimeScale(),
       yScale: undefined,
     };
-
-    this.init();
   }
 
-  init() {
-    window.addEventListener("resize", () => {
-      this.subcharts.main.canvas.setHeight(window.innerHeight - 20);
-      this.subcharts.main.canvas.setWidth(window.innerWidth);
-      this.subcharts.main.canvas.RE.draw();
-      this.subcharts.xScale.canvas.setWidth(window.innerWidth);
-      chartState.resizeXRange(0, window.innerWidth);
-    });
+  setWidth(width) {
+    layoutState.width.setWidth(width);
+  }
+
+  setHeight(height) {
+    layoutState.height.setHeight(height);
   }
 }

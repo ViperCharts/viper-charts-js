@@ -1,6 +1,4 @@
 import chartState from "../../state/chart.js";
-import layoutState from "../../state/layout.js";
-
 import Canvas from "../canvas.js";
 import Background from "./background.js";
 import Layer from "./layer.js";
@@ -11,7 +9,6 @@ export default class TimeScale {
     this.canvas = new Canvas({
       id: `canvas-timescale`,
       height: 20,
-      width: layoutState.width.width - 50,
       cursor: "e-resize",
       position: "bottom",
     });
@@ -25,11 +22,7 @@ export default class TimeScale {
     this.init();
   }
 
-  init() {
-    layoutState.width.addEventListener("setWidth", (width) =>
-      this.canvas.setWidth(width - 50)
-    );
-  }
+  init() {}
 }
 
 class TimeScaleLayer extends Layer {

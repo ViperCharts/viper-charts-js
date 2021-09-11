@@ -1,6 +1,8 @@
 import "./style.css";
 import Chart from "./chart/chart.js";
 
+let chart;
+
 (async () => {
   const res = await fetch("https://crypto.moonmath.xyz/ftx-data/btc");
   const data = await res.json();
@@ -15,8 +17,15 @@ import Chart from "./chart/chart.js";
     });
   }
 
-  new Chart({
+  chart = new Chart({
     data: newData,
+    width: window.innerWidth,
+    height: window.innerHeight,
     element: document.querySelector("#app"),
+  });
+
+  window.addEventListener("resize", () => {
+    chart.setHeight(window.innerHeight);
+    chart.setWidth(window.innerWidth);
   });
 })();

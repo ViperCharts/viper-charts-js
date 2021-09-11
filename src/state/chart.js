@@ -1,5 +1,7 @@
 import Constants from "../constants.js";
 
+import layoutState from "./layout.js";
+
 class ChartState {
   constructor() {
     this.data = [];
@@ -13,6 +15,14 @@ class ChartState {
       x: [],
       y: [],
     };
+
+    this.init();
+  }
+
+  init() {
+    layoutState.width.addEventListener("setWidth", (width) =>
+      this.resizeXRange(0, width)
+    );
   }
 
   setVisibleRange({ start, end }) {
@@ -54,8 +64,8 @@ class ChartState {
 
   buildXAndYVisibleScales() {
     const visibleScales = { x: [], y: [] };
-    let xTimestampInterval = 0;
-    let yTimestampInterval = 0;
+    let xTimeStep = 0;
+    let yPriceStep = 0;
 
     const minPixels = 100;
 
@@ -65,15 +75,25 @@ class ChartState {
         this.pixelsPerElement * (Constants.TIMESCALES[i] / this.timeframe);
 
       if (pixelsPerScale >= minPixels) {
-        xTimestampInterval = Constants.TIMESCALES[i];
+        xTimeStep = Constants.TIMESCALES[i];
         break;
       }
     }
 
+    const yRange = this.range[3] - this.range[2];
+    const exponent = yRange.toExponential().split("e")[1];
+    yPriceStep = Math.pow(10, exponent);
+
     // Build timestamps that are on interval
-    const start = this.range[0] - (this.range[0] % xTimestampInterval);
-    for (let i = start; i < this.range[1]; i += xTimestampInterval) {
+    const start = this.range[0] - (this.range[0] % xTimeStep);
+    for (let i = start; i < this.range[1]; i += xTimeStep) {
       visibleScales.x.push(i);
+    }
+
+    // TODO build y axis range
+    const min = this.range[2] - (this.range[2] % yPriceStep);
+    for (let i = min; i < this.range[3]; i += yPriceStep) {
+      visibleScales.y.push(i);
     }
 
     this.visibleScales = visibleScales;
@@ -132,7 +152,7 @@ class ChartState {
   getTimestampByXCoord(x) {
     const [start, end] = this.range;
     const msInView = end - start;
-    const perc = x / this.chart.subcharts.main.canvas.width;
+    const perc = x / layoutState.width.width;
     const time = perc * msInView;
     return start + time;
   }
@@ -142,7 +162,7 @@ class ChartState {
     const msInView = end - start;
     const msFromStart = timestamp - start;
     const perc = msFromStart / msInView;
-    const w = this.chart.subcharts.main.canvas.width;
+    const w = layoutState.width.width;
     return Math.floor(perc * w);
   }
 
@@ -151,7 +171,7 @@ class ChartState {
     const yInView = max - min;
     const yFromMin = price - min;
     const perc = yFromMin / yInView;
-    const h = this.chart.subcharts.main.canvas.height;
+    const h = layoutState.height.height;
     return -Math.floor(perc * h - h);
   }
 }
