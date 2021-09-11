@@ -50,13 +50,13 @@ export default class VolumeProfile extends Layer {
 
         // const sellPerc = Math.min(profile.sell_volume / 2500000, 1);
         const sellPerc = profile.sell_volume / 1000000;
-        const sw = (sellPerc / 2) * w;
+        const sw = sellPerc * w;
 
         this.canvas.drawBox(this.downColor, [x, y, -sw, y - y2]);
 
         // const buyPerc = Math.min(profile.buy_volume / 2500000, 1);
         const buyPerc = profile.buy_volume / 1000000;
-        const bw = (buyPerc / 2) * w;
+        const bw = buyPerc * w;
 
         this.canvas.drawBox(this.upColor, [x, y, bw, y - y2]);
 
