@@ -93,7 +93,6 @@ export default class VolumeProfile extends Layer {
     if (!profile) return;
 
     const newProfile = [];
-    const tf = chartState.timeframe;
 
     for (let i = 0; i < profile.length; i += 5) {
       const nv = {
