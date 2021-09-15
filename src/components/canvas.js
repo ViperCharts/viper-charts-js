@@ -38,7 +38,6 @@ export default class Canvas {
     this.setWidth(this.width);
 
     chartState.chartParentElement.appendChild(this.canvas);
-    chartState.setInitialVisibleRange(this.height, this.width);
     this.RE = new RenderingEngine(this);
   }
 

@@ -15,6 +15,7 @@ export default class Chart {
     element.style.position = "relative";
     element.style.width = "100%";
     element.style.height = "100%";
+    element.style.background = "#080019";
     chartState.chartParentElement = element;
 
     this.chartState = chartState;
@@ -24,6 +25,8 @@ export default class Chart {
       xScale: new TimeScale(),
       yScale: new PriceScale(),
     };
+
+    chartState.setInitialVisibleRange(height - 20, width - 50);
   }
 
   setWidth(width) {
