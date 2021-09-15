@@ -3,6 +3,7 @@ import layoutState from "../state/layout.js";
 
 import Main from "./main.js";
 import TimeScale from "../components/canvas_components/time_scale.js";
+import PriceScale from "../components/canvas_components/price_scale.js";
 
 export default class Chart {
   constructor({ data, element, height, width }) {
@@ -21,7 +22,7 @@ export default class Chart {
     this.subcharts = {
       main: new Main(),
       xScale: new TimeScale(),
-      yScale: undefined,
+      yScale: new PriceScale(),
     };
   }
 
