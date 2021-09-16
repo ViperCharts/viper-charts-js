@@ -1,6 +1,8 @@
 {
   "name": "viper-charts",
   "version": "0.0.0",
+  "lockfileVersion": 1,
+  "hasInstallScript": true,
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
