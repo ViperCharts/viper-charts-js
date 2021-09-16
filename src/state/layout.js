@@ -1,5 +1,7 @@
 import EventEmitter from "../events/event_emitter.ts";
 
+import chartState from "../state/chart.js";
+
 class Height extends EventEmitter {
   constructor() {
     super();

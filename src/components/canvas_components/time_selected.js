@@ -9,6 +9,10 @@ export default class TimeSelected extends Layer {
   }
 
   draw() {
+    const x = crosshairState.crosshair.x;
+
+    if (x < 0) return;
+
     const d = new Date(crosshairState.crosshair.timestamp);
     const dateText = `${
       d.getMonth() + 1
@@ -16,7 +20,6 @@ export default class TimeSelected extends Layer {
       -2
     )}`;
 
-    const x = crosshairState.crosshair.x;
     this.canvas.drawBox("#424242", [x - 45, 0, 90, 30]);
     this.canvas.drawText("#fff", [x, 15], dateText);
   }
