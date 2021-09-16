@@ -1,5 +1,5 @@
 import Utils from "../utils.js";
-import Canvas from "./Canvas.js";
+import Canvas from "./canvas.js";
 
 /**
  * Handles render queue and layers including order
