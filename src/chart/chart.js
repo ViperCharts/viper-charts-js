@@ -5,6 +5,17 @@ import Main from "./main.js";
 import TimeScale from "../components/canvas_components/time_scale.js";
 import PriceScale from "../components/canvas_components/price_scale.js";
 
+import Vue from "vue";
+import View from "../vue_components/View.vue";
+
+const app = new Vue({
+  el: "#app",
+  render: (h) => h(View),
+});
+
+app.$on("increment", console.log);
+const ChartView = app.$children[0];
+
 export default class Chart {
   constructor({ data, element, height, width }) {
     layoutState.height.setHeight(height);
@@ -12,11 +23,7 @@ export default class Chart {
 
     chartState.data = data;
     chartState.chart = this;
-    element.style.position = "relative";
-    element.style.width = "100%";
-    element.style.height = "100%";
-    element.style.background = "#080019";
-    chartState.chartParentElement = element;
+    this.createLayout(element);
 
     this.chartState = chartState;
 
@@ -27,6 +34,11 @@ export default class Chart {
     };
 
     chartState.setInitialVisibleRange(height - 20, width - 50);
+  }
+
+  createLayout(parent) {
+    console.log(app);
+    chartState.chartParentElement = ChartView.$refs.charts;
   }
 
   setWidth(width) {

@@ -9,6 +9,7 @@ class ChartState {
     this.chartParentElement = null;
     this.timeframe = Constants.MINUTE;
     this.pixelsPerElement = 10;
+    this.indicators = [];
     this.range = [];
     this.visibleData = [];
     this.visibleScales = {
