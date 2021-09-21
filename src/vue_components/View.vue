@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="app">
     <!-- Icons -->
     <Icons />
 
@@ -56,6 +56,8 @@ button {
 #app {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
 }
 
 .top-bar {
@@ -66,8 +68,10 @@ button {
 }
 
 .charts {
-  width: 100%;
   flex-grow: 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .top-bar > button {

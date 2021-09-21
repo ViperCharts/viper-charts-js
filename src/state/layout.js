@@ -30,6 +30,18 @@ class LayoutState {
   constructor() {
     this.height = new Height();
     this.width = new Width();
+
+    this.init();
+  }
+
+  init() {
+    window.addEventListener("resize", this.resize.bind(this));
+  }
+
+  resize() {
+    const container = chartState.chartParentElement;
+    this.width.setWidth(container.clientWidth);
+    this.height.setHeight(container.clientHeight);
   }
 }
 

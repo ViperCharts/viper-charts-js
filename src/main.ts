@@ -23,9 +23,4 @@ let chart;
     height: window.innerHeight,
     element: document.querySelector("#app"),
   });
-
-  window.addEventListener("resize", () => {
-    chart.setHeight(window.innerHeight);
-    chart.setWidth(window.innerWidth);
-  });
 })();

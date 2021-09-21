@@ -17,10 +17,7 @@ app.$on("increment", console.log);
 const ChartView = app.$children[0];
 
 export default class Chart {
-  constructor({ data, element, height, width }) {
-    layoutState.height.setHeight(height);
-    layoutState.width.setWidth(width);
-
+  constructor({ data, element }) {
     chartState.data = data;
     chartState.chart = this;
     this.createLayout(element);
@@ -32,20 +29,14 @@ export default class Chart {
       xScale: new TimeScale(),
       yScale: new PriceScale(),
     };
-
-    chartState.setInitialVisibleRange(height - 20, width - 50);
   }
 
-  createLayout(parent) {
-    console.log(app);
+  createLayout() {
     chartState.chartParentElement = ChartView.$refs.charts;
-  }
-
-  setWidth(width) {
-    layoutState.width.setWidth(width);
-  }
-
-  setHeight(height) {
-    layoutState.height.setHeight(height);
+    layoutState.resize();
+    chartState.setInitialVisibleRange(
+      layoutState.height.height - 20,
+      layoutState.width.width - 50
+    );
   }
 }
