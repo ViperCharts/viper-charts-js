@@ -91,6 +91,7 @@ export default class Main {
   }
 
   onMouseMove(e) {
-    crosshairState.crosshair.updateCrosshair(e.x, e.y);
+    console.log(e);
+    crosshairState.crosshair.updateCrosshair(e.offsetX, e.offsetY);
   }
 }
