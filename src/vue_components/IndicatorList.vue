@@ -1,7 +1,11 @@
 <template>
   <div>
-    <div v-for="(indicator, i) of indicators" :key="i" class="indicator">
-      <span class="indicator-title">{{ indicator.title }}</span>
+    <div
+      v-for="instanceId of Object.keys(indicators)"
+      :key="instanceId"
+      class="indicator"
+    >
+      <span class="indicator-title">{{ indicators[instanceId].name }}</span>
       <button>
         <i class="gg-eye"></i>
       </button>
@@ -16,7 +20,7 @@
 export default {
   props: {
     indicators: {
-      type: Array,
+      type: Object,
       required: true,
     },
   },

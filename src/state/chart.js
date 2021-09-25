@@ -1,6 +1,7 @@
 import Constants from "../constants.js";
 
 import layoutState from "./layout.js";
+import uiState from "./ui.js";
 
 import Utils from "../utils.js";
 
@@ -13,7 +14,6 @@ class ChartState {
     this.id = Utils.uniqueId();
     this.data = [];
     this.chart = null;
-    this.chartParentElement = null;
     this.timeframe = Constants.MINUTE;
     this.pixelsPerElement = 10;
     this.indicators = {};
@@ -50,6 +50,8 @@ class ChartState {
     this.indicators[instance.renderingQueueId] = {
       name: indicator.name,
     };
+
+    uiState.update("indicators", this.indicators);
   }
 
   setVisibleRange({ start, end }) {

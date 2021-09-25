@@ -1,6 +1,7 @@
 import RenderingEngine from "./rendering_engine.js";
 
 import chartState from "../state/chart.js";
+import uiState from "../state/ui.js";
 
 export default class Canvas {
   constructor({ id, height, width, cursor = "default", position }) {
@@ -37,7 +38,7 @@ export default class Canvas {
     this.setHeight(this.height);
     this.setWidth(this.width);
 
-    chartState.chartParentElement.appendChild(this.canvas);
+    uiState.chartsElements.appendChild(this.canvas);
     this.RE = new RenderingEngine(this);
   }
 

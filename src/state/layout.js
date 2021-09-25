@@ -1,6 +1,7 @@
 import EventEmitter from "../events/event_emitter.ts";
 
 import chartState from "../state/chart.js";
+import uiState from "../state/ui.js";
 
 class Height extends EventEmitter {
   constructor() {
@@ -39,7 +40,7 @@ class LayoutState {
   }
 
   resize() {
-    const container = chartState.chartParentElement;
+    const container = uiState.chartsElements;
     this.width.setWidth(container.clientWidth);
     this.height.setHeight(container.clientHeight);
   }
