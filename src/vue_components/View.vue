@@ -7,7 +7,10 @@
     <div class="top-bar">
       <button @click="showModal" modal="indicators">Indicators</button>
     </div>
-    <div ref="charts" class="charts"></div>
+    <div class="viewport">
+      <IndicatorList :indicators="indicators" class="indicator-list" />
+      <div ref="charts" class="charts"></div>
+    </div>
 
     <!-- Modal -->
     <div v-if="modal.length" class="modal">
@@ -27,14 +30,17 @@
 
 <script>
 import Icons from "./Icons.vue";
+import IndicatorList from "./IndicatorList.vue";
 
 export default {
   components: {
     Icons,
+    IndicatorList,
   },
 
   data: () => ({
     modal: "",
+    indicators: [],
   }),
 
   methods: {
@@ -67,8 +73,21 @@ button {
   background: #100033;
 }
 
-.charts {
+.viewport {
   flex-grow: 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.indicator-list {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+}
+
+.charts {
   position: relative;
   width: 100%;
   height: 100%;

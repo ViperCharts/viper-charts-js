@@ -3,9 +3,9 @@ import Layer from "../layer.js";
 import chartState from "../../../state/chart.js";
 
 export default class VolumeBySideBar extends Layer {
-  constructor({ canvas, screenHeightPerc }) {
+  constructor({ canvas }) {
     super(canvas);
-    this.screenHeightPerc = screenHeightPerc;
+    this.screenHeightPerc = 0.2;
     this.upColor = "#C4FF4944";
     this.downColor = "#FE3A6444";
 

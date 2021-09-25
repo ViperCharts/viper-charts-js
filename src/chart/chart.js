@@ -1,10 +1,6 @@
 import chartState from "../state/chart.js";
 import layoutState from "../state/layout.js";
 
-import Main from "./main.js";
-import TimeScale from "../components/canvas_components/time_scale.js";
-import PriceScale from "../components/canvas_components/price_scale.js";
-
 import Vue from "vue";
 import View from "../vue_components/View.vue";
 
@@ -23,12 +19,6 @@ export default class Chart {
     this.createLayout(element);
 
     this.chartState = chartState;
-
-    this.subcharts = {
-      main: new Main(),
-      xScale: new TimeScale(),
-      yScale: new PriceScale(),
-    };
   }
 
   createLayout() {

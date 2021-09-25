@@ -1,9 +1,9 @@
 import Layer from "./layer.js";
 
 export default class Background extends Layer {
-  constructor({ canvas, color }) {
+  constructor({ canvas }) {
     super(canvas);
-    this.color = color;
+    this.color = "#080019";
   }
 
   draw() {

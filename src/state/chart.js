@@ -2,28 +2,54 @@ import Constants from "../constants.js";
 
 import layoutState from "./layout.js";
 
+import Utils from "../utils.js";
+
+import Main from "../chart/main.js";
+import TimeScale from "../components/canvas_components/time_scale.js";
+import PriceScale from "../components/canvas_components/price_scale.js";
+
 class ChartState {
   constructor() {
+    this.id = Utils.uniqueId();
     this.data = [];
     this.chart = null;
     this.chartParentElement = null;
     this.timeframe = Constants.MINUTE;
     this.pixelsPerElement = 10;
-    this.indicators = [];
+    this.indicators = {};
     this.range = [];
     this.visibleData = [];
     this.visibleScales = {
       x: [],
       y: [],
     };
+    this.subcharts = {
+      main: undefined,
+      xScale: undefined,
+      yScale: undefined,
+    };
 
-    this.init();
+    setTimeout(() => this.init());
   }
 
   init() {
     layoutState.width.addEventListener("setWidth", (width) =>
       this.resizeXRange(0, width)
     );
+
+    this.subcharts.main = new Main();
+    this.subcharts.xScale = new TimeScale();
+    this.subcharts.yScale = new PriceScale();
+  }
+
+  addIndicator(indicator) {
+    const { canvas } = this.subcharts.main;
+
+    // Create an instance of the indicator class
+    const instance = new indicator.class({ canvas });
+    this.indicators[instance.renderingQueueId] = {
+      name: indicator.name,
+    };
   }
 
   setVisibleRange({ start, end }) {

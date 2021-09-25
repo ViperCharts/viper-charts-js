@@ -3,9 +3,9 @@ import Layer from "./layer.js";
 import chartState from "../../state/chart.js";
 
 export default class Grid extends Layer {
-  constructor({ canvas, color }) {
+  constructor({ canvas }) {
     super(canvas);
-    this.color = color;
+    this.color = "#434343";
   }
 
   draw() {
