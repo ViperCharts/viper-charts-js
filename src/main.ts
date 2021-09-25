@@ -1,12 +1,10 @@
 import "./style.css";
 import Chart from "./chart/chart.js";
-import data from "./footprint.json";
-
-let chart;
+// import data from "./footprint.json";
 
 (async () => {
-  // const res = await fetch("https://crypto.moonmath.xyz/ftx-data/btc");
-  // const data = await res.json();
+  const res = await fetch("https://crypto.moonmath.xyz/ftx-data/btc");
+  const data = await res.json();
 
   const newData: any = [];
   for (let i = 0; i < data.candles.length; i++) {
@@ -18,7 +16,7 @@ let chart;
     });
   }
 
-  chart = new Chart({
+  new Chart({
     data: newData,
     width: window.innerWidth,
     height: window.innerHeight,

@@ -92,6 +92,9 @@ button {
 }
 
 .indicator-list {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
   position: absolute;
   top: 1rem;
   left: 1rem;
