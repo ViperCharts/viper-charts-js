@@ -47,10 +47,19 @@ class ChartState {
 
     // Create an instance of the indicator class
     const instance = new indicator.class({ canvas });
+    console.log(this.indicators);
     this.indicators[instance.renderingQueueId] = {
       name: indicator.name,
     };
 
+    uiState.update("indicators", this.indicators);
+  }
+
+  removeIndicator(id) {
+    const { RE } = this.subcharts.main.canvas;
+
+    RE.removeFromQueue(id);
+    delete this.indicators[id];
     uiState.update("indicators", this.indicators);
   }
 

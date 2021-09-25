@@ -51,10 +51,6 @@ export default class Main {
     layoutState.width.addEventListener("setWidth", (width) =>
       this.canvas.setWidth(width - 50)
     );
-
-    setTimeout(() => {
-      chartState.addIndicator(series[0]);
-    }, 1000);
   }
 
   onScroll(e) {

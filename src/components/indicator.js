@@ -23,3 +23,5 @@ export const indicators = [
   new Indicator("Volume", [], VolumeBar),
   new Indicator("Volume By Side", [], VolumeBySideBar),
 ];
+
+export default { series, indicators };

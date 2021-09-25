@@ -12,7 +12,7 @@ class UIState {
   }
 
   update(property, value) {
-    this.child[property] = value;
+    this.child.setProperty(property, JSON.parse(JSON.stringify(value)));
   }
 }
 

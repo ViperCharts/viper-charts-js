@@ -18,10 +18,14 @@
         <div class="modal-box-topbar">
           <h1>Modal</h1>
           <button @click="modal = ''" class="modal-box-close">
-            <svg class="icon icon-cross">
-              <use xlink:href="#icon-cross"></use>
-            </svg>
+            <i class="gg-close"></i>
           </button>
+        </div>
+
+        <div>
+          <div v-if="modal === 'indicators'">
+            <IndicatorsListModal />
+          </div>
         </div>
       </div>
     </div>
@@ -32,10 +36,13 @@
 import Icons from "./Icons.vue";
 import IndicatorList from "./IndicatorList.vue";
 
+import IndicatorsListModal from "./modals/IndicatorsList.vue";
+
 export default {
   components: {
     Icons,
     IndicatorList,
+    IndicatorsListModal,
   },
 
   data: () => ({
@@ -44,6 +51,10 @@ export default {
   }),
 
   methods: {
+    setProperty(property, value) {
+      this[property] = value;
+    },
+
     showModal(e) {
       const id = e.srcElement.getAttribute("modal");
       this.modal = id;

@@ -1,15 +1,15 @@
 <template>
   <div>
     <div
-      v-for="instanceId of Object.keys(indicators)"
-      :key="instanceId"
+      v-for="indicatorId of indicatorIds"
+      :key="indicatorId"
       class="indicator"
     >
-      <span class="indicator-title">{{ indicators[instanceId].name }}</span>
+      <span class="indicator-title">{{ indicators[indicatorId].name }}</span>
       <button>
         <i class="gg-eye"></i>
       </button>
-      <button>
+      <button @click="() => remove(indicatorId)">
         <i class="gg-close"></i>
       </button>
     </div>
@@ -17,11 +17,25 @@
 </template>
 
 <script>
+import chartState from "../state/chart.js";
+
 export default {
   props: {
     indicators: {
       type: Object,
       required: true,
+    },
+  },
+
+  computed: {
+    indicatorIds() {
+      return Object.keys(this.indicators);
+    },
+  },
+
+  methods: {
+    remove(id) {
+      chartState.removeIndicator(id);
     },
   },
 };
