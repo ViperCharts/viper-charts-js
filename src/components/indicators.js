@@ -1,5 +1,6 @@
 class Indicator {
   constructor(name, dataSources, c) {
+    this.id = name.replaceAll(" ", "-").toLowerCase();
     this.name = name;
     this.dataSources = dataSources;
     this.class = c;
@@ -24,4 +25,18 @@ export const indicators = [
   new Indicator("Volume By Side", [], VolumeBySideBar),
 ];
 
-export default { series, indicators };
+export const map = (() => {
+  const map = new Map();
+
+  for (const indi of [...series, ...indicators]) {
+    if (map.has(indi.id)) {
+      console.error("Duplicate indicator ID detected for: " + indi.name);
+      return;
+    }
+    map.set(indi.id, indi);
+  }
+
+  return map;
+})();
+
+export default { series, indicators, map };

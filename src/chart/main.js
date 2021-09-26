@@ -8,7 +8,9 @@ import Grid from "../components/canvas_components/grid.js";
 import Crosshair from "../components/canvas_components/crosshair.js";
 import LastPriceLine from "../components/canvas_components/last_price_line.js";
 
-import { series, indicators } from "../components/indicator.js";
+import Indicators, { indicators } from "../components/indicators.js";
+
+import StorageManager from "../managers/storage.js";
 
 export default class Main {
   constructor() {
@@ -23,7 +25,7 @@ export default class Main {
     this.mousemoveListener = null;
     this.mouseleaveListener = null;
 
-    this.init();
+    setTimeout(() => this.init());
   }
 
   init() {
@@ -51,6 +53,19 @@ export default class Main {
     layoutState.width.addEventListener("setWidth", (width) =>
       this.canvas.setWidth(width - 50)
     );
+
+    // Load initial indicators
+    const settings = StorageManager.getChartSettings();
+    console.log(settings);
+    if (settings.indicators) {
+      for (const indicator of settings.indicators) {
+        console.log(Indicators.map, indicator.id);
+        chartState.addIndicator(Indicators.map.get(indicator.id));
+      }
+    } else {
+      chartState.addIndicator(Indicators.map.get("candlestick"));
+      chartState.addIndicator(Indicators.map.get("volume-by-side"));
+    }
   }
 
   onScroll(e) {

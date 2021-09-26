@@ -10,8 +10,11 @@ export default class LastPriceLine extends Layer {
   }
 
   draw() {
+    const newestCandle = chartState.data[chartState.data.length - 1];
+    if (!newestCandle) return;
+
     // Get last candle and draw price line
-    const { close, open } = chartState.data[chartState.data.length - 1];
+    const { close, open } = newestCandle;
     const isUp = close >= open;
     const color = isUp ? this.upColor : this.downColor;
 

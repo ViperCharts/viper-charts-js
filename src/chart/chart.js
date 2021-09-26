@@ -9,6 +9,7 @@ export default class Chart {
     this.createLayout(element);
 
     this.chartState = chartState;
+    chartState.init();
   }
 
   createLayout() {

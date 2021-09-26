@@ -1,6 +1,6 @@
 import "./style.css";
-import Chart from "./chart/chart.js";
 // import data from "./footprint.json";
+import Chart from "./chart/chart.js";
 
 (async () => {
   const res = await fetch("https://crypto.moonmath.xyz/ftx-data/btc");

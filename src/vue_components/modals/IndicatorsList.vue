@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import IndicatorList from "../../components/indicator.js";
+import IndicatorList from "../../components/indicators.js";
 
 import chartState from "../../state/chart.js";
 

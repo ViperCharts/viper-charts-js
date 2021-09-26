@@ -9,6 +9,8 @@ import Main from "../chart/main.js";
 import TimeScale from "../components/canvas_components/time_scale.js";
 import PriceScale from "../components/canvas_components/price_scale.js";
 
+import StorageManager from "../managers/storage.js";
+
 class ChartState {
   constructor() {
     this.id = Utils.uniqueId();
@@ -28,8 +30,6 @@ class ChartState {
       xScale: undefined,
       yScale: undefined,
     };
-
-    setTimeout(() => this.init());
   }
 
   init() {
@@ -37,9 +37,11 @@ class ChartState {
       this.resizeXRange(0, width)
     );
 
-    this.subcharts.main = new Main();
-    this.subcharts.xScale = new TimeScale();
-    this.subcharts.yScale = new PriceScale();
+    this.subcharts = {
+      main: new Main(),
+      xScale: new TimeScale(),
+      yScale: new PriceScale(),
+    };
   }
 
   addIndicator(indicator) {
@@ -47,12 +49,16 @@ class ChartState {
 
     // Create an instance of the indicator class
     const instance = new indicator.class({ canvas });
-    console.log(this.indicators);
     this.indicators[instance.renderingQueueId] = {
+      id: indicator.id,
       name: indicator.name,
     };
 
     uiState.update("indicators", this.indicators);
+
+    StorageManager.setChartSettings({
+      indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
+    });
   }
 
   removeIndicator(id) {
@@ -61,6 +67,10 @@ class ChartState {
     RE.removeFromQueue(id);
     delete this.indicators[id];
     uiState.update("indicators", this.indicators);
+
+    StorageManager.setChartSettings({
+      indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
+    });
   }
 
   setVisibleRange({ start, end }) {
