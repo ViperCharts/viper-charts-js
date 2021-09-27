@@ -20,6 +20,5 @@ import Chart from "./chart/chart.js";
     data: newData,
     width: window.innerWidth,
     height: window.innerHeight,
-    element: document.querySelector("#app"),
   });
 })();

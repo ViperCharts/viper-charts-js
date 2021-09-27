@@ -25,26 +25,28 @@ function nFormatter(num, digits) {
 }
 
 export default class VolumeProfile extends Layer {
-  constructor({ canvas }) {
+  constructor({ $state, canvas }) {
+    this.$state = $state;
+
     super(canvas);
     this.upColor = "#8BB532";
     this.downColor = "#FE3A64";
 
-    this.lastRange = chartState.range;
+    this.lastRange = this.$state.chart.range;
   }
 
   draw() {
     // Loop through and render all candles
-    for (const candle of chartState.visibleData) {
-      const w = chartState.pixelsPerElement;
+    for (const candle of this.$state.chart.visibleData) {
+      const w = this.$state.chart.pixelsPerElement;
 
       if (!candle.volumeProfile) continue;
       for (const profile of this.volumeProfile(candle.volumeProfile)) {
-        const x = chartState.getXCoordByTimestamp(
-          candle.time + chartState.timeframe
+        const x = this.$state.chart.getXCoordByTimestamp(
+          candle.time + this.$state.chart.timeframe
         );
-        const y = chartState.getYCoordByPrice(profile.price);
-        const y2 = chartState.getYCoordByPrice(profile.price - 5);
+        const y = this.$state.chart.getYCoordByPrice(profile.price);
+        const y2 = this.$state.chart.getYCoordByPrice(profile.price - 5);
 
         const pixelsPerRow = y2 - y;
 
@@ -78,7 +80,7 @@ export default class VolumeProfile extends Layer {
 
         // const barColor =
         //   candle.close >= candle.open ? this.upColor : this.downColor;
-        // const time = candle.time - chartState.timeframe / 2;
+        // const time = candle.time - this.$state.chart.timeframe / 2;
         // this.canvas.drawLineByPriceAndTime(barColor, [
         //   time,
         //   candle.open,

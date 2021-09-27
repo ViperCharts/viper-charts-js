@@ -3,14 +3,16 @@ import Layer from "../layer.js";
 import chartState from "../../../state/chart.js";
 
 export default class Candlestick extends Layer {
-  constructor({ canvas }) {
+  constructor({ $state, canvas }) {
+    this.$state = $state;
+
     super(canvas);
     this.upColor = "#C4FF49";
     this.downColor = "#FE3A64";
   }
 
   draw() {
-    for (const candle of chartState.visibleData) {
+    for (const candle of this.$state.chart.visibleData) {
       const isUp = candle.close >= candle.open;
       const color = isUp ? this.upColor : this.downColor;
 

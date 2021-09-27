@@ -7,7 +7,9 @@ import Layer from "./layer.js";
 import TimeSelected from "./time_selected.js";
 
 export default class TimeScale {
-  constructor() {
+  constructor({ $state }) {
+    this.$state = $state;
+
     this.canvas = new Canvas({
       id: `canvas-timescale`,
       height: 20,
@@ -43,7 +45,7 @@ class TimeScaleLayer extends Layer {
    * Draw canvas function, this is a placeholder
    */
   draw() {
-    for (const time of chartState.visibleScales.x) {
+    for (const time of this.$state.chart.visibleScales.x) {
       const d = new Date(time);
       this.canvas.drawTextAtPriceAndTime(
         "#A7A8B3",

@@ -13,7 +13,9 @@ import Indicators, { indicators } from "../components/indicators.js";
 import StorageManager from "../managers/storage.js";
 
 export default class Main {
-  constructor() {
+  constructor({ $state }) {
+    this.$state = $state;
+
     this.canvas = new Canvas({
       id: `canvas-${this.id}-main`,
       height: layoutState.height.height - 20,
@@ -30,10 +32,10 @@ export default class Main {
 
   init() {
     // Add indicators to it
-    new Background({ canvas: this.canvas });
-    new Grid({ canvas: this.canvas });
-    new LastPriceLine({ canvas: this.canvas });
-    new Crosshair({ canvas: this.canvas });
+    new Background({ $state: this.$state, canvas: this.canvas });
+    new Grid({ $state: this.$state, canvas: this.canvas });
+    new LastPriceLine({ $state: this.$state, canvas: this.canvas });
+    new Crosshair({ $state: this.$state, canvas: this.canvas });
 
     this.scrollListener = this.canvas.canvas.addEventListener(
       "wheel",
@@ -58,17 +60,18 @@ export default class Main {
     const settings = StorageManager.getChartSettings();
     if (settings.indicators) {
       for (const indicator of settings.indicators) {
-        chartState.addIndicator(Indicators.map.get(indicator.id));
+        this.$state.chart.addIndicator(Indicators.map.get(indicator.id));
       }
     } else {
-      chartState.addIndicator(Indicators.map.get("candlestick"));
-      chartState.addIndicator(Indicators.map.get("volume-by-side"));
+      this.$state.chart.addIndicator(Indicators.map.get("candlestick"));
+      this.$state.chart.addIndicator(Indicators.map.get("volume-by-side"));
     }
   }
 
   onScroll(e) {
-    if (e.deltaY < 0) chartState.resizeXRange(10, this.canvas.width);
-    else if (e.deltaY > 0) chartState.resizeXRange(-10, this.canvas.width);
+    if (e.deltaY < 0) this.$state.chart.resizeXRange(10, this.canvas.width);
+    else if (e.deltaY > 0)
+      this.$state.chart.resizeXRange(-10, this.canvas.width);
   }
 
   onMouseMove(e) {

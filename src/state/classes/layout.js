@@ -4,7 +4,9 @@ import chartState from "../state/chart.js";
 import uiState from "../state/ui.js";
 
 class Height extends EventEmitter {
-  constructor() {
+  constructor({ $global }) {
+    this.$global = $global;
+
     super();
     this.height = 0;
   }
@@ -27,7 +29,7 @@ class Width extends EventEmitter {
   }
 }
 
-class LayoutState {
+export default class LayoutState {
   constructor() {
     this.height = new Height();
     this.width = new Width();
@@ -37,13 +39,12 @@ class LayoutState {
 
   init() {
     window.addEventListener("resize", this.resize.bind(this));
+    this.resize();
   }
 
   resize() {
-    const container = uiState.chartsElements;
+    const container = this.$global.ui.chartsElements;
     this.width.setWidth(container.clientWidth);
     this.height.setHeight(container.clientHeight);
   }
 }
-
-export default new LayoutState();

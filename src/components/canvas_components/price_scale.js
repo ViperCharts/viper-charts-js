@@ -7,7 +7,9 @@ import Layer from "./layer.js";
 import PriceSelected from "./price_selected.js";
 
 export default class TimeScale {
-  constructor() {
+  constructor({ $state }) {
+    this.$state = $state;
+
     this.canvas = new Canvas({
       id: `canvas-pricescale`,
       height: layoutState.height.height - 20,

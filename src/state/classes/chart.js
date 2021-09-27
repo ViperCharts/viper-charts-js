@@ -1,30 +1,31 @@
-import Constants from "../constants.js";
+import Constants from "../../constants.js";
 
-import layoutState from "./layout.js";
-import uiState from "./ui.js";
+import layoutState from "./../layout.js";
+import uiState from "./../ui.js";
 
-import Utils from "../utils.js";
+import Utils from "../../utils.js";
 
-import Main from "../chart/main.js";
-import TimeScale from "../components/canvas_components/time_scale.js";
-import PriceScale from "../components/canvas_components/price_scale.js";
+import Main from "../../chart/main.js";
+import TimeScale from "../../components/canvas_components/time_scale.js";
+import PriceScale from "../../components/canvas_components/price_scale.js";
 
-import StorageManager from "../managers/storage.js";
+import StorageManager from "../../managers/storage.js";
 
-class ChartState {
-  constructor() {
+import EventEmitter from "../../events/event_emitter.ts";
+
+export default class Chart extends EventEmitter {
+  constructor({ $global }) {
+    this.$global = $global;
+
+    super();
     this.id = Utils.uniqueId();
     this.data = [];
-    this.chart = null;
     this.timeframe = Constants.MINUTE;
     this.pixelsPerElement = 10;
     this.indicators = {};
     this.range = [];
     this.visibleData = [];
-    this.visibleScales = {
-      x: [],
-      y: [],
-    };
+    this.visibleScales = { x: [], y: [] };
     this.subcharts = {
       main: undefined,
       xScale: undefined,
@@ -37,18 +38,31 @@ class ChartState {
       this.resizeXRange(0, width)
     );
 
-    this.subcharts = {
-      main: new Main(),
-      xScale: new TimeScale(),
-      yScale: new PriceScale(),
+    const $state = {
+      chart: this,
+      layout: this.$global.layout,
+      crosshair: this.$global.crosshair,
+      ui: this.$global.ui,
+      global: this.$global,
     };
+
+    this.subcharts = {
+      main: new Main({ $state }),
+      xScale: new TimeScale({ $state }),
+      yScale: new PriceScale({ $state }),
+    };
+
+    this.setInitialVisibleRange();
   }
 
   addIndicator(indicator) {
     const { canvas } = this.subcharts.main;
 
     // Create an instance of the indicator class
-    const instance = new indicator.class({ canvas });
+    const instance = new indicator.class({
+      $state: this,
+      canvas,
+    });
     this.indicators[instance.renderingQueueId] = {
       id: indicator.id,
       name: indicator.name,
@@ -156,7 +170,12 @@ class ChartState {
     this.visibleScales = visibleScales;
   }
 
-  setInitialVisibleRange(height, width) {
+  /**
+   * Set the initial visible range of data
+   */
+  setInitialVisibleRange() {
+    const width = this.$global.layout.width.width;
+
     // End timestamp based on last element
     const end = this.data[this.data.length - 1].time + this.timeframe * 5;
 
@@ -232,5 +251,3 @@ class ChartState {
     return -Math.floor(perc * h - h);
   }
 }
-
-export default new ChartState();

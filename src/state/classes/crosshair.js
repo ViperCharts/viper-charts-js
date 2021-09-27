@@ -1,9 +1,9 @@
 import EventEmitter from "../../events/event_emitter.ts";
-import chartState from "../../state/chart.js";
-import layoutState from "../../state/layout.js";
 
-export default class Crosshair extends EventEmitter {
-  constructor() {
+class Crosshair extends EventEmitter {
+  constructor({ $global }) {
+    this.$global = $global;
+
     super();
     this.x = -1;
     this.y = -1;
@@ -35,5 +35,13 @@ export default class Crosshair extends EventEmitter {
     this.timestamp = timestamp;
     this.price = Math.round(price);
     this.fireEvent("updateCrosshair", { x, y });
+  }
+}
+
+export default class CrosshairState {
+  constructor({ $global }) {
+    this.$global = $global;
+
+    this.crosshair = new Crosshair({ $global });
   }
 }
