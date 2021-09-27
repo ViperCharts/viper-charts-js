@@ -56,10 +56,8 @@ export default class Main {
 
     // Load initial indicators
     const settings = StorageManager.getChartSettings();
-    console.log(settings);
     if (settings.indicators) {
       for (const indicator of settings.indicators) {
-        console.log(Indicators.map, indicator.id);
         chartState.addIndicator(Indicators.map.get(indicator.id));
       }
     } else {

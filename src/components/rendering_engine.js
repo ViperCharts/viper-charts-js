@@ -48,7 +48,10 @@ export default class RenderingEngine {
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     for (const key of this.renderingOrder) {
-      this.queue.get(key)();
+      const item = this.queue.get(key);
+      if (!item.visible) continue;
+
+      item.func();
     }
   }
 
@@ -64,10 +67,24 @@ export default class RenderingEngine {
     } while (this.queue.has(id));
 
     // Add to the queue
-    this.queue.set(id, func);
+    this.queue.set(id, {
+      func,
+      visible: true,
+    });
     this.renderingOrder.push(id);
 
     return id;
+  }
+
+  toggleVisibility(id) {
+    if (!this.queue.has(id)) {
+      console.error(`${id} was not found in rendering queue`);
+      return;
+    }
+
+    const item = this.queue.get(id);
+    item.visible = !item.visible;
+    this.queue.set(id, item);
   }
 
   removeFromQueue(id) {

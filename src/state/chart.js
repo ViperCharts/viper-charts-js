@@ -52,6 +52,7 @@ class ChartState {
     this.indicators[instance.renderingQueueId] = {
       id: indicator.id,
       name: indicator.name,
+      visible: true,
     };
 
     uiState.update("indicators", this.indicators);
@@ -59,6 +60,14 @@ class ChartState {
     StorageManager.setChartSettings({
       indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
     });
+  }
+
+  toggleVisibility(id) {
+    const { RE } = this.subcharts.main.canvas;
+
+    RE.toggleVisibility(id);
+    this.indicators[id].visible = !this.indicators[id].visible;
+    uiState.update("indicators", this.indicators);
   }
 
   removeIndicator(id) {

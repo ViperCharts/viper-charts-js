@@ -34,7 +34,7 @@
 
 <script>
 import Icons from "./Icons.vue";
-import IndicatorList from "./IndicatorList.vue";
+import IndicatorList from "./indicator-list/IndicatorList.vue";
 
 import IndicatorsListModal from "./modals/IndicatorsList.vue";
 
