@@ -1,5 +1,5 @@
 <template>
-  <div class="indicator" :class="visible ? '' : 'invisible'">
+  <div class="indicator v-noselect" :class="visible ? '' : 'invisible'">
     <span class="indicator-title">{{ indicator.name }}</span>
     <button @click="toggleVisibility">
       <i v-if="visible" class="gg-eye"></i>
@@ -49,6 +49,14 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.indicator:hover {
+  border: 1px solid rgb(172, 172, 172, 0.5);
 }
 
 .invisible {
