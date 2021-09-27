@@ -100,6 +100,7 @@ export default class RenderingEngine {
     }
 
     this.renderingOrder.splice(i, 1);
+    this.queue.delete(id);
     return true;
   }
 }
