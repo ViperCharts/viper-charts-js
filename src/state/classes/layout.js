@@ -1,12 +1,7 @@
-import EventEmitter from "../events/event_emitter.ts";
-
-import chartState from "../state/chart.js";
-import uiState from "../state/ui.js";
+import EventEmitter from "../../events/event_emitter.ts";
 
 class Height extends EventEmitter {
-  constructor({ $global }) {
-    this.$global = $global;
-
+  constructor() {
     super();
     this.height = 0;
   }
@@ -30,11 +25,11 @@ class Width extends EventEmitter {
 }
 
 export default class LayoutState {
-  constructor() {
+  constructor({ $global }) {
+    this.$global = $global;
+
     this.height = new Height();
     this.width = new Width();
-
-    this.init();
   }
 
   init() {

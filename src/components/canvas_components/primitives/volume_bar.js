@@ -1,12 +1,11 @@
 import Layer from "../layer.js";
 
-import chartState from "../../../state/chart.js";
-
 export default class VolumeBar extends Layer {
   constructor({ $state, canvas }) {
+    super(canvas);
+
     this.$state = $state;
 
-    super(canvas);
     this.screenHeightPerc = 0.2;
     this.upColor = "#C4FF4988";
     this.downColor = "#FE3A6488";

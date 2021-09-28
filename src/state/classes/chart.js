@@ -1,8 +1,5 @@
 import Constants from "../../constants.js";
 
-import layoutState from "./../layout.js";
-import uiState from "./../ui.js";
-
 import Utils from "../../utils.js";
 
 import Main from "../../chart/main.js";
@@ -13,11 +10,12 @@ import StorageManager from "../../managers/storage.js";
 
 import EventEmitter from "../../events/event_emitter.ts";
 
-export default class Chart extends EventEmitter {
+export default class ChartState extends EventEmitter {
   constructor({ $global }) {
+    super();
+
     this.$global = $global;
 
-    super();
     this.id = Utils.uniqueId();
     this.data = [];
     this.timeframe = Constants.MINUTE;
@@ -34,7 +32,7 @@ export default class Chart extends EventEmitter {
   }
 
   init() {
-    layoutState.width.addEventListener("setWidth", (width) =>
+    this.$global.layout.width.addEventListener("setWidth", (width) =>
       this.resizeXRange(0, width)
     );
 
@@ -58,9 +56,17 @@ export default class Chart extends EventEmitter {
   addIndicator(indicator) {
     const { canvas } = this.subcharts.main;
 
+    const $state = {
+      chart: this,
+      layout: this.$global.layout,
+      crosshair: this.$global.crosshair,
+      ui: this.$global.ui,
+      global: this.$global,
+    };
+
     // Create an instance of the indicator class
     const instance = new indicator.class({
-      $state: this,
+      $state,
       canvas,
     });
     this.indicators[instance.renderingQueueId] = {
@@ -69,7 +75,7 @@ export default class Chart extends EventEmitter {
       visible: true,
     };
 
-    uiState.update("indicators", this.indicators);
+    this.$global.ui.update("indicators", this.indicators);
 
     StorageManager.setChartSettings({
       indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
@@ -81,7 +87,7 @@ export default class Chart extends EventEmitter {
 
     RE.toggleVisibility(id);
     this.indicators[id].visible = !this.indicators[id].visible;
-    uiState.update("indicators", this.indicators);
+    this.$global.ui.update("indicators", this.indicators);
   }
 
   removeIndicator(id) {
@@ -89,7 +95,7 @@ export default class Chart extends EventEmitter {
 
     RE.removeFromQueue(id);
     delete this.indicators[id];
-    uiState.update("indicators", this.indicators);
+    this.$global.ui.update("indicators", this.indicators);
 
     StorageManager.setChartSettings({
       indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
@@ -228,7 +234,7 @@ export default class Chart extends EventEmitter {
   getTimestampByXCoord(x) {
     const [start, end] = this.range;
     const msInView = end - start;
-    const perc = x / layoutState.width.width;
+    const perc = x / this.$global.layout.width.width;
     const time = perc * msInView;
     return start + time;
   }
@@ -238,7 +244,7 @@ export default class Chart extends EventEmitter {
     const msInView = end - start;
     const msFromStart = timestamp - start;
     const perc = msFromStart / msInView;
-    const w = layoutState.width.width;
+    const w = this.$global.layout.width.width;
     return Math.floor(perc * w);
   }
 
@@ -247,7 +253,7 @@ export default class Chart extends EventEmitter {
     const yInView = max - min;
     const yFromMin = price - min;
     const perc = yFromMin / yInView;
-    const h = layoutState.height.height;
+    const h = this.$global.layout.height.height;
     return -Math.floor(perc * h - h);
   }
 }

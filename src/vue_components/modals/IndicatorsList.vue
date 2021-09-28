@@ -26,7 +26,7 @@
 <script>
 import IndicatorList from "../../components/indicators.js";
 
-import chartState from "../../state/chart.js";
+// import chartState from "../../state/chart.js";
 
 export default {
   data: () => ({
@@ -36,7 +36,7 @@ export default {
 
   methods: {
     addIndicator(type, index) {
-      chartState.addIndicator(IndicatorList[type][index]);
+      // chartState.addIndicator(IndicatorList[type][index]);
       this.$emit("addIndicator", { type, index });
     },
   },

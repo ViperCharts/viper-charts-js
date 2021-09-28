@@ -1,7 +1,5 @@
 import Layer from "../layer.js";
 
-import chartState from "../../../state/chart.js";
-
 function nFormatter(num, digits) {
   const lookup = [
     { value: 1, symbol: "" },
@@ -26,9 +24,10 @@ function nFormatter(num, digits) {
 
 export default class VolumeProfile extends Layer {
   constructor({ $state, canvas }) {
+    super(canvas);
+
     this.$state = $state;
 
-    super(canvas);
     this.upColor = "#8BB532";
     this.downColor = "#FE3A64";
 

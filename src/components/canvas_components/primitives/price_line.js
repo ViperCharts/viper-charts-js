@@ -1,12 +1,10 @@
 import Layer from "../layer.js";
 
-import chartState from "../../../state/chart.js";
-
 export default class PriceLine extends Layer {
   constructor({ $state, canvas, color }) {
-    this.$state = $state;
-
     super(canvas);
+
+    this.$state = $state;
     this.color = color;
   }
 

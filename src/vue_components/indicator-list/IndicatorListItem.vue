@@ -12,8 +12,6 @@
 </template>
 
 <script>
-import chartState from "../../state/chart.js";
-
 export default {
   props: {
     indicator: {
@@ -28,11 +26,11 @@ export default {
 
   methods: {
     toggleVisibility() {
-      chartState.toggleVisibility(this.id);
+      // chartState.toggleVisibility(this.id);
     },
 
     remove() {
-      chartState.removeIndicator(this.id);
+      // chartState.removeIndicator(this.id);
     },
   },
 

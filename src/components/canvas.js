@@ -1,8 +1,5 @@
 import RenderingEngine from "./rendering_engine.js";
 
-import chartState from "../state/chart.js";
-import uiState from "../state/ui.js";
-
 export default class Canvas {
   constructor({ $state, id, height, width, cursor = "default", position }) {
     this.$state = $state;
@@ -40,7 +37,7 @@ export default class Canvas {
     this.setHeight(this.height);
     this.setWidth(this.width);
 
-    uiState.chartsElements.appendChild(this.canvas);
+    this.$state.ui.chartsElements.appendChild(this.canvas);
     this.RE = new RenderingEngine(this);
   }
 

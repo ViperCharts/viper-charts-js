@@ -1,7 +1,3 @@
-import chartState from "../state/chart.js";
-import crosshairState from "../state/crosshair.js";
-import layoutState from "../state/layout.js";
-
 import Canvas from "../components/canvas.js";
 import Background from "../components/canvas_components/background.js";
 import Grid from "../components/canvas_components/grid.js";
@@ -17,9 +13,10 @@ export default class Main {
     this.$state = $state;
 
     this.canvas = new Canvas({
+      $state,
       id: `canvas-${this.id}-main`,
-      height: layoutState.height.height - 20,
-      width: layoutState.width.width - 50,
+      height: this.$state.layout.height.height - 20,
+      width: this.$state.layout.width.width - 50,
       cursor: "crosshair",
     });
 
@@ -47,12 +44,12 @@ export default class Main {
     );
     this.mouseleaveListener = this.canvas.canvas.addEventListener(
       "mouseleave",
-      () => crosshairState.crosshair.updateCrosshair(-1, -1)
+      () => this.$state.crosshair.crosshair.updateCrosshair(-1, -1)
     );
-    layoutState.height.addEventListener("setHeight", (height) =>
+    this.$state.layout.height.addEventListener("setHeight", (height) =>
       this.canvas.setHeight(height - 20)
     );
-    layoutState.width.addEventListener("setWidth", (width) =>
+    this.$state.layout.width.addEventListener("setWidth", (width) =>
       this.canvas.setWidth(width - 50)
     );
 
@@ -75,6 +72,6 @@ export default class Main {
   }
 
   onMouseMove(e) {
-    crosshairState.crosshair.updateCrosshair(e.offsetX, e.offsetY);
+    this.$state.crosshair.crosshair.updateCrosshair(e.offsetX, e.offsetY);
   }
 }

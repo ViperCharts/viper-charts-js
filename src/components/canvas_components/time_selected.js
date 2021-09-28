@@ -1,19 +1,18 @@
 import Layer from "./layer.js";
 
-import chartState from "../../state/chart.js";
-import crosshairState from "../../state/crosshair.js";
-
 export default class TimeSelected extends Layer {
-  constructor({ canvas }) {
+  constructor({ $state, canvas }) {
     super(canvas);
+
+    this.$state = $state;
   }
 
   draw() {
-    const x = crosshairState.crosshair.x;
+    const x = this.$state.crosshair.crosshair.x;
 
     if (x < 0) return;
 
-    const d = new Date(crosshairState.crosshair.timestamp);
+    const d = new Date(this.$state.crosshair.crosshair.timestamp);
     const dateText = `${
       d.getMonth() + 1
     }/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${`0${d.getMinutes()}`.slice(

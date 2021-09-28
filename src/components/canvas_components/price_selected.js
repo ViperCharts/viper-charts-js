@@ -1,16 +1,15 @@
 import Layer from "./layer.js";
 
-import chartState from "../../state/chart.js";
-import crosshairState from "../../state/crosshair.js";
-
 export default class TimeSelected extends Layer {
-  constructor({ canvas }) {
+  constructor({ $state, canvas }) {
     super(canvas);
+
+    this.$state = $state;
   }
 
   draw() {
-    const p = crosshairState.crosshair.price;
-    const y = crosshairState.crosshair.y;
+    const p = this.$state.crosshair.crosshair.price;
+    const y = this.$state.crosshair.crosshair.y;
 
     if (y < 0) return;
 

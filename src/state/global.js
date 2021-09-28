@@ -1,24 +1,18 @@
 import EventEmitter from "../events/event_emitter.ts";
 
-import Utils from "../utils.js";
-import Chart from "./classes/chart";
+import ChartState from "./classes/chart";
 import LayoutState from "./classes/layout";
 import CrosshairState from "./classes/crosshair";
 import UIState from "./classes/ui";
 
-class ChartState {
-  constructor() {
-    this.id = Utils.uniqueId();
-    this.chart = new Chart();
-  }
-}
-
 export default class GlobalState extends EventEmitter {
   constructor() {
+    super();
     this.charts = new Map();
-    this.layout = new LayoutState({ $global: this });
     this.crosshair = new CrosshairState({ $global: this });
     this.ui = new UIState({ $global: this });
+    this.layout = new LayoutState({ $global: this });
+    this.layout.init();
   }
 
   createChart() {

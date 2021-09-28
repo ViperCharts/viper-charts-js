@@ -1,5 +1,5 @@
 import Vue from "vue";
-import View from "../vue_components/View.vue";
+import View from "../../vue_components/View.vue";
 
 export default class UIState {
   constructor() {

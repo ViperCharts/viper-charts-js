@@ -1,12 +1,11 @@
 import Layer from "./layer.js";
 
-import chartState from "../../state/chart.js";
-
 export default class LastPriceLine extends Layer {
   constructor({ $state, canvas }) {
+    super(canvas);
+
     this.$state = $state;
 
-    super(canvas);
     this.upColor = "#C4FF4966";
     this.downColor = "#FE3A6466";
   }
