@@ -4,6 +4,7 @@ export default {
   },
 
   setChartSettings(settings) {
+    console.log(settings);
     localStorage.setItem("chart-settings", JSON.stringify(settings));
   },
 };

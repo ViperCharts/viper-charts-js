@@ -9,11 +9,7 @@
     </div>
     <div class="viewport">
       <div ref="charts" class="charts">
-        <Chart
-          v-for="chart of Object.keys(state.charts)"
-          :key="chart.id"
-          :indicators="chart.indicators"
-        />
+        <Chart v-for="id of chartIds" :key="id" :chartId="id" />
       </div>
     </div>
 
@@ -38,6 +34,8 @@
 </template>
 
 <script>
+import Vue from "vue";
+
 import Icons from "./Icons.vue";
 
 import Chart from "./Chart.vue";
@@ -53,27 +51,13 @@ export default {
 
   data: () => ({
     modal: "",
-    state: {
-      charts: {},
-    },
+    chartIds: [],
   }),
 
   methods: {
-    updateState(newState) {
-      this.$set(this, "state", newState);
-      this.$forceUpdate();
-      console.log(this.state);
-    },
-
     showModal(e) {
       const id = e.srcElement.getAttribute("modal");
       this.modal = id;
-    },
-  },
-
-  watch: {
-    state() {
-      console.log(this.state);
     },
   },
 };

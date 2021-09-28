@@ -1,8 +1,6 @@
 <template>
   <div class="container">
     <IndicatorList :indicators="indicators" class="indicator-list" />
-
-    {{ indicators }}
     <div class="chart">
       <canvas class="main"></canvas>
       <canvas class="x-scale"></canvas>
@@ -12,6 +10,8 @@
 </template>
 
 <script>
+import GlobalState from "../state/global.js";
+
 import IndicatorList from "./indicator-list/IndicatorList.vue";
 
 export default {
@@ -19,9 +19,27 @@ export default {
     IndicatorList,
   },
 
+  props: {
+    chartId: "",
+  },
+
   data: () => ({
+    timeframe: 0,
     indicators: {},
   }),
+
+  created() {
+    GlobalState.ui.charts[this.chartId] = this;
+  },
+
+  watch: {
+    indicators: {
+      deep: true,
+      handler() {
+        console.log(this.indicators);
+      },
+    },
+  },
 };
 </script>
 
