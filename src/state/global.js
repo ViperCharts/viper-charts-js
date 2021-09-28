@@ -5,7 +5,7 @@ import LayoutState from "./classes/layout";
 import CrosshairState from "./classes/crosshair";
 import UIState from "./classes/ui";
 
-export default class GlobalState extends EventEmitter {
+class GlobalState extends EventEmitter {
   constructor() {
     super();
     this.charts = new Map();
@@ -18,6 +18,9 @@ export default class GlobalState extends EventEmitter {
   createChart() {
     const chart = new ChartState({ $global: this });
     this.charts.set(chart.id, chart);
+    this.ui.updateState();
     return this.charts.get(chart.id);
   }
 }
+
+export default new GlobalState();

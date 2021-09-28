@@ -8,8 +8,13 @@
       <button @click="showModal" modal="indicators">Indicators</button>
     </div>
     <div class="viewport">
-      <IndicatorList :indicators="indicators" class="indicator-list" />
-      <div ref="charts" class="charts"></div>
+      <div ref="charts" class="charts">
+        <Chart
+          v-for="chart of Object.keys(state.charts)"
+          :key="chart.id"
+          :indicators="chart.indicators"
+        />
+      </div>
     </div>
 
     <!-- Modal -->
@@ -34,30 +39,41 @@
 
 <script>
 import Icons from "./Icons.vue";
-import IndicatorList from "./indicator-list/IndicatorList.vue";
+
+import Chart from "./Chart.vue";
 
 import IndicatorsListModal from "./modals/IndicatorsList.vue";
 
 export default {
   components: {
     Icons,
-    IndicatorList,
+    Chart,
     IndicatorsListModal,
   },
 
   data: () => ({
     modal: "",
-    indicators: {},
+    state: {
+      charts: {},
+    },
   }),
 
   methods: {
-    setProperty(property, value) {
-      this[property] = value;
+    updateState(newState) {
+      this.$set(this, "state", newState);
+      this.$forceUpdate();
+      console.log(this.state);
     },
 
     showModal(e) {
       const id = e.srcElement.getAttribute("modal");
       this.modal = id;
+    },
+  },
+
+  watch: {
+    state() {
+      console.log(this.state);
     },
   },
 };

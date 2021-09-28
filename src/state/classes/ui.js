@@ -2,7 +2,9 @@ import Vue from "vue";
 import View from "../../vue_components/View.vue";
 
 export default class UIState {
-  constructor() {
+  constructor({ $global }) {
+    this.$global = $global;
+
     this.app = new Vue({
       el: "#app",
       render: (h) => h(View),
@@ -11,7 +13,5 @@ export default class UIState {
     this.chartsElements = this.child.$refs.charts;
   }
 
-  update(property, value) {
-    this.child.setProperty(property, JSON.parse(JSON.stringify(value)));
-  }
+  addChart(id, chartState) {}
 }

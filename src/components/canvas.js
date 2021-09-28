@@ -37,7 +37,7 @@ export default class Canvas {
     this.setHeight(this.height);
     this.setWidth(this.width);
 
-    this.$state.ui.chartsElements.appendChild(this.canvas);
+    // this.$state.ui.chartsElements.appendChild(this.canvas);
     this.RE = new RenderingEngine(this);
   }
 

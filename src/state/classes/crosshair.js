@@ -17,6 +17,7 @@ class Crosshair extends EventEmitter {
 
     // let timestamp = chartState.getTimestampByXCoord(x);
 
+    // TODO: fix this crosshair code
     // Check if timestamp remainder is less than half a single timeframe unit
     // (that means left candle is closer than right candle)
     // const remainder = timestamp % chartState.timeframe;
