@@ -15,8 +15,8 @@ export default class Main {
     this.canvas = new Canvas({
       $state,
       id: `canvas-${this.id}-main`,
-      height: this.$state.layout.height.height - 20,
-      width: this.$state.layout.width.width - 50,
+      height: this.$state.global.layout.height.height - 20,
+      width: this.$state.global.layout.width.width - 50,
       cursor: "crosshair",
     });
 
@@ -44,18 +44,17 @@ export default class Main {
     );
     this.mouseleaveListener = this.canvas.canvas.addEventListener(
       "mouseleave",
-      () => this.$state.crosshair.crosshair.updateCrosshair(-1, -1)
+      () => this.$state.global.crosshair.crosshair.updateCrosshair(-1, -1)
     );
-    this.$state.layout.height.addEventListener("setHeight", (height) =>
+    this.$state.global.layout.height.addEventListener("setHeight", (height) =>
       this.canvas.setHeight(height - 20)
     );
-    this.$state.layout.width.addEventListener("setWidth", (width) =>
+    this.$state.global.layout.width.addEventListener("setWidth", (width) =>
       this.canvas.setWidth(width - 50)
     );
 
     // Load initial indicators
     const settings = StorageManager.getChartSettings();
-    console.log(settings);
     if (settings.indicators) {
       for (const indicator of settings.indicators) {
         this.$state.chart.addIndicator(Indicators.map.get(indicator.id));
@@ -73,6 +72,9 @@ export default class Main {
   }
 
   onMouseMove(e) {
-    this.$state.crosshair.crosshair.updateCrosshair(e.offsetX, e.offsetY);
+    this.$state.global.crosshair.crosshair.updateCrosshair(
+      e.offsetX,
+      e.offsetY
+    );
   }
 }

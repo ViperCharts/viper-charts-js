@@ -9,7 +9,7 @@ export default class TimeScale {
     this.canvas = new Canvas({
       $state,
       id: `canvas-pricescale`,
-      height: this.$state.layout.height.height - 20,
+      height: this.$state.global.layout.height.height - 20,
       width: 50,
       cursor: "n-resize",
       position: "right",
@@ -25,7 +25,7 @@ export default class TimeScale {
   }
 
   init() {
-    this.$state.layout.height.addEventListener("setHeight", (height) =>
+    this.$state.global.layout.height.addEventListener("setHeight", (height) =>
       this.canvas.setHeight(height - 20)
     );
   }

@@ -6,7 +6,7 @@ import Chart from "./chart/chart.js";
   // const res = await fetch("https://crypto.moonmath.xyz/ftx-data/btc");
   // const data = await res.json();
 
-  const newData: any = [];
+  const newData = [];
   for (let i = 0; i < data.candles.length; i++) {
     newData.push({
       ...data.candles[i],

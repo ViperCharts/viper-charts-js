@@ -12,13 +12,18 @@ class GlobalState extends EventEmitter {
     this.crosshair = new CrosshairState({ $global: this });
     this.ui = new UIState({ $global: this });
     this.layout = new LayoutState({ $global: this });
+  }
+
+  init() {
+    this.crosshair.init();
+    this.ui.init();
     this.layout.init();
   }
 
   createChart() {
     const chart = new ChartState({ $global: this });
     this.charts.set(chart.id, chart);
-    this.ui.addChart(chart);
+    this.ui.app.addChart(chart);
     return this.charts.get(chart.id);
   }
 }

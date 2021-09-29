@@ -46,4 +46,6 @@ export default class CrosshairState {
 
     this.crosshair = new Crosshair({ $global });
   }
+
+  init() {}
 }

@@ -8,11 +8,11 @@ export default class TimeSelected extends Layer {
   }
 
   draw() {
-    const x = this.$state.crosshair.crosshair.x;
+    const x = this.$state.global.crosshair.crosshair.x;
 
     if (x < 0) return;
 
-    const d = new Date(this.$state.crosshair.crosshair.timestamp);
+    const d = new Date(this.$state.global.crosshair.crosshair.timestamp);
     const dateText = `${
       d.getMonth() + 1
     }/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${`0${d.getMinutes()}`.slice(

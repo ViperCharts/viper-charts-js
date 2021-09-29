@@ -38,9 +38,6 @@ export default class ChartState extends EventEmitter {
 
     const $state = {
       chart: this,
-      layout: this.$global.layout,
-      crosshair: this.$global.crosshair,
-      ui: this.$global.ui,
       global: this.$global,
     };
 
@@ -58,9 +55,6 @@ export default class ChartState extends EventEmitter {
 
     const $state = {
       chart: this,
-      layout: this.$global.layout,
-      crosshair: this.$global.crosshair,
-      ui: this.$global.ui,
       global: this.$global,
     };
 
@@ -78,7 +72,10 @@ export default class ChartState extends EventEmitter {
 
     this.indicators[instance.renderingQueueId] = indi;
 
-    this.$global.ui.addIndicator(this.id, indi);
+    this.$global.ui.charts[this.id].addIndicator(
+      instance.renderingQueueId,
+      indi
+    );
 
     StorageManager.setChartSettings({
       indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),

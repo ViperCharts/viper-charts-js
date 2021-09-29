@@ -1,0 +1,35 @@
+.indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.indicator:hover {
+  border: 1px solid rgb(172, 172, 172, 0.5);
+}
+
+.invisible {
+  opacity: 0.5;
+}
+
+.indicator-title {
+  color: rgb(172, 172, 172);
+}
+
+.indicator button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  margin-left: 6px;
+  color: rgb(172, 172, 172);
+  cursor: pointer;
+}
+
+.indicator > button > i {
+  transform: scale(-0.7);
+}

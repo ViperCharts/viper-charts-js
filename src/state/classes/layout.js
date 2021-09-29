@@ -38,8 +38,9 @@ export default class LayoutState {
   }
 
   resize() {
-    const container = this.$global.ui.chartsElements;
-    this.width.setWidth(container.clientWidth);
-    this.height.setHeight(container.clientHeight);
+    // TODO Fix resize
+    // const container = this.$global.ui.chartsElements;
+    // this.width.setWidth(container.clientWidth);
+    // this.height.setHeight(container.clientHeight);
   }
 }
