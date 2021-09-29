@@ -3,7 +3,9 @@ import ReactDOM from "react-dom";
 
 import GlobalState from "../../state/global";
 
-import Chart from "../../react-components/chart/chart.jsx";
+import Modal from "../../react-components/modal/modal";
+import Chart from "../../react-components/chart/chart";
+import TopBar from "../../react-components/top-bar/top-bar";
 
 class App extends React.Component {
   constructor(props) {
@@ -11,6 +13,7 @@ class App extends React.Component {
 
     this.state = {
       charts: {},
+      modal: "",
     };
   }
 
@@ -20,7 +23,14 @@ class App extends React.Component {
     this.setState(() => (this.state.charts = charts));
   }
 
+  setModal(modal) {
+    this.setState(() => (this.state.modal = modal));
+    console.log(modal);
+  }
+
   render() {
+    const { modal } = this.state;
+
     return (
       <div style={{ width: "100%", height: "100%" }}>
         <link
@@ -28,6 +38,9 @@ class App extends React.Component {
           rel="stylesheet"
         />
 
+        {modal.length ? <Modal id={modal} /> : null}
+
+        <TopBar />
         <div style={{ width: "100%", height: "100%" }}>
           {this.renderCharts()}
         </div>
@@ -39,7 +52,6 @@ class App extends React.Component {
     const keys = Object.keys(this.state.charts);
     if (!keys.length) return <div></div>;
     const charts = keys.map((key) => <Chart id={key} key={key} />);
-    console.log(charts);
     return charts;
   }
 }

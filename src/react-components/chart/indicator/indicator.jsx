@@ -5,7 +5,6 @@ import "./indicator.css";
 export default class Indicator extends React.Component {
   constructor(props) {
     super(props);
-    console.log(props);
   }
 
   toggleVisibility() {}
@@ -14,20 +13,13 @@ export default class Indicator extends React.Component {
 
   render() {
     const { indicator } = this.props;
+    const v = indicator.visible;
 
     return (
-      <div
-        className={`indicator v-noselect ${
-          indicator.visible ? "" : "invisible"
-        }`}
-      >
+      <div className={`indicator v-noselect ${v ? "" : "invisible"}`}>
         <span className="indicator-title">{indicator.name}</span>
         <button onClick={this.toggleVisibility}>
-          {indicator.visible ? (
-            <i className="gg-eye"></i>
-          ) : (
-            <i className="gg-eye-alt"></i>
-          )}
+          {v ? <i className="gg-eye"></i> : <i className="gg-eye-alt"></i>}
         </button>
         <button onClick={this.remove}>
           <i className="gg-close"></i>

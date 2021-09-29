@@ -45,7 +45,6 @@ export default class Chart extends React.Component {
     const indicators = keys.map((key) => (
       <Indicator indicator={this.state.indicators[key]} key={key} />
     ));
-    console.log(indicators);
     return indicators;
   }
 }
