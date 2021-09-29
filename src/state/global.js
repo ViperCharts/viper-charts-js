@@ -8,6 +8,7 @@ import UIState from "./classes/ui";
 class GlobalState extends EventEmitter {
   constructor() {
     super();
+    this.selectedChartId = null;
     this.charts = new Map();
     this.crosshair = new CrosshairState({ $global: this });
     this.ui = new UIState({ $global: this });
@@ -24,6 +25,7 @@ class GlobalState extends EventEmitter {
     const chart = new ChartState({ $global: this });
     this.charts.set(chart.id, chart);
     this.ui.app.addChart(chart);
+    this.selectedChartId = chart.id;
     return this.charts.get(chart.id);
   }
 }
