@@ -24,6 +24,18 @@ export default class Chart extends React.Component {
     this.setState(() => (this.state.indicators = indicators));
   }
 
+  updateIndicator(renderingQueueId, updates) {
+    const indicators = this.state.indicators;
+    Object.assign(indicators[renderingQueueId], updates);
+    this.setState(() => (this.state.indicators = indicators));
+  }
+
+  removeIndicator(renderingQueueId) {
+    const indicators = this.state.indicators;
+    delete indicators[renderingQueueId];
+    this.setState(() => (this.state.indicators = indicators));
+  }
+
   render() {
     return (
       <div className="chart">
@@ -43,7 +55,12 @@ export default class Chart extends React.Component {
     const keys = Object.keys(this.state.indicators);
     if (!keys.length) return;
     const indicators = keys.map((key) => (
-      <Indicator indicator={this.state.indicators[key]} key={key} />
+      <Indicator
+        chartId={this.state.id}
+        indicator={this.state.indicators[key]}
+        renderingQueueId={key}
+        key={key}
+      />
     ));
     return indicators;
   }

@@ -86,8 +86,9 @@ export default class ChartState extends EventEmitter {
     const { RE } = this.subcharts.main.canvas;
 
     RE.toggleVisibility(id);
-    this.indicators[id].visible = !this.indicators[id].visible;
-    // this.$global.ui.updateState();
+    const visible = !this.indicators[id].visible;
+    this.indicators[id].visible = visible;
+    this.$global.ui.charts[this.id].updateIndicator(id, { visible });
   }
 
   removeIndicator(id) {
@@ -95,8 +96,8 @@ export default class ChartState extends EventEmitter {
 
     RE.removeFromQueue(id);
     delete this.indicators[id];
-    // this.$global.ui.updateState();
 
+    this.$global.ui.charts[this.id].removeIndicator(id);
     StorageManager.setChartSettings({
       indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
     });

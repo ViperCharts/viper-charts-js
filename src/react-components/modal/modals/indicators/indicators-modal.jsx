@@ -10,7 +10,6 @@ export default class IndicatorsModal extends React.Component {
   }
 
   addIndicator(indicator) {
-    // Get the currently selected chart
     const chart = GlobalState.charts.get(GlobalState.selectedChartId);
     chart.addIndicator(indicator);
   }
