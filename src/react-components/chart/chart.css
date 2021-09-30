@@ -20,6 +20,7 @@
   width: 100%;
   height: 100%;
   z-index: 11;
+  pointer-events: none;
 }
 
 .top-left {
@@ -32,4 +33,31 @@
   display: flex;
   flex-direction: column;
   align-items: start;
+}
+
+.chart-chart {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.chart-main {
+  position: absolute;
+  top: 0;
+  width: calc(100% - 50px);
+  height: calc(100% - 20px);
+}
+
+.chart-x-axis {
+  position: absolute;
+  bottom: 0;
+  width: calc(100% - 50px);
+  height: 20px;
+}
+
+.chart-y-axis {
+  position: absolute;
+  right: 0;
+  width: 50px;
+  height: calc(100% - 20px);
 }

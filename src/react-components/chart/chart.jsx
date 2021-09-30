@@ -9,12 +9,17 @@ import "./chart.css";
 export default class Chart extends React.Component {
   constructor(props) {
     super(props);
-
     GlobalState.ui.charts[this.props.id] = this;
 
     this.state = {
       id: this.props.id,
       indicators: {},
+    };
+
+    this.subcharts = {
+      main: new React.createRef(),
+      xScale: new React.createRef(),
+      yScale: new React.createRef(),
     };
   }
 
@@ -46,7 +51,11 @@ export default class Chart extends React.Component {
             </div>
           </div>
         </div>
-        <div className="chart"></div>
+        <div className="chart-chart">
+          <canvas className="chart-main" ref={this.subcharts.main}></canvas>
+          <canvas className="chart-x-axis" ref={this.subcharts.xScale}></canvas>
+          <canvas className="chart-y-axis" ref={this.subcharts.yScale}></canvas>
+        </div>
       </div>
     );
   }

@@ -15,6 +15,9 @@ export default class Main {
     this.canvas = new Canvas({
       $state,
       id: `canvas-${this.id}-main`,
+      canvas:
+        this.$state.global.ui.charts[this.$state.chart.id].subcharts.main
+          .current,
       height: this.$state.global.layout.height.height - 20,
       width: this.$state.global.layout.width.width - 50,
       cursor: "crosshair",

@@ -25,14 +25,20 @@ class App extends React.Component {
 
   setModal(modal) {
     this.setState(() => (this.state.modal = modal));
-    console.log(modal);
   }
 
   render() {
     const { modal } = this.state;
 
     return (
-      <div style={{ width: "100%", height: "100%" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          height: "100%",
+        }}
+      >
         <link
           href="https://cdn.jsdelivr.net/npm/css.gg/icons/all.css"
           rel="stylesheet"

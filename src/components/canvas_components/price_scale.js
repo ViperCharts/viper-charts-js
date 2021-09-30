@@ -9,6 +9,9 @@ export default class TimeScale {
     this.canvas = new Canvas({
       $state,
       id: `canvas-pricescale`,
+      canvas:
+        this.$state.global.ui.charts[this.$state.chart.id].subcharts.yScale
+          .current,
       height: this.$state.global.layout.height.height - 20,
       width: 50,
       cursor: "n-resize",

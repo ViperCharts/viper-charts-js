@@ -3,7 +3,7 @@ import EventEmitter from "../../events/event_emitter.ts";
 class Height extends EventEmitter {
   constructor() {
     super();
-    this.height = 0;
+    this.height = 905;
   }
 
   setHeight(height) {
@@ -15,7 +15,7 @@ class Height extends EventEmitter {
 class Width extends EventEmitter {
   constructor() {
     super();
-    this.width = 0;
+    this.width = 1351;
   }
 
   setWidth(width) {

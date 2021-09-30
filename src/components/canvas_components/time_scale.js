@@ -10,6 +10,9 @@ export default class TimeScale {
     this.canvas = new Canvas({
       $state,
       id: `canvas-timescale`,
+      canvas:
+        this.$state.global.ui.charts[this.$state.chart.id].subcharts.xScale
+          .current,
       height: 20,
       width: this.$state.global.layout.width.width - 50,
       cursor: "e-resize",

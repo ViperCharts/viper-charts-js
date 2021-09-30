@@ -1,16 +1,12 @@
 import RenderingEngine from "./rendering_engine.js";
 
 export default class Canvas {
-  constructor({ $state, id, height, width, cursor = "default", position }) {
+  constructor({ $state, canvas, cursor = "default" }) {
     this.$state = $state;
 
-    this.height = height;
-    this.width = width;
-    this.id = id;
-    this.canvas = null;
+    this.canvas = canvas;
     this.ctx = null;
     this.RE = null;
-    this.sizing = {};
     this.cursor = cursor;
 
     this.isMouseDown = false;
@@ -19,25 +15,23 @@ export default class Canvas {
     this.mouseMoveListener = null;
     this.count = 0;
 
-    this.init({ position });
+    this.width = this.canvas.clientWidth;
+    this.height = this.canvas.clientHeight;
+
+    this.init();
   }
 
-  init({ position }) {
-    this.canvas = document.createElement("canvas");
-    this.canvas.id = this.id;
+  init() {
     this.ctx = this.canvas.getContext("2d");
 
     this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.style.cursor = this.cursor;
-    this.canvas.style.position = "absolute";
-    this.canvas.style[position] = "0px";
 
-    this.setHeight(this.height);
-    this.setWidth(this.width);
+    this.canvas.height = this.height;
+    this.canvas.width = this.width;
 
-    // this.$state.global.ui.chartsElements.appendChild(this.canvas);
     this.RE = new RenderingEngine(this);
   }
 
