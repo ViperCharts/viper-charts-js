@@ -7,6 +7,7 @@
   cursor: pointer;
   padding: 2px 4px;
   pointer-events: all;
+  font-size: 12px;
 }
 
 .indicator:hover {
@@ -32,5 +33,5 @@
 }
 
 .indicator > button > i {
-  transform: scale(-0.7);
+  transform: scale(-0.65);
 }
