@@ -16,5 +16,5 @@ import Chart from "./chart/chart.js";
     });
   }
 
-  new Chart({ data: newData });
+  const chart = new Chart({ data: newData });
 })();

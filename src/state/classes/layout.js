@@ -17,7 +17,7 @@ export default class LayoutState extends EventEmitter {
   }
 
   resize() {
-    const { current } = this.$global.ui.app.appElement;
+    const { current } = this.$global.ui.app.chartsElement;
 
     this.height = current.clientHeight;
     this.width = current.clientWidth;

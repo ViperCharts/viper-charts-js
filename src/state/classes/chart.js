@@ -17,7 +17,6 @@ export default class ChartState extends EventEmitter {
     this.$global = $global;
 
     this.id = Utils.uniqueId();
-    this.data = [];
     this.timeframe = Constants.MINUTE;
     this.pixelsPerElement = 10;
     this.indicators = {};
@@ -106,9 +105,11 @@ export default class ChartState extends EventEmitter {
   setVisibleRange({ start, end }) {
     const visibleData = [];
 
+    const { data } = Array.from(this.$global.data.datasets.values())[0];
+
     // Start loop from right to find end candle
-    for (let i = this.data.length - 1; i > -1; i--) {
-      const candle = this.data[i];
+    for (let i = data.length - 1; i > -1; i--) {
+      const candle = data[i];
       const timestamp = candle.time;
 
       // If right timestamp is not less than right view boundary
@@ -181,10 +182,11 @@ export default class ChartState extends EventEmitter {
    * Set the initial visible range of data
    */
   setInitialVisibleRange() {
-    const width = this.$global.layout.width.width;
+    const width = this.$global.layout.width;
+    const { data } = Array.from(this.$global.data.datasets.values())[0];
 
     // End timestamp based on last element
-    const end = this.data[this.data.length - 1].time + this.timeframe * 5;
+    const end = data[data.length - 1].time + this.timeframe * 5;
 
     // Calculate start timestamp using width and pixelsPerElement
     const candlesInView = width / this.pixelsPerElement;

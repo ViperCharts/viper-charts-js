@@ -15,9 +15,6 @@ export default class TopBar extends React.Component {
 
   addChart() {
     const chart = GlobalState.createChart.bind(GlobalState)();
-    console.log(chart, GlobalState.charts);
-    chart.data = GlobalState.charts.get(GlobalState.selectedChartId).data;
-    chart.init.bind(chart)();
   }
 
   render() {

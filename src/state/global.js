@@ -4,6 +4,7 @@ import ChartState from "./classes/chart";
 import LayoutState from "./classes/layout";
 import CrosshairState from "./classes/crosshair";
 import UIState from "./classes/ui";
+import DataState from "./classes/data";
 
 class GlobalState extends EventEmitter {
   constructor() {
@@ -13,12 +14,14 @@ class GlobalState extends EventEmitter {
     this.crosshair = new CrosshairState({ $global: this });
     this.ui = new UIState({ $global: this });
     this.layout = new LayoutState({ $global: this });
+    this.data = new DataState({ $global: this });
   }
 
   init() {
     this.crosshair.init();
     this.ui.init();
     this.layout.init();
+    this.data.init();
   }
 
   createChart() {

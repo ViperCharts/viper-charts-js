@@ -17,12 +17,13 @@ class App extends React.Component {
     };
 
     this.appElement = React.createRef();
+    this.chartsElement = React.createRef();
   }
 
   addChart(chart) {
     const charts = this.state.charts;
     charts[chart.id] = chart;
-    this.setState(() => (this.state.charts = charts));
+    this.setState(() => (this.state.charts = charts), chart.init.bind(chart));
   }
 
   setModal(modal) {
@@ -50,7 +51,7 @@ class App extends React.Component {
         {modal.length ? <Modal id={modal} /> : null}
 
         <TopBar />
-        <div style={{ width: "100%", height: "100%" }}>
+        <div ref={this.chartsElement} style={{ width: "100%", height: "100%" }}>
           {this.renderCharts()}
         </div>
       </div>
