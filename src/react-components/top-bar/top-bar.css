@@ -11,6 +11,8 @@
 }
 
 button.top-bar-item {
+  display: flex;
+  align-items: center;
   color: rgb(173, 173, 173);
   /* font-weight: bold; */
   border: 0;
@@ -24,4 +26,8 @@ button.top-bar-item {
 
 button.top-bar-item:hover {
   background: rgb(70, 70, 70);
+}
+
+button.top-bar-item i {
+  transform: scale(-0.6);
 }
