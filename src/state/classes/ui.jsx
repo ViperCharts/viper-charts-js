@@ -15,6 +15,8 @@ class App extends React.Component {
       charts: {},
       modal: "",
     };
+
+    this.appElement = React.createRef();
   }
 
   addChart(chart) {
@@ -32,6 +34,7 @@ class App extends React.Component {
 
     return (
       <div
+        ref={this.appElement}
         style={{
           display: "flex",
           flexDirection: "column",

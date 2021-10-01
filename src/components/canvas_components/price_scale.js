@@ -12,7 +12,7 @@ export default class TimeScale {
       canvas:
         this.$state.global.ui.charts[this.$state.chart.id].subcharts.yScale
           .current,
-      height: this.$state.global.layout.height.height - 20,
+      height: this.$state.global.layout.height - 20,
       width: 50,
       cursor: "n-resize",
       position: "right",
@@ -28,8 +28,8 @@ export default class TimeScale {
   }
 
   init() {
-    this.$state.global.layout.height.addEventListener("setHeight", (height) =>
-      this.canvas.setHeight(height - 20)
-    );
+    this.$state.global.layout.addEventListener("resize", ({ height }) => {
+      this.canvas.setHeight(height - 20);
+    });
   }
 }

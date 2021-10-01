@@ -14,7 +14,7 @@ export default class TimeScale {
         this.$state.global.ui.charts[this.$state.chart.id].subcharts.xScale
           .current,
       height: 20,
-      width: this.$state.global.layout.width.width - 50,
+      width: this.$state.global.layout.width - 50,
       cursor: "e-resize",
       position: "bottom",
     });
@@ -29,9 +29,9 @@ export default class TimeScale {
   }
 
   init() {
-    this.$state.global.layout.width.addEventListener("setWidth", (width) =>
-      this.canvas.setWidth(width - 50)
-    );
+    this.$state.global.layout.addEventListener("resize", ({ width }) => {
+      this.canvas.setWidth(width - 50);
+    });
   }
 }
 

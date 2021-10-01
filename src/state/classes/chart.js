@@ -32,9 +32,9 @@ export default class ChartState extends EventEmitter {
   }
 
   init() {
-    this.$global.layout.width.addEventListener("setWidth", (width) =>
-      this.resizeXRange(0, width)
-    );
+    this.$global.layout.addEventListener("resize", ({ width }) => {
+      this.resizeXRange(0, width);
+    });
 
     const $state = {
       chart: this,
@@ -235,7 +235,7 @@ export default class ChartState extends EventEmitter {
   getTimestampByXCoord(x) {
     const [start, end] = this.range;
     const msInView = end - start;
-    const perc = x / this.$global.layout.width.width;
+    const perc = x / this.$global.layout.width;
     const time = perc * msInView;
     return start + time;
   }
@@ -245,7 +245,7 @@ export default class ChartState extends EventEmitter {
     const msInView = end - start;
     const msFromStart = timestamp - start;
     const perc = msFromStart / msInView;
-    const w = this.$global.layout.width.width;
+    const w = this.$global.layout.width;
     return Math.floor(perc * w);
   }
 
@@ -254,7 +254,7 @@ export default class ChartState extends EventEmitter {
     const yInView = max - min;
     const yFromMin = price - min;
     const perc = yFromMin / yInView;
-    const h = this.$global.layout.height.height;
+    const h = this.$global.layout.height;
     return -Math.floor(perc * h - h);
   }
 }

@@ -18,8 +18,8 @@ export default class Main {
       canvas:
         this.$state.global.ui.charts[this.$state.chart.id].subcharts.main
           .current,
-      height: this.$state.global.layout.height.height - 20,
-      width: this.$state.global.layout.width.width - 50,
+      height: this.$state.global.layout.height - 20,
+      width: this.$state.global.layout.width - 50,
       cursor: "crosshair",
     });
 
@@ -49,11 +49,12 @@ export default class Main {
       "mouseleave",
       () => this.$state.global.crosshair.crosshair.updateCrosshair(-1, -1)
     );
-    this.$state.global.layout.height.addEventListener("setHeight", (height) =>
-      this.canvas.setHeight(height - 20)
-    );
-    this.$state.global.layout.width.addEventListener("setWidth", (width) =>
-      this.canvas.setWidth(width - 50)
+    this.$state.global.layout.addEventListener(
+      "resize",
+      ({ height, width }) => {
+        this.canvas.setHeight(height - 20);
+        this.canvas.setWidth(width - 50);
+      }
     );
 
     // Load initial indicators

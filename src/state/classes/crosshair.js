@@ -31,7 +31,7 @@ class Crosshair extends EventEmitter {
     }
 
     const range = chart.range[3] - chart.range[2];
-    const screenPerc = y / this.$global.layout.height.height;
+    const screenPerc = y / this.$global.layout.height;
     const rangeOffset = (1 - screenPerc) * range;
     const price = chart.range[2] + rangeOffset;
 
