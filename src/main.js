@@ -18,7 +18,5 @@ import Chart from "./chart/chart.js";
 
   new Chart({
     data: newData,
-    width: window.innerWidth,
-    height: window.innerHeight,
   });
 })();

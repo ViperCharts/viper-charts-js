@@ -8,7 +8,7 @@ export default class LayoutState extends EventEmitter {
 
     this.height = 0;
     this.width = 0;
-    this.chartDimensions = {};
+    this.chartDimensions = new Map();
   }
 
   init() {
@@ -25,6 +25,15 @@ export default class LayoutState extends EventEmitter {
     this.fireEvent("resize", {
       height: this.height,
       width: this.width,
+    });
+  }
+
+  addChart(id) {
+    // Create new chart
+    this.chartDimensions.set(id, {
+      id,
+      height: 0,
+      width: 0,
     });
   }
 }
