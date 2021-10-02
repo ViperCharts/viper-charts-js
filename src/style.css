@@ -13,3 +13,7 @@
   user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
 }
+
+.react-resizable-handle {
+  z-index: 1000;
+}
