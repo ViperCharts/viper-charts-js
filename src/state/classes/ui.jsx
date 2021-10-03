@@ -6,6 +6,7 @@ import GlobalState from "../../state/global";
 import Modal from "../../react-components/modal/modal";
 import Chart from "../../react-components/chart/chart";
 import TopBar from "../../react-components/top-bar/top-bar";
+import Grid from "../../react-components/grid/grid";
 
 import "../../../node_modules/react-grid-layout/css/styles.css";
 import "../../../node_modules/react-resizable/css/styles.css";
@@ -57,7 +58,8 @@ class App extends React.Component {
 
         <TopBar />
         <div ref={this.chartsElement} style={{ width: "100%", height: "100%" }}>
-          <GridLayout
+          <Grid />
+          {/* <GridLayout
             className="layout"
             cols={12}
             rowHeight={300}
@@ -66,7 +68,7 @@ class App extends React.Component {
             margin={[0, 0]}
           >
             {this.renderCharts()}
-          </GridLayout>
+          </GridLayout> */}
         </div>
       </div>
     );

@@ -1,0 +1,53 @@
+.grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-box {
+  position: absolute;
+}
+
+.grid-box-controls {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-box-controls > div {
+  position: absolute;
+  cursor: pointer;
+  transition-duration: 50ms;
+}
+
+.grid-box-controls > div:hover {
+  background: blue;
+}
+
+.grid-box-controls-left {
+  position: absolute;
+  left: 0;
+  height: 100%;
+  width: 100px;
+}
+
+.grid-box-controls-top {
+  position: absolute;
+  top: 0;
+  height: 100px;
+  width: 100%;
+}
+
+.grid-box-controls-right {
+  position: absolute;
+  right: 0;
+  height: 100%;
+  width: 100px;
+}
+
+.grid-box-controls-bottom {
+  position: absolute;
+  bottom: 0;
+  height: 100px;
+  width: 100%;
+}
