@@ -1,5 +1,9 @@
 import React from "react";
 
+import GlobalState from "../../state/global";
+
+import Chart from "../../react-components/chart/chart";
+
 import "./grid.css";
 
 export default class Grid extends React.Component {
@@ -7,37 +11,63 @@ export default class Grid extends React.Component {
     super(props);
 
     this.state = {
-      boxes: [],
+      boxes: [
+        {
+          top: 0,
+          left: 0,
+          width: 100,
+          height: 100,
+        },
+      ],
     };
 
     this.grid = React.createRef();
-
-    this.addBox(0, 0);
   }
 
-  addBox(x, y) {
-    const width = this.grid.clientWidth;
-    const height = this.grid.clientHeight;
+  addBoxToSide(index, side) {
+    let box = this.state.boxes[index];
+    let newBox = { ...box };
 
-    // Convert coords to perc using screen size
-    const widthPercent = x / width;
-    const heightPercent = y / height;
+    if (side === "left") {
+      const w = box.width / 2;
+      newBox.width = w;
+      box.left = box.left + w;
+      box.width = w;
+    }
 
-    const box = {
-      top: widthPercent,
-      left: heightPercent,
-      width: 100,
-      height: 100,
-    };
+    if (side === "top") {
+      const h = box.height / 2;
+      newBox.height = h;
+      box.top = box.top + h;
+      box.height = h;
+    }
 
-    // Check if box overlaps with other boxes
+    if (side === "right") {
+      const w = box.width / 2;
+      newBox.left = box.left + w;
+      newBox.width = w;
+      box.width = w;
+    }
 
-    // Add box to state
-    const boxes = this.state.boxes;
-    boxes.push(box);
+    if (side === "bottom") {
+      const h = box.height / 2;
+      newBox.height = h;
+      newBox.top = box.top + h;
+      box.height = h;
+    }
+
+    const { boxes } = this.state;
+    boxes[index] = box;
+    boxes.push(newBox);
+
+    this.setState(() => (this.state.boxes = boxes));
+    GlobalState.createChart();
   }
 
   render() {
+    const chartKeys = Object.keys(this.props.charts);
+    if (!chartKeys.length) return <div></div>;
+
     return (
       <div ref={this.grid} className="grid">
         {this.state.boxes.map((box, i) => (
@@ -49,17 +79,40 @@ export default class Grid extends React.Component {
               left: `${box.left}%`,
               width: `${box.width}%`,
               height: `${box.height}%`,
-              background: getRandomColor(),
             }}
           >
             <div className="grid-box-controls">
               <div
-                onClick={() => this.addBox()}
+                onClick={() => this.addBoxToSide(i, "left")}
                 className="grid-box-controls-left"
               ></div>
-              <div className="grid-box-controls-top"></div>
-              <div className="grid-box-controls-right"></div>
-              <div className="grid-box-controls-bottom"></div>
+              <div
+                onClick={() => this.addBoxToSide(i, "top")}
+                className="grid-box-controls-top"
+              ></div>
+              <div
+                onClick={() => this.addBoxToSide(i, "right")}
+                className="grid-box-controls-right"
+              ></div>
+              <div
+                onClick={() => this.addBoxToSide(i, "bottom")}
+                className="grid-box-controls-bottom"
+              ></div>
+            </div>
+
+            <div
+              style={{
+                position: "absolute",
+                top: "0",
+                left: "0",
+                width: "100%",
+                height: "100%",
+              }}
+            >
+              <Chart
+                id={chartKeys[i]}
+                style={{ width: "100%", height: "100%" }}
+              />
             </div>
           </div>
         ))}

@@ -6,6 +6,8 @@
 
 .grid-box {
   position: absolute;
+  background: lightgray;
+  border: 12px solid black;
 }
 
 .grid-box-controls {
@@ -18,6 +20,7 @@
   position: absolute;
   cursor: pointer;
   transition-duration: 50ms;
+  z-index: 1001;
 }
 
 .grid-box-controls > div:hover {
@@ -28,13 +31,13 @@
   position: absolute;
   left: 0;
   height: 100%;
-  width: 100px;
+  width: 24px;
 }
 
 .grid-box-controls-top {
   position: absolute;
   top: 0;
-  height: 100px;
+  height: 24px;
   width: 100%;
 }
 
@@ -42,12 +45,12 @@
   position: absolute;
   right: 0;
   height: 100%;
-  width: 100px;
+  width: 24px;
 }
 
 .grid-box-controls-bottom {
   position: absolute;
   bottom: 0;
-  height: 100px;
+  height: 24px;
   width: 100%;
 }

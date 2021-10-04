@@ -58,7 +58,7 @@ class App extends React.Component {
 
         <TopBar />
         <div ref={this.chartsElement} style={{ width: "100%", height: "100%" }}>
-          <Grid />
+          <Grid charts={this.state.charts} />
           {/* <GridLayout
             className="layout"
             cols={12}
