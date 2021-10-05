@@ -7,8 +7,12 @@ export default class TimeScale {
   constructor({ $state }) {
     this.$state = $state;
 
+    this.canvas = null;
+  }
+
+  init() {
     this.canvas = new Canvas({
-      $state,
+      $state: this.$state,
       id: `canvas-timescale`,
       canvas:
         this.$state.global.ui.charts[this.$state.chart.id].subcharts.xScale
@@ -18,17 +22,20 @@ export default class TimeScale {
       cursor: "e-resize",
       position: "bottom",
     });
+
     this.background = new Background({
       canvas: this.canvas,
       color: "#080019",
     });
-    this.timeScaleLayer = new TimeScaleLayer({ $state, canvas: this.canvas });
-    this.timeSelected = new TimeSelected({ $state, canvas: this.canvas });
+    this.timeScaleLayer = new TimeScaleLayer({
+      $state: this.$state,
+      canvas: this.canvas,
+    });
+    this.timeSelected = new TimeSelected({
+      $state: this.$state,
+      canvas: this.canvas,
+    });
 
-    this.init();
-  }
-
-  init() {
     this.$state.global.layout.addEventListener("resize", ({ width }) => {
       this.canvas.setWidth(width - 50);
     });

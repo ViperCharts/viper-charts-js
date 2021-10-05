@@ -6,8 +6,12 @@ export default class TimeScale {
   constructor({ $state }) {
     this.$state = $state;
 
+    this.canvas = null;
+  }
+
+  init() {
     this.canvas = new Canvas({
-      $state,
+      $state: this.$state,
       id: `canvas-pricescale`,
       canvas:
         this.$state.global.ui.charts[this.$state.chart.id].subcharts.yScale
@@ -17,17 +21,14 @@ export default class TimeScale {
       cursor: "n-resize",
       position: "right",
     });
-    this.background = new Background({
-      $state,
+
+    new Background({
+      $state: this.$state,
       canvas: this.canvas,
       color: "#080019",
     });
-    this.priceSelected = new PriceSelected({ $state, canvas: this.canvas });
+    new PriceSelected({ $state: this.$state, canvas: this.canvas });
 
-    this.init();
-  }
-
-  init() {
     this.$state.global.layout.addEventListener("resize", ({ height }) => {
       this.canvas.setHeight(height - 20);
     });

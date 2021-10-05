@@ -29,7 +29,7 @@ class App extends React.Component {
   addChart(chart) {
     const charts = this.state.charts;
     charts[chart.id] = chart;
-    this.setState(() => (this.state.charts = charts), chart.init.bind(chart));
+    this.setState(() => (this.state.charts = charts));
   }
 
   setModal(modal) {
@@ -77,7 +77,6 @@ class App extends React.Component {
   renderCharts() {
     const keys = Object.keys(this.state.charts);
     if (!keys.length) return <div></div>;
-    console.log(keys);
     const charts = keys.map((key) => (
       <div
         key={key}
@@ -91,7 +90,6 @@ class App extends React.Component {
         <Chart id={key} style={{ width: "100%", height: "100%" }} />
       </div>
     ));
-    console.log(charts);
     return charts;
   }
 }

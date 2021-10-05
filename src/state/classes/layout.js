@@ -1,5 +1,7 @@
 import EventEmitter from "../../events/event_emitter.ts";
 
+import Utils from "../../utils";
+
 export default class LayoutState extends EventEmitter {
   constructor({ $global }) {
     super();
@@ -8,12 +10,25 @@ export default class LayoutState extends EventEmitter {
 
     this.height = 0;
     this.width = 0;
-    this.chartDimensions = new Map();
+    this.layout = {};
   }
 
   init() {
     window.addEventListener("resize", this.resize.bind(this));
     setTimeout(this.resize.bind(this));
+  }
+
+  setInitialLayout(layout) {
+    const { id } = this.$global.createChart();
+    layout[0].id = Utils.uniqueId();
+    layout[0].chartId = id;
+    layout[0].children = [];
+    this.setLayout(layout);
+  }
+
+  setLayout(layout) {
+    this.layout = layout;
+    this.fireEvent("set-layout", this.layout);
   }
 
   resize() {

@@ -12,8 +12,16 @@ export default class Main {
   constructor({ $state }) {
     this.$state = $state;
 
+    this.canvas = null;
+
+    this.scrollListener = null;
+    this.mousemoveListener = null;
+    this.mouseleaveListener = null;
+  }
+
+  init() {
     this.canvas = new Canvas({
-      $state,
+      $state: this.$state,
       id: `canvas-${this.id}-main`,
       canvas:
         this.$state.global.ui.charts[this.$state.chart.id].subcharts.main
@@ -23,14 +31,6 @@ export default class Main {
       cursor: "crosshair",
     });
 
-    this.scrollListener = null;
-    this.mousemoveListener = null;
-    this.mouseleaveListener = null;
-
-    setTimeout(() => this.init());
-  }
-
-  init() {
     // Add indicators to it
     new Background({ $state: this.$state, canvas: this.canvas });
     new Grid({ $state: this.$state, canvas: this.canvas });
@@ -57,8 +57,9 @@ export default class Main {
       }
     );
 
-    // Load initial indicators
-    const settings = StorageManager.getChartSettings();
+    // Load initial indicators TEMP REMOVED
+    // const settings = StorageManager.getChartSettings();
+    const settings = {};
     if (settings.indicators) {
       for (const indicator of settings.indicators) {
         this.$state.chart.addIndicator(Indicators.map.get(indicator.id));

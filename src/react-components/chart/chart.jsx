@@ -23,6 +23,14 @@ export default class Chart extends React.Component {
     };
   }
 
+  componentDidMount() {
+    const chart = GlobalState.charts.get(this.state.id);
+    chart.init();
+    chart.subcharts.main.init();
+    chart.subcharts.xScale.init();
+    chart.subcharts.yScale.init();
+  }
+
   addIndicator(renderingQueueId, indicator) {
     const indicators = this.state.indicators;
     indicators[renderingQueueId] = indicator;

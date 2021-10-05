@@ -16,7 +16,15 @@ import Chart from "./chart/chart.js";
     });
   }
 
-  new Chart({
+  const chart = new Chart({
     data: newData,
+    layout: [
+      {
+        top: 0,
+        left: 0,
+        width: 100,
+        height: 100,
+      },
+    ],
   });
 })();
