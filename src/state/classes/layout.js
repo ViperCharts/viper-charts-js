@@ -11,6 +11,7 @@ export default class LayoutState extends EventEmitter {
     this.height = 0;
     this.width = 0;
     this.layout = {};
+    this.chartDimensions = {};
   }
 
   init() {
@@ -41,14 +42,21 @@ export default class LayoutState extends EventEmitter {
       height: this.height,
       width: this.width,
     });
+
+    for (const chart of Object.values(this.chartDimensions)) {
+      const { current } = this.$global.ui.charts[chart.id].chartContainer;
+      if (current) {
+        this.updateSize(chart.id, current.clientWidth, current.clientHeight);
+      }
+    }
   }
 
-  addChart(id) {
-    // Create new chart
-    this.chartDimensions.set(id, {
-      id,
-      height: 0,
-      width: 0,
-    });
+  updateSize(id, width, height) {
+    this.chartDimensions[id] = { id, width, height };
+    this.fireEvent(`resize_${id}`, { width, height });
+  }
+
+  addChart(id, width, height) {
+    this.chartDimensions[id] = { id, width, height };
   }
 }

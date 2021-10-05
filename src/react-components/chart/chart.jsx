@@ -21,14 +21,24 @@ export default class Chart extends React.Component {
       xScale: new React.createRef(),
       yScale: new React.createRef(),
     };
+
+    this.chartContainer = new React.createRef();
   }
 
   componentDidMount() {
+    const { clientWidth, clientHeight } = this.chartContainer.current;
+    GlobalState.layout.addChart(this.state.id, clientWidth, clientHeight);
+
     const chart = GlobalState.charts.get(this.state.id);
     chart.init();
     chart.subcharts.main.init();
     chart.subcharts.xScale.init();
     chart.subcharts.yScale.init();
+  }
+
+  componentDidUpdate() {
+    const { clientWidth, clientHeight } = this.chartContainer.current;
+    GlobalState.layout.updateSize(this.state.id, clientWidth, clientHeight);
   }
 
   addIndicator(renderingQueueId, indicator) {
@@ -51,7 +61,7 @@ export default class Chart extends React.Component {
 
   render() {
     return (
-      <div className="chart">
+      <div ref={this.chartContainer} className="chart">
         <div className="overlay-padding">
           <div className="overlay">
             <div className="top-left">
