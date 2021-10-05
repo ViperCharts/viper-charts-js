@@ -15,6 +15,7 @@ export default class ChartState extends EventEmitter {
     super();
 
     this.$global = $global;
+    this.isInitialized = false;
 
     this.id = Utils.uniqueId();
     this.timeframe = Constants.MINUTE;
@@ -32,8 +33,11 @@ export default class ChartState extends EventEmitter {
   }
 
   init() {
+    if (this.isInitialized) return;
+
     this.$global.layout.addEventListener(`resize-${this.id}`, ({ width }) => {
       this.resizeXRange(0, width);
+      this.dimensions = this.$global.layout.chartDimensions[this.id];
     });
 
     this.dimensions = this.$global.layout.chartDimensions[this.id];
@@ -51,6 +55,7 @@ export default class ChartState extends EventEmitter {
     };
 
     this.setInitialVisibleRange();
+    this.isInitialized = true;
   }
 
   addIndicator(indicator) {

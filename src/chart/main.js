@@ -49,7 +49,6 @@ export default class Main {
       "mouseleave",
       () => this.$state.global.crosshair.crosshair.updateCrosshair(-1, -1)
     );
-    console.log(this.$state.chart.id);
     this.$state.global.layout.addEventListener(
       `resize-${this.$state.chart.id}`,
       ({ width }) => {

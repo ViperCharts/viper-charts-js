@@ -21,9 +21,7 @@ export default class LayoutState extends EventEmitter {
 
   setInitialLayout(layout) {
     const { id } = this.$global.createChart();
-    layout[0].id = Utils.uniqueId();
     layout[0].chartId = id;
-    layout[0].children = [];
     this.setLayout(layout);
   }
 
@@ -53,11 +51,10 @@ export default class LayoutState extends EventEmitter {
 
   updateSize(id, width, height) {
     this.chartDimensions[id] = { id, width, height };
-    console.log(id);
     this.fireEvent(`resize-${id}`, { width, height });
   }
 
   addChart(id, width, height) {
-    this.chartDimensions[id] = { id, width, height };
+    this.chartDimensions[id] = { isMounted: true, id, width, height };
   }
 }

@@ -28,12 +28,14 @@ export default class Chart extends React.Component {
   componentDidMount() {
     const { clientWidth, clientHeight } = this.chartContainer.current;
     GlobalState.layout.addChart(this.state.id, clientWidth, clientHeight);
-
     const chart = GlobalState.charts.get(this.state.id);
-    chart.init();
-    chart.subcharts.main.init();
-    chart.subcharts.xScale.init();
-    chart.subcharts.yScale.init();
+
+    if (!chart.isInitialized) {
+      chart.init();
+      chart.subcharts.main.init();
+      chart.subcharts.xScale.init();
+      chart.subcharts.yScale.init();
+    }
   }
 
   componentDidUpdate() {

@@ -35,8 +35,8 @@ export default class Grid extends React.Component {
       left: 0,
       width: 100,
       height: 100,
-      children: [],
       chartId: box.chartId,
+      children: [],
     };
     const newBox = {
       id: Utils.uniqueId(),
@@ -46,7 +46,6 @@ export default class Grid extends React.Component {
       height: 100,
       children: [],
     };
-    delete box.chartId;
 
     if (side === "left") {
       oldBox.left = 50;
@@ -91,7 +90,7 @@ export default class Grid extends React.Component {
     );
   }
 
-  renderBox(box) {
+  renderBox(box, i) {
     return (
       <div
         className="grid-box"
@@ -122,33 +121,20 @@ export default class Grid extends React.Component {
           ></div>
         </div>
 
-        {box.children.length ? (
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-            }}
-          >
-            <div className="grid">
-              {box.children.map(this.renderBox.bind(this))}
-            </div>
-          </div>
-        ) : (
-          <div
-            style={{
-              position: "absolute",
-              top: "0",
-              left: "0",
-              width: "100%",
-              height: "100%",
-            }}
-          >
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          <div className="grid">
             <Chart id={box.chartId} style={{ width: "100%", height: "100%" }} />
+            {box.children.map(this.renderBox.bind(this))}
           </div>
-        )}
+        </div>
       </div>
     );
   }
