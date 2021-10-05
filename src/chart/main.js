@@ -22,12 +22,12 @@ export default class Main {
   init() {
     this.canvas = new Canvas({
       $state: this.$state,
-      id: `canvas-${this.id}-main`,
+      id: `canvas-${this.$state.chart.id}-main`,
       canvas:
         this.$state.global.ui.charts[this.$state.chart.id].subcharts.main
           .current,
-      height: this.$state.global.layout.height - 20,
-      width: this.$state.global.layout.width - 50,
+      height: this.$state.dimensions.height - 20,
+      width: this.$state.dimensions.width - 50,
       cursor: "crosshair",
     });
 
@@ -49,10 +49,10 @@ export default class Main {
       "mouseleave",
       () => this.$state.global.crosshair.crosshair.updateCrosshair(-1, -1)
     );
+    console.log(this.$state.chart.id);
     this.$state.global.layout.addEventListener(
-      "resize",
-      ({ height, width }) => {
-        this.canvas.setHeight(height - 20);
+      `resize-${this.$state.chart.id}`,
+      ({ width }) => {
         this.canvas.setWidth(width - 50);
       }
     );

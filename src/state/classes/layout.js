@@ -53,7 +53,8 @@ export default class LayoutState extends EventEmitter {
 
   updateSize(id, width, height) {
     this.chartDimensions[id] = { id, width, height };
-    this.fireEvent(`resize_${id}`, { width, height });
+    console.log(id);
+    this.fireEvent(`resize-${id}`, { width, height });
   }
 
   addChart(id, width, height) {

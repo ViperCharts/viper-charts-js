@@ -16,7 +16,7 @@ export default class TimeScale {
       canvas:
         this.$state.global.ui.charts[this.$state.chart.id].subcharts.yScale
           .current,
-      height: this.$state.global.layout.height - 20,
+      height: this.$state.dimensions.height - 20,
       width: 50,
       cursor: "n-resize",
       position: "right",
@@ -29,8 +29,11 @@ export default class TimeScale {
     });
     new PriceSelected({ $state: this.$state, canvas: this.canvas });
 
-    this.$state.global.layout.addEventListener("resize", ({ height }) => {
-      this.canvas.setHeight(height - 20);
-    });
+    this.$state.global.layout.addEventListener(
+      `resize-${this.$state.chart.id}`,
+      ({ height }) => {
+        this.canvas.setHeight(height - 20);
+      }
+    );
   }
 }

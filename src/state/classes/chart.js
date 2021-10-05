@@ -23,6 +23,7 @@ export default class ChartState extends EventEmitter {
     this.range = [];
     this.visibleData = [];
     this.visibleScales = { x: [], y: [] };
+    this.dimensions = {};
     this.subcharts = {
       main: undefined,
       xScale: undefined,
@@ -31,13 +32,16 @@ export default class ChartState extends EventEmitter {
   }
 
   init() {
-    this.$global.layout.addEventListener("resize", ({ width }) => {
+    this.$global.layout.addEventListener(`resize-${this.id}`, ({ width }) => {
       this.resizeXRange(0, width);
     });
+
+    this.dimensions = this.$global.layout.chartDimensions[this.id];
 
     const $state = {
       chart: this,
       global: this.$global,
+      dimensions: this.dimensions,
     };
 
     this.subcharts = {
@@ -182,7 +186,7 @@ export default class ChartState extends EventEmitter {
    * Set the initial visible range of data
    */
   setInitialVisibleRange() {
-    const width = this.$global.layout.width;
+    const width = this.dimensions.width;
     const { data } = Array.from(this.$global.data.datasets.values())[0];
 
     // End timestamp based on last element
@@ -237,7 +241,7 @@ export default class ChartState extends EventEmitter {
   getTimestampByXCoord(x) {
     const [start, end] = this.range;
     const msInView = end - start;
-    const perc = x / this.$global.layout.width;
+    const perc = x / this.dimensions.width;
     const time = perc * msInView;
     return start + time;
   }
@@ -247,7 +251,7 @@ export default class ChartState extends EventEmitter {
     const msInView = end - start;
     const msFromStart = timestamp - start;
     const perc = msFromStart / msInView;
-    const w = this.$global.layout.width;
+    const w = this.dimensions.width;
     return Math.floor(perc * w);
   }
 
@@ -256,7 +260,7 @@ export default class ChartState extends EventEmitter {
     const yInView = max - min;
     const yFromMin = price - min;
     const perc = yFromMin / yInView;
-    const h = this.$global.layout.height;
+    const h = this.dimensions.height;
     return -Math.floor(perc * h - h);
   }
 }
