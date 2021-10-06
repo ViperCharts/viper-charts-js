@@ -2,6 +2,42 @@ import EventEmitter from "../../events/event_emitter.ts";
 
 import Utils from "../../utils";
 
+// TODO move this to chart settings state
+const settings = {
+  xScaleHeight: 20,
+  yScaleWidth: 50,
+};
+
+class ChartDimension {
+  constructor(id, width, height) {
+    this.id = id;
+    this.width;
+    this.height;
+    this.main = {};
+    this.xScale = {};
+    this.yScale = {};
+
+    this.setDimensions(width, height);
+  }
+
+  setDimensions(width, height) {
+    this.width = width;
+    this.height = height;
+    this.main = {
+      width: width - settings.yScaleWidth,
+      height: height - settings.xScaleHeight,
+    };
+    this.xScale = {
+      width: width,
+      height: settings.xScaleHeight,
+    };
+    this.yScale = {
+      width: settings.yScaleWidth,
+      height: height,
+    };
+  }
+}
+
 export default class LayoutState extends EventEmitter {
   constructor({ $global }) {
     super();
@@ -50,11 +86,11 @@ export default class LayoutState extends EventEmitter {
   }
 
   updateSize(id, width, height) {
-    this.chartDimensions[id] = { id, width, height };
-    this.fireEvent(`resize-${id}`, { width, height });
+    this.chartDimensions[id].setDimensions(width, height);
+    this.fireEvent(`resize-${id}`, this.chartDimensions[id]);
   }
 
   addChart(id, width, height) {
-    this.chartDimensions[id] = { isMounted: true, id, width, height };
+    this.chartDimensions[id] = new ChartDimension(id, width, height);
   }
 }

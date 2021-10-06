@@ -51,8 +51,8 @@ export default class Main {
     );
     this.$state.global.layout.addEventListener(
       `resize-${this.$state.chart.id}`,
-      ({ width }) => {
-        this.canvas.setWidth(width - 50);
+      ({ main }) => {
+        this.canvas.setWidth(main.width);
       }
     );
 

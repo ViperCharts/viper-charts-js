@@ -188,14 +188,14 @@ export default class ChartState extends EventEmitter {
    * Set the initial visible range of data
    */
   setInitialVisibleRange() {
-    const { width } = this.$global.layout.chartDimensions[this.id];
+    const { width } = this.$global.layout.chartDimensions[this.id].main;
     const { data } = Array.from(this.$global.data.datasets.values())[0];
 
     // End timestamp based on last element
     const end = data[data.length - 1].time + this.timeframe * 5;
 
     // Calculate start timestamp using width and pixelsPerElement
-    const candlesInView = (width - 50) / this.pixelsPerElement;
+    const candlesInView = width / this.pixelsPerElement;
     // Set start to candlesInView lookback
     const start = end - candlesInView * this.timeframe;
 
@@ -243,7 +243,7 @@ export default class ChartState extends EventEmitter {
   getTimestampByXCoord(x) {
     const [start, end] = this.range;
     const msInView = end - start;
-    const perc = x / this.$global.layout.chartDimensions[this.id].width - 50;
+    const perc = x / this.$global.layout.chartDimensions[this.id].main.width;
     const time = perc * msInView;
     return start + time;
   }
@@ -253,7 +253,7 @@ export default class ChartState extends EventEmitter {
     const msInView = end - start;
     const msFromStart = timestamp - start;
     const perc = msFromStart / msInView;
-    const w = this.$global.layout.chartDimensions[this.id].width - 50;
+    const w = this.$global.layout.chartDimensions[this.id].main.width;
     return Math.floor(perc * w);
   }
 
@@ -262,7 +262,7 @@ export default class ChartState extends EventEmitter {
     const yInView = max - min;
     const yFromMin = price - min;
     const perc = yFromMin / yInView;
-    const h = this.$global.layout.chartDimensions[this.id].height - 20;
+    const h = this.$global.layout.chartDimensions[this.id].main.height;
     return -Math.floor(perc * h - h);
   }
 }

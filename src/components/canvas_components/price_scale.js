@@ -31,8 +31,8 @@ export default class TimeScale {
 
     this.$state.global.layout.addEventListener(
       `resize-${this.$state.chart.id}`,
-      ({ height }) => {
-        this.canvas.setHeight(height - 20);
+      ({ yScale }) => {
+        this.canvas.setHeight(yScale.height);
       }
     );
   }

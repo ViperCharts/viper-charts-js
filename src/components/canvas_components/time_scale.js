@@ -38,8 +38,8 @@ export default class TimeScale {
 
     this.$state.global.layout.addEventListener(
       `resize-${this.$state.chart.id}`,
-      ({ width }) => {
-        this.canvas.setWidth(width - 50);
+      ({ xScale }) => {
+        this.canvas.setWidth(xScale.width);
       }
     );
   }
