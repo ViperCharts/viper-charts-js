@@ -28,12 +28,12 @@ class ChartDimension {
       height: height - settings.xScaleHeight,
     };
     this.xScale = {
-      width: width,
+      width: width - settings.yScaleWidth,
       height: settings.xScaleHeight,
     };
     this.yScale = {
       width: settings.yScaleWidth,
-      height: height,
+      height: height - settings.xScaleHeight,
     };
   }
 }
@@ -67,15 +67,10 @@ export default class LayoutState extends EventEmitter {
   }
 
   resize() {
+    // Get the height and width of charts grid container
     const { current } = this.$global.ui.app.chartsElement;
-
     this.height = current.clientHeight;
     this.width = current.clientWidth;
-
-    this.fireEvent("resize", {
-      height: this.height,
-      width: this.width,
-    });
 
     for (const chart of Object.values(this.chartDimensions)) {
       const { current } = this.$global.ui.charts[chart.id].chartContainer;
@@ -83,6 +78,11 @@ export default class LayoutState extends EventEmitter {
         this.updateSize(chart.id, current.clientWidth, current.clientHeight);
       }
     }
+
+    this.fireEvent("resize", {
+      height: this.height,
+      width: this.width,
+    });
   }
 
   updateSize(id, width, height) {
