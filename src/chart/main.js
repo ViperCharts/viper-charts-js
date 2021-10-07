@@ -111,7 +111,8 @@ export default class Main {
 
     // If vertical scroll
     if (e.deltaY !== 0) {
-      const change = e.deltaY > 0 ? e.deltaY : e.deltaY;
+      const d = e.deltaY;
+      const change = -(d > 0 ? -d * -50 : d * 50);
       this.$state.chart.resizeXRange(change, this.canvas.width);
     }
   }
