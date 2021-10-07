@@ -50,7 +50,6 @@ export default class Main {
   }
 
   setCanvasElement(canvas) {
-    console.log(this.$state.chart.indicators);
     if (!this.canvas) {
       this.canvas = new Canvas({
         $state: this.$state,
