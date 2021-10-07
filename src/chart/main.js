@@ -103,7 +103,6 @@ export default class Main {
     // If mouse down on child canvas
     if (!this.canvas.isMouseDown) return;
 
-    console.log(e);
     this.$state.chart.handleMouseRangeChange(e.movementX, e.movementY);
   }
 }
