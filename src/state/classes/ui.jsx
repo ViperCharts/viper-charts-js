@@ -11,8 +11,6 @@ import Grid from "../../react-components/grid/grid";
 import "../../../node_modules/react-grid-layout/css/styles.css";
 import "../../../node_modules/react-resizable/css/styles.css";
 
-import GridLayout from "react-grid-layout";
-
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -59,16 +57,6 @@ class App extends React.Component {
         <TopBar />
         <div ref={this.chartsElement} style={{ width: "100%", height: "100%" }}>
           <Grid charts={this.state.charts} />
-          {/* <GridLayout
-            className="layout"
-            cols={12}
-            rowHeight={300}
-            width={1200}
-            resizeHandles={["se", "s"]}
-            margin={[0, 0]}
-          >
-            {this.renderCharts()}
-          </GridLayout> */}
         </div>
       </div>
     );

@@ -4,7 +4,7 @@ export default class Canvas {
   constructor({ $state, canvas, cursor = "default" }) {
     this.$state = $state;
 
-    this.canvas = canvas;
+    this.canvas = null;
     this.ctx = null;
     this.RE = null;
     this.cursor = cursor;
@@ -13,26 +13,32 @@ export default class Canvas {
     this.mouseDownListener = null;
     this.mouseUpListener = null;
     this.mouseMoveListener = null;
-    this.count = 0;
 
-    this.width = this.canvas.clientWidth;
-    this.height = this.canvas.clientHeight;
+    this.width = 0;
+    this.height = 0;
 
+    this.setCanvasElement(canvas);
     this.init();
   }
 
   init() {
-    this.ctx = this.canvas.getContext("2d");
-
-    this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
-    this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
-    this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
-    this.canvas.style.cursor = this.cursor;
-
-    this.canvas.height = this.height;
-    this.canvas.width = this.width;
-
     this.RE = new RenderingEngine(this);
+  }
+
+  setCanvasElement(canvas) {
+    this.ctx = canvas.getContext("2d");
+
+    canvas.style.cursor = this.cursor;
+    canvas.width = canvas.clientWidth;
+    this.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    this.height = canvas.clientHeight;
+
+    canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
+    canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
+    canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
+
+    this.canvas = canvas;
   }
 
   /**

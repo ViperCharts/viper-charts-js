@@ -20,16 +20,8 @@ export default class Main {
   }
 
   init() {
-    this.canvas = new Canvas({
-      $state: this.$state,
-      id: `canvas-${this.$state.chart.id}-main`,
-      canvas:
-        this.$state.global.ui.charts[this.$state.chart.id].subcharts.main
-          .current,
-      height: this.$state.dimensions.height - 20,
-      width: this.$state.dimensions.width - 50,
-      cursor: "crosshair",
-    });
+    const { subcharts } = this.$state.global.ui.charts[this.$state.chart.id];
+    this.setCanvasElement(subcharts.main.current);
 
     // Add indicators to it
     new Background({ $state: this.$state, canvas: this.canvas });
@@ -37,18 +29,6 @@ export default class Main {
     new LastPriceLine({ $state: this.$state, canvas: this.canvas });
     new Crosshair({ $state: this.$state, canvas: this.canvas });
 
-    this.scrollListener = this.canvas.canvas.addEventListener(
-      "wheel",
-      this.onScroll.bind(this)
-    );
-    this.mousemoveListener = this.canvas.canvas.addEventListener(
-      "mousemove",
-      this.onMouseMove.bind(this)
-    );
-    this.mouseleaveListener = this.canvas.canvas.addEventListener(
-      "mouseleave",
-      () => this.$state.global.crosshair.crosshair.updateCrosshair(-1, -1)
-    );
     this.$state.global.layout.addEventListener(
       `resize-${this.$state.chart.id}`,
       ({ main }) => {
@@ -67,6 +47,33 @@ export default class Main {
       this.$state.chart.addIndicator(Indicators.map.get("candlestick"));
       this.$state.chart.addIndicator(Indicators.map.get("volume-by-side"));
     }
+  }
+
+  setCanvasElement(canvas) {
+    if (!this.canvas) {
+      this.canvas = new Canvas({
+        $state: this.$state,
+        id: `canvas-${this.$state.chart.id}-main`,
+        canvas,
+        height: this.$state.dimensions.height - 20,
+        width: this.$state.dimensions.width - 50,
+        cursor: "crosshair",
+      });
+    }
+
+    this.scrollListener = canvas.addEventListener(
+      "wheel",
+      this.onScroll.bind(this)
+    );
+    this.mousemoveListener = canvas.addEventListener(
+      "mousemove",
+      this.onMouseMove.bind(this)
+    );
+    this.mouseleaveListener = canvas.addEventListener("mouseleave", () =>
+      this.$state.global.crosshair.crosshair.updateCrosshair(-1, -1)
+    );
+
+    this.canvas.setCanvasElement(canvas);
   }
 
   onScroll(e) {

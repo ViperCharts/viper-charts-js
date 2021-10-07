@@ -33,7 +33,7 @@ export default class ChartState extends EventEmitter {
   }
 
   init() {
-    // if (this.isInitialized) return;
+    if (this.isInitialized) return;
 
     this.$global.layout.addEventListener(`resize-${this.id}`, ({ width }) => {
       this.resizeXRange(0, width);
@@ -52,7 +52,12 @@ export default class ChartState extends EventEmitter {
     };
 
     this.setInitialVisibleRange();
-    // this.isInitialized = true;
+
+    this.subcharts.main.init();
+    this.subcharts.xScale.init();
+    this.subcharts.yScale.init();
+
+    this.isInitialized = true;
   }
 
   addIndicator(indicator) {
@@ -264,5 +269,16 @@ export default class ChartState extends EventEmitter {
     const perc = yFromMin / yInView;
     const h = this.$global.layout.chartDimensions[this.id].main.height;
     return -Math.floor(perc * h - h);
+  }
+
+  /**
+   * When React UI component re-mounts, update canvas element for children
+   */
+  onNewCanvas() {
+    const { main, xScale, yScale } = this.$global.ui.charts[this.id].subcharts;
+
+    this.subcharts.main.setCanvasElement(main.current);
+    this.subcharts.xScale.canvas.setCanvasElement(xScale.current);
+    this.subcharts.yScale.canvas.setCanvasElement(yScale.current);
   }
 }
