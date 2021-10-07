@@ -8,9 +8,11 @@ export default class Crosshair extends Layer {
   }
 
   draw() {
+    if (!this.$state.global.crosshair.visible) return;
+
     // Draw horizontal line
-    const { x, y } = this.$state.global.crosshair.crosshair;
-    if (x < 0 || y < 0) return;
+    const { crosshairs } = this.$state.global.crosshair;
+    const { x, y } = crosshairs[this.$state.chart.id];
     this.canvas.drawLine("#ffffff88", [0, y, this.canvas.width, y]);
     this.canvas.drawLine("#ffffff88", [x, 0, x, this.canvas.height]);
   }

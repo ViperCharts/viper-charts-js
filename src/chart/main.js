@@ -69,8 +69,13 @@ export default class Main {
       "mousemove",
       this.onMouseMove.bind(this)
     );
-    this.mouseleaveListener = canvas.addEventListener("mouseleave", () =>
-      this.$state.global.crosshair.crosshair.updateCrosshair(-1, -1)
+    this.mouseleaveListener = canvas.addEventListener(
+      "mouseleave",
+      () => (this.$state.global.crosshair.visible = false)
+    );
+    canvas.addEventListener(
+      "mouseenter",
+      () => (this.$state.global.crosshair.visible = true)
     );
 
     this.canvas.setCanvasElement(canvas);
@@ -83,7 +88,8 @@ export default class Main {
   }
 
   onMouseMove(e) {
-    this.$state.global.crosshair.crosshair.updateCrosshair(
+    this.$state.global.crosshair.updateCrosshair(
+      this.$state.chart,
       e.offsetX,
       e.offsetY
     );

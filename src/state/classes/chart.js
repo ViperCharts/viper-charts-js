@@ -45,6 +45,9 @@ export default class ChartState extends EventEmitter {
       dimensions: this.$global.layout.chartDimensions[this.id],
     };
 
+    // Add crosshair to crosshair state in prep for chart to be rendered
+    this.$global.crosshair.addCrosshair(this.id);
+
     this.subcharts = {
       main: new Main({ $state }),
       xScale: new TimeScale({ $state }),
