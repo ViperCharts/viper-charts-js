@@ -9,7 +9,7 @@ export default class TimeSelected extends Layer {
 
   draw() {
     const p = this.$state.global.crosshair.price;
-    const y = this.$state.global.crosshair.crosshairs[this.$state.chart.id];
+    const { y } = this.$state.global.crosshair.crosshairs[this.$state.chart.id];
 
     if (y < 0) return;
 
