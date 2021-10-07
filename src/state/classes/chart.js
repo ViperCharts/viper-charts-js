@@ -209,24 +209,6 @@ export default class ChartState extends EventEmitter {
     this.setVisibleRange({ start, end });
   }
 
-  /**
-   * Take x and y movements from canvas mouse listeners to update chart visible ranges
-   * @param {number} movementX + or - mouse movement
-   * @param {number} movementY + or - mouse movement
-   */
-  handleMouseRangeChange(movementX, movementY) {
-    let [start, end, min, max] = this.range;
-
-    // Get how many candles moved
-    const candlesMoved = movementX / this.pixelsPerElement;
-    const timeMoved = this.timeframe * candlesMoved;
-
-    start -= timeMoved;
-    end -= timeMoved;
-
-    this.setVisibleRange({ start, end });
-  }
-
   resizeXRange(delta, width) {
     const ppe = this.pixelsPerElement;
 

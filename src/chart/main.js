@@ -85,10 +85,35 @@ export default class Main {
     this.canvas.setCanvasElement(canvas);
   }
 
+  /**
+   *
+   * @param {Scroll Event} e
+   */
   onScroll(e) {
-    if (e.deltaY < 0) this.$state.chart.resizeXRange(10, this.canvas.width);
-    else if (e.deltaY > 0)
-      this.$state.chart.resizeXRange(-10, this.canvas.width);
+    e.preventDefault();
+
+    // If horizontal scroll, move range
+    if (e.deltaX !== 0) {
+      const ppe = this.$state.chart.pixelsPerElement;
+      const { width } =
+        this.$state.global.layout.chartDimensions[this.$state.chart.id].main;
+
+      const d = e.deltaX;
+      const change = (d > 0 ? d * 100 : -d * -100) * (width / ppe);
+
+      let [start, end] = this.$state.chart.range;
+      start += change;
+      end += change;
+
+      console.log(change);
+      this.$state.chart.setVisibleRange({ start, end });
+    }
+
+    // If vertical scroll
+    if (e.deltaY !== 0) {
+      const change = e.deltaY > 0 ? e.deltaY : e.deltaY;
+      this.$state.chart.resizeXRange(change, this.canvas.width);
+    }
   }
 
   onMouseMove(e) {
@@ -103,6 +128,15 @@ export default class Main {
     // If mouse down on child canvas
     if (!this.canvas.isMouseDown) return;
 
-    this.$state.chart.handleMouseRangeChange(e.movementX, e.movementY);
+    let [start, end, min, max] = this.$state.chart.range;
+
+    // Get how many candles moved
+    const candlesMoved = e.movementX / this.$state.chart.pixelsPerElement;
+    const timeMoved = this.$state.chart.timeframe * candlesMoved;
+
+    start -= timeMoved;
+    end -= timeMoved;
+
+    this.$state.chart.setVisibleRange({ start, end });
   }
 }
