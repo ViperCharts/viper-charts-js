@@ -11,7 +11,7 @@ export default class TimeSelected extends Layer {
     const p = this.$state.global.crosshair.price;
     const { y } = this.$state.global.crosshair.crosshairs[this.$state.chart.id];
 
-    if (y < 0) return;
+    if (!this.$state.global.crosshair.visible) return;
 
     this.canvas.drawBox("#424242", [0, y - 10, 50, 20]);
     this.canvas.drawText("#fff", [25, y + 3], p);
