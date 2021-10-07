@@ -217,12 +217,12 @@ export default class ChartState extends EventEmitter {
   handleMouseRangeChange(movementX, movementY) {
     let [start, end, min, max] = this.range;
 
-    const xDiff = end - start;
-    const yDiff = max - min;
+    // Get how many candles moved
+    const candlesMoved = movementX / this.pixelsPerElement;
+    const timeMoved = this.timeframe * candlesMoved;
 
-    const xChange = Math.floor(xDiff / 2000) * movementX;
-    start -= xChange;
-    end -= xChange;
+    start -= timeMoved;
+    end -= timeMoved;
 
     this.setVisibleRange({ start, end });
   }

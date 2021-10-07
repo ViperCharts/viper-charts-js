@@ -10,9 +10,6 @@ export default class Canvas {
     this.cursor = cursor;
 
     this.isMouseDown = false;
-    this.mouseDownListener = null;
-    this.mouseUpListener = null;
-    this.mouseMoveListener = null;
 
     this.width = 0;
     this.height = 0;
@@ -34,9 +31,11 @@ export default class Canvas {
     canvas.height = canvas.clientHeight;
     this.height = canvas.clientHeight;
 
-    canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
-    canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
-    canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
+    canvas.addEventListener("mousedown", () => (this.isMouseDown = true));
+    this.$state.global.events.addEventListener(
+      "mouseup",
+      () => (this.isMouseDown = false)
+    );
 
     this.canvas = canvas;
   }
@@ -139,11 +138,5 @@ export default class Canvas {
 
   onMouseUp() {
     this.isMouseDown = false;
-  }
-
-  onMouseMove(e) {
-    if (this.isMouseDown) {
-      this.$state.chart.handleMouseRangeChange(e.movementX, e.movementY);
-    }
   }
 }

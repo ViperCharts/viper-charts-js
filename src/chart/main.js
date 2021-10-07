@@ -77,6 +77,10 @@ export default class Main {
       "mouseenter",
       () => (this.$state.global.crosshair.visible = true)
     );
+    this.$state.global.events.addEventListener(
+      "mousemove",
+      this.onWindowMouseMove.bind(this)
+    );
 
     this.canvas.setCanvasElement(canvas);
   }
@@ -93,5 +97,13 @@ export default class Main {
       e.offsetX,
       e.offsetY
     );
+  }
+
+  onWindowMouseMove(e) {
+    // If mouse down on child canvas
+    if (!this.canvas.isMouseDown) return;
+
+    console.log(e);
+    this.$state.chart.handleMouseRangeChange(e.movementX, e.movementY);
   }
 }
