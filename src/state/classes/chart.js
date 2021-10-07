@@ -24,7 +24,6 @@ export default class ChartState extends EventEmitter {
     this.range = [];
     this.visibleData = [];
     this.visibleScales = { x: [], y: [] };
-    this.dimensions = {};
     this.subcharts = {
       main: undefined,
       xScale: undefined,

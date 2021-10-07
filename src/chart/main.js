@@ -89,6 +89,7 @@ export default class Main {
   }
 
   onMouseMove(e) {
+    console.log(e.offsetX, e.offsetY);
     this.$state.global.crosshair.updateCrosshair(
       this.$state.chart,
       e.offsetX,
