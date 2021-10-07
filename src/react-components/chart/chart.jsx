@@ -13,7 +13,7 @@ export default class Chart extends React.Component {
 
     this.state = {
       id: this.props.id,
-      indicators: {},
+      indicators: GlobalState.charts.get(this.props.id).indicators,
     };
 
     this.subcharts = {
