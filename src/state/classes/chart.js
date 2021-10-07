@@ -280,6 +280,7 @@ export default class ChartState extends EventEmitter {
   onNewCanvas() {
     const { main, xScale, yScale } = this.$global.ui.charts[this.id].subcharts;
 
+    this.$global.layout.resize();
     this.subcharts.main.setCanvasElement(main.current);
     this.subcharts.xScale.canvas.setCanvasElement(xScale.current);
     this.subcharts.yScale.canvas.setCanvasElement(yScale.current);
