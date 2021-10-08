@@ -26,15 +26,18 @@ export default class Chart extends React.Component {
     };
 
     this.chartContainer = new React.createRef();
-    GlobalState.addEventListener("set-selected-chart-id", (id) => {
-      if (this.state.id !== id) {
-        if (this.state.isFocused) {
-          this.setState({ isFocused: false });
+    this.setSelectedChartListener = GlobalState.addEventListener(
+      "set-selected-chart-id",
+      (id) => {
+        if (this.state.id !== id) {
+          if (this.state.isFocused) {
+            this.setState({ isFocused: false });
+          }
+          return;
         }
-        return;
+        this.setState({ isFocused: true });
       }
-      this.setState({ isFocused: true });
-    });
+    );
   }
 
   componentDidMount() {
@@ -54,6 +57,13 @@ export default class Chart extends React.Component {
   componentDidUpdate() {
     const { clientWidth, clientHeight } = this.chartContainer.current;
     GlobalState.layout.updateSize(this.state.id, clientWidth, clientHeight);
+  }
+
+  componentWillUnmount() {
+    GlobalState.removeEventListener(
+      "set-selected-chart-id",
+      this.setSelectedChartListener
+    );
   }
 
   addIndicator(renderingQueueId, indicator) {
