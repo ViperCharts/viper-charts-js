@@ -155,6 +155,18 @@ export default class ChartState extends EventEmitter {
     const ySpread5P = (max - min) * 0.05;
     this.range = [start, end, min - ySpread5P, max + ySpread5P];
 
+    // If this chart is in synced mode and other charts are also in sync mode,
+    // set their scales to ours
+    if (this.settings.syncRange) {
+      for (const chartId in this.$global.charts) {
+        // Skip calling setVisibleRange on chart if self
+        if (chartId === this.id) continue;
+        const chart = this.$global.charts[chartId];
+        if (!chart.settings.syncRange) continue;
+        chart.setVisibleRange({ start, end }, callee);
+      }
+    }
+
     this.buildXAndYVisibleScales();
   }
 

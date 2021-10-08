@@ -8,7 +8,7 @@ export default class Indicator extends React.Component {
   constructor(props) {
     super(props);
 
-    this.chart = GlobalState.charts.get(props.chartId);
+    this.chart = GlobalState.charts[props.chartId];
   }
 
   toggleVisibility() {

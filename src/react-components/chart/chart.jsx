@@ -14,7 +14,7 @@ export default class Chart extends React.Component {
 
     this.state = {
       id: this.props.id,
-      indicators: GlobalState.charts.get(this.props.id).indicators,
+      indicators: GlobalState.charts[this.props.id].indicators,
 
       isFocused: GlobalState.selectedChartId === this.props.id,
     };
@@ -40,7 +40,7 @@ export default class Chart extends React.Component {
   componentDidMount() {
     const { clientWidth, clientHeight } = this.chartContainer.current;
     GlobalState.layout.addChart(this.state.id, clientWidth, clientHeight);
-    const chart = GlobalState.charts.get(this.state.id);
+    const chart = GlobalState.charts[this.state.id];
 
     // If React component is re-mounting on an existing initialized chart state
     if (chart.isInitialized) {
@@ -111,7 +111,7 @@ export default class Chart extends React.Component {
   }
 
   renderFocusedChart() {
-    const multipleCharts = GlobalState.charts.size > 1;
+    const multipleCharts = Object.keys(GlobalState.charts).length > 1;
     return this.state.isFocused && multipleCharts ? (
       <div className="chart__focused"></div>
     ) : null;

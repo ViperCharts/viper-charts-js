@@ -8,7 +8,7 @@ export default class ChartSettings extends React.Component {
   constructor(props) {
     super(props);
 
-    this.chart = GlobalState.charts.get(this.props.chartId);
+    this.chart = GlobalState.charts[this.props.chartId];
     this.state = {
       settings: this.chart.settings,
     };
@@ -16,7 +16,6 @@ export default class ChartSettings extends React.Component {
 
   updateChartSetting(setting, value) {
     this.chart.updateSettings({ [setting]: value });
-    console.log(this.state.settings[setting]);
   }
 
   render() {

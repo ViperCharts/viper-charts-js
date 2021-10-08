@@ -52,7 +52,8 @@ export default class CrosshairState extends EventEmitter {
     this.price = Math.round(price);
 
     // Loop through all charts and get x and y pos using timestamp and price
-    for (chart of Array.from(this.$global.charts.values())) {
+    for (const chartId in this.$global.charts) {
+      chart = this.$global.charts[chartId];
       if (!chart.isInitialized) continue;
       this.crosshairs[chart.id] = {
         x: chart.getXCoordByTimestamp(this.timestamp),

@@ -12,7 +12,7 @@ class GlobalState extends EventEmitter {
   constructor() {
     super();
     this.selectedChartId = null;
-    this.charts = new Map();
+    this.charts = {};
     this.settings = new SettingsState({ $global: this });
     this.crosshair = new CrosshairState({ $global: this });
     this.ui = new UIState({ $global: this });
@@ -32,10 +32,10 @@ class GlobalState extends EventEmitter {
 
   createChart() {
     const chart = new ChartState({ $global: this });
-    this.charts.set(chart.id, chart);
+    this.charts[chart.id] = chart;
     this.ui.app.addChart(chart);
     this.selectedChartId = chart.id;
-    return this.charts.get(chart.id);
+    return this.charts[chart.id];
   }
 
   setSelectedChartId(id) {
