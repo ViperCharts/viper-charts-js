@@ -48,6 +48,11 @@ export default class Main {
       this.$state.chart.addIndicator(Indicators.map.get("candlestick"));
       this.$state.chart.addIndicator(Indicators.map.get("volume-by-side"));
     }
+
+    this.$state.global.events.addEventListener(
+      "mousemove",
+      this.onWindowMouseMove.bind(this)
+    );
   }
 
   setCanvasElement(canvas) {
@@ -77,10 +82,6 @@ export default class Main {
     canvas.addEventListener(
       "mouseenter",
       () => (this.$state.global.crosshair.visible = true)
-    );
-    this.$state.global.events.addEventListener(
-      "mousemove",
-      this.onWindowMouseMove.bind(this)
     );
 
     this.canvas.setCanvasElement(canvas);
