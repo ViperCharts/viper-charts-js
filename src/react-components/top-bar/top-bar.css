@@ -24,6 +24,10 @@ button.top-bar-item {
   min-width: 32px;
 }
 
+.top-bar-seperator {
+  flex-grow: 1;
+}
+
 button.top-bar-item:hover {
   background: rgb(70, 70, 70);
 }

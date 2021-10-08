@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import GlobalState from "../../state/global";
+import EventEmitter from "../../events/event_emitter";
 
 import Modal from "../../react-components/modal/modal";
 import Chart from "../../react-components/chart/chart";
@@ -82,15 +82,28 @@ class App extends React.Component {
   }
 }
 
-export default class UIState {
+export default class UIState extends EventEmitter {
   constructor({ $global }) {
+    super();
+
     this.$global = $global;
 
     this.app = undefined;
     this.charts = {};
+
+    this.state = {
+      isGridEditMode: false,
+    };
   }
 
   init() {
     this.app = ReactDOM.render(<App />, document.getElementById("app"));
+  }
+
+  setState(updates) {
+    for (const key in updates) {
+      this.state[key] = updates[key];
+    }
+    this.app.forceUpdate();
   }
 }

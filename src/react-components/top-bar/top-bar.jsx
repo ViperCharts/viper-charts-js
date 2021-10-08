@@ -13,20 +13,24 @@ export default class TopBar extends React.Component {
     GlobalState.ui.app.setModal("indicators");
   }
 
-  addChart() {
-    const chart = GlobalState.createChart.bind(GlobalState)();
-  }
-
   render() {
+    const { isGridEditMode } = GlobalState.ui.state;
+
     return (
       <div className="top-bar">
         <button className="top-bar-item">🐍</button>
         <button onClick={this.showIndicatorsModal} className="top-bar-item">
           Indicators
         </button>
-        <button onClick={this.addChart} className="top-bar-item">
-          <i className="gg-add"></i>
-          Chart
+        <div className="top-bar-seperator"></div>
+        <button
+          onClick={() =>
+            GlobalState.ui.setState({ isGridEditMode: !isGridEditMode })
+          }
+          className="top-bar-item"
+        >
+          <i className="gg-display-grid"></i>
+          {!isGridEditMode ? "Grid Locked" : "Grid Edit"}
         </button>
       </div>
     );

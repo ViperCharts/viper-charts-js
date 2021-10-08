@@ -14,6 +14,8 @@ export default class Grid extends React.Component {
 
     this.state = {
       boxes: [],
+
+      showAddChartHooks: false,
     };
 
     this.grid = React.createRef();
@@ -102,24 +104,26 @@ export default class Grid extends React.Component {
           height: `${box.height}%`,
         }}
       >
-        <div className="grid-box-controls">
-          <div
-            onClick={() => this.addBoxToSide(box, "left")}
-            className="grid-box-controls-left"
-          ></div>
-          <div
-            onClick={() => this.addBoxToSide(box, "top")}
-            className="grid-box-controls-top"
-          ></div>
-          <div
-            onClick={() => this.addBoxToSide(box, "right")}
-            className="grid-box-controls-right"
-          ></div>
-          <div
-            onClick={() => this.addBoxToSide(box, "bottom")}
-            className="grid-box-controls-bottom"
-          ></div>
-        </div>
+        {GlobalState.ui.state.isGridEditMode ? (
+          <div className="grid-box-controls">
+            <div
+              onClick={() => this.addBoxToSide(box, "left")}
+              className="grid-box-controls-left"
+            ></div>
+            <div
+              onClick={() => this.addBoxToSide(box, "top")}
+              className="grid-box-controls-top"
+            ></div>
+            <div
+              onClick={() => this.addBoxToSide(box, "right")}
+              className="grid-box-controls-right"
+            ></div>
+            <div
+              onClick={() => this.addBoxToSide(box, "bottom")}
+              className="grid-box-controls-bottom"
+            ></div>
+          </div>
+        ) : null}
 
         <div
           style={{

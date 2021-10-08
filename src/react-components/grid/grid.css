@@ -19,7 +19,7 @@
   position: absolute;
   cursor: pointer;
   transition-duration: 50ms;
-  z-index: 1001;
+  z-index: 99;
 }
 
 .grid-box-controls > div:hover {
