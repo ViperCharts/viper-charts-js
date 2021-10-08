@@ -163,7 +163,14 @@ export default class ChartState extends EventEmitter {
         if (chartId === this.id) continue;
         const chart = this.$global.charts[chartId];
         if (!chart.settings.syncRange) continue;
-        chart.pixelsPerElement = this.pixelsPerElement;
+
+        // Update charts pixels per element
+        const { width: w1 } =
+          this.$global.layout.chartDimensions[chart.id].main;
+        const { width: w2 } = this.$global.layout.chartDimensions[this.id].main;
+        const diff = w1 / w2;
+        console.log(diff);
+        chart.pixelsPerElement = this.pixelsPerElement * diff;
         chart.setVisibleRange({ start, end }, movedId);
       }
     }
