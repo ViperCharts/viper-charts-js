@@ -29,6 +29,10 @@ export default class ChartState extends EventEmitter {
       xScale: undefined,
       yScale: undefined,
     };
+    this.settings = {
+      syncRange: false,
+      syncWithCrosshair: "",
+    };
   }
 
   init() {
@@ -265,5 +269,10 @@ export default class ChartState extends EventEmitter {
     this.subcharts.main.setCanvasElement(main.current);
     this.subcharts.xScale.canvas.setCanvasElement(xScale.current);
     this.subcharts.yScale.canvas.setCanvasElement(yScale.current);
+  }
+
+  updateSettings(updates) {
+    Object.assign(this.settings, updates);
+    this.fireEvent("update-settings", updates);
   }
 }

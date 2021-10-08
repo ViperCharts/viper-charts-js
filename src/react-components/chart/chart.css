@@ -40,6 +40,12 @@
   left: 0;
 }
 
+.top-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
 .indicator-list {
   display: flex;
   flex-direction: column;

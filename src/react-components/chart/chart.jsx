@@ -3,6 +3,7 @@ import React from "react";
 import GlobalState from "../../state/global";
 
 import Indicator from "./indicator/indicator";
+import ChartSettings from "./chart-settings/chart-settings";
 
 import "./chart.css";
 
@@ -94,6 +95,9 @@ export default class Chart extends React.Component {
           <div className="overlay">
             <div className="top-left">
               <div className="indicator-list">{this.renderIndicators()}</div>
+            </div>
+            <div className="top-right">
+              <ChartSettings chartId={this.state.id} />
             </div>
           </div>
         </div>

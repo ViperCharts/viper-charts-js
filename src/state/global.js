@@ -6,12 +6,14 @@ import CrosshairState from "./classes/crosshair";
 import UIState from "./classes/ui";
 import DataState from "./classes/data";
 import EventsState from "./classes/events";
+import SettingsState from "./classes/settings";
 
 class GlobalState extends EventEmitter {
   constructor() {
     super();
     this.selectedChartId = null;
     this.charts = new Map();
+    this.settings = new SettingsState({ $global: this });
     this.crosshair = new CrosshairState({ $global: this });
     this.ui = new UIState({ $global: this });
     this.layout = new LayoutState({ $global: this });
@@ -20,6 +22,7 @@ class GlobalState extends EventEmitter {
   }
 
   init() {
+    this.settings.init();
     this.crosshair.init();
     this.ui.init();
     this.layout.init();
