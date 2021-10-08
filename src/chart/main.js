@@ -33,6 +33,7 @@ export default class Main {
       `resize-${this.$state.chart.id}`,
       ({ main }) => {
         this.canvas.setWidth(main.width);
+        this.canvas.setHeight(main.height);
       }
     );
 

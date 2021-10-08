@@ -77,7 +77,9 @@ export default class Chart extends React.Component {
    * When user clicks chart, set as selected chart
    */
   onFocusChart() {
-    GlobalState.setSelectedChartId(this.state.id);
+    if (!this.state.isFocused) {
+      GlobalState.setSelectedChartId(this.state.id);
+    }
   }
 
   render() {
@@ -87,7 +89,7 @@ export default class Chart extends React.Component {
         ref={this.chartContainer}
         className="chart"
       >
-        {this.state.isFocused ? <div className="chart__focused"></div> : null}
+        {this.renderFocusedChart()}
         <div className="overlay-padding">
           <div className="overlay">
             <div className="top-left">
@@ -102,6 +104,13 @@ export default class Chart extends React.Component {
         </div>
       </div>
     );
+  }
+
+  renderFocusedChart() {
+    const multipleCharts = GlobalState.charts.size > 1;
+    return this.state.isFocused && multipleCharts ? (
+      <div className="chart__focused"></div>
+    ) : null;
   }
 
   renderIndicators() {
