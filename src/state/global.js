@@ -34,6 +34,11 @@ class GlobalState extends EventEmitter {
     this.selectedChartId = chart.id;
     return this.charts.get(chart.id);
   }
+
+  setSelectedChartId(id) {
+    this.selectedChartId = id;
+    this.fireEvent("set-selected-chart-id", id);
+  }
 }
 
 export default new GlobalState();

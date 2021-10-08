@@ -105,7 +105,6 @@ export default class Main {
       start += change;
       end += change;
 
-      console.log(change);
       this.$state.chart.setVisibleRange({ start, end });
     }
 

@@ -14,6 +14,8 @@ export default class Chart extends React.Component {
     this.state = {
       id: this.props.id,
       indicators: GlobalState.charts.get(this.props.id).indicators,
+
+      isFocused: GlobalState.selectedChartId === this.props.id,
     };
 
     this.subcharts = {
@@ -23,6 +25,15 @@ export default class Chart extends React.Component {
     };
 
     this.chartContainer = new React.createRef();
+    GlobalState.addEventListener("set-selected-chart-id", (id) => {
+      if (this.state.id !== id) {
+        if (this.state.isFocused) {
+          this.setState({ isFocused: false });
+        }
+        return;
+      }
+      this.setState({ isFocused: true });
+    });
   }
 
   componentDidMount() {
@@ -62,9 +73,21 @@ export default class Chart extends React.Component {
     this.setState(() => (this.state.indicators = indicators));
   }
 
+  /**
+   * When user clicks chart, set as selected chart
+   */
+  onFocusChart() {
+    GlobalState.setSelectedChartId(this.state.id);
+  }
+
   render() {
     return (
-      <div ref={this.chartContainer} className="chart">
+      <div
+        onMouseDown={this.onFocusChart.bind(this)}
+        ref={this.chartContainer}
+        className="chart"
+      >
+        {this.state.isFocused ? <div className="chart__focused"></div> : null}
         <div className="overlay-padding">
           <div className="overlay">
             <div className="top-left">

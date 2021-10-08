@@ -34,8 +34,8 @@ export default class ChartState extends EventEmitter {
   init() {
     if (this.isInitialized) return;
 
-    this.$global.layout.addEventListener(`resize-${this.id}`, ({ width }) => {
-      this.resizeXRange(0, width);
+    this.$global.layout.addEventListener(`resize-${this.id}`, ({ main }) => {
+      this.resizeXRange(0, main.width);
     });
 
     const $state = {
