@@ -32,6 +32,7 @@ export default class Grid extends React.Component {
 
   addBoxToSide(box, side) {
     const oldBox = {
+      side: box.side,
       id: Utils.uniqueId(),
       top: 0,
       left: 0,
@@ -41,6 +42,7 @@ export default class Grid extends React.Component {
       children: [],
     };
     const newBox = {
+      side,
       id: Utils.uniqueId(),
       top: 0,
       left: 0,
@@ -75,6 +77,7 @@ export default class Grid extends React.Component {
 
     const { id } = GlobalState.createChart();
     newBox.chartId = id;
+    delete box.chartId;
 
     const { boxes } = this.state;
     box.children = [oldBox, newBox];
@@ -135,11 +138,60 @@ export default class Grid extends React.Component {
           }}
         >
           <div className="grid">
-            <Chart id={box.chartId} style={{ width: "100%", height: "100%" }} />
+            {box.chartId ? (
+              <div style={{ padding: "2px", width: "100%", height: "100%" }}>
+                <Chart id={box.chartId} />
+              </div>
+            ) : null}
+            {box.children.length ? this.renderBreakpoint(box) : null}
             {box.children.map(this.renderBox.bind(this))}
           </div>
         </div>
       </div>
+    );
+  }
+
+  renderBreakpoint(box) {
+    const parent = box.children[0];
+    const child = box.children[1];
+
+    const bp = {
+      top: 0,
+      left: 0,
+      width: 0,
+      height: 0,
+      cursor: "",
+    };
+
+    if (child.side === "right") {
+      bp.left = child.width;
+      bp.height = child.height;
+      bp.cursor = "ew-resize";
+    } else if (child.side === "bottom") {
+      bp.top = parent.height;
+      bp.width = child.width;
+      bp.cursor = "ns-resize";
+    } else if (child.side === "left") {
+      bp.left = child.width;
+      bp.height = child.height;
+      bp.cursor = "ew-resize";
+    } else if (child.side === "top") {
+      bp.top = child.height;
+      bp.width = child.width;
+      bp.cursor = "ns-resize";
+    }
+
+    return (
+      <div
+        className="grid-breakpoint"
+        style={{
+          top: `calc(${bp.top}% - 2px)`,
+          left: `calc(${bp.left}% - 2px)`,
+          width: bp.width > 0 ? `${bp.width}%` : "4px",
+          height: bp.height > 0 ? `${bp.height}%` : "4px",
+          cursor: bp.cursor,
+        }}
+      ></div>
     );
   }
 }

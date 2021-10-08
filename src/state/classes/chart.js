@@ -165,10 +165,13 @@ export default class ChartState extends EventEmitter {
         if (!chart.settings.syncRange) continue;
 
         // Update charts pixels per element
-        const { width: w1 } =
-          this.$global.layout.chartDimensions[chart.id].main;
-        const { width: w2 } = this.$global.layout.chartDimensions[this.id].main;
+        const dimensions = this.$global.layout.chartDimensions;
+        const { width: w1 } = dimensions[chart.id].main;
+        const { width: w2 } = dimensions[this.id].main;
         const diff = w1 / w2;
+
+        // Calculate pixels per element relative to chart layout. This is because
+        // different charts can have different viewpoints
         chart.pixelsPerElement = this.pixelsPerElement * diff;
         chart.setVisibleRange({ start, end }, movedId);
       }
