@@ -88,7 +88,7 @@ export default class Chart extends React.Component {
       <div
         onMouseDown={this.onFocusChart.bind(this)}
         ref={this.chartContainer}
-        className="chart"
+        className="chart v-noselect"
       >
         {this.renderFocusedChart()}
         <div className="overlay-padding">

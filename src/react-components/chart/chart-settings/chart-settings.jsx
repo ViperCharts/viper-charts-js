@@ -12,6 +12,8 @@ export default class ChartSettings extends React.Component {
     this.state = {
       settings: this.chart.settings,
     };
+
+    this.chart.addEventListener("update-settings", () => this.forceUpdate());
   }
 
   updateChartSetting(setting, value) {
@@ -23,8 +25,8 @@ export default class ChartSettings extends React.Component {
       <div className="chart-settings">
         <label>
           <input
-            value={this.state.settings.syncRange}
-            onClick={() =>
+            checked={this.state.settings.syncRange}
+            onChange={() =>
               this.updateChartSetting(
                 "syncRange",
                 !this.state.settings.syncRange

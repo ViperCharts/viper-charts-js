@@ -119,7 +119,7 @@ export default class ChartState extends EventEmitter {
     });
   }
 
-  setVisibleRange({ start, end }) {
+  setVisibleRange({ start, end }, movedId = this.id) {
     const visibleData = [];
 
     const { data } = Array.from(this.$global.data.datasets.values())[0];
@@ -157,13 +157,14 @@ export default class ChartState extends EventEmitter {
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours
-    if (this.settings.syncRange) {
+    if (this.settings.syncRange && movedId === this.id) {
       for (const chartId in this.$global.charts) {
         // Skip calling setVisibleRange on chart if self
         if (chartId === this.id) continue;
         const chart = this.$global.charts[chartId];
         if (!chart.settings.syncRange) continue;
-        chart.setVisibleRange({ start, end }, callee);
+        chart.pixelsPerElement = this.pixelsPerElement;
+        chart.setVisibleRange({ start, end }, movedId);
       }
     }
 
