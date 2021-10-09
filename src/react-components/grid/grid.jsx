@@ -16,13 +16,20 @@ export default class Grid extends React.Component {
       boxes: [],
 
       showAddChartHooks: false,
+      breakpointResizingBox: undefined,
     };
 
     this.grid = React.createRef();
+    this.boxRefs = {};
 
     GlobalState.layout.addEventListener(
       "set-layout",
       this.onSetLayout.bind(this)
+    );
+
+    GlobalState.events.addEventListener(
+      "mouseup",
+      () => (this.breakpointResizingBox = undefined)
     );
   }
 
@@ -31,8 +38,9 @@ export default class Grid extends React.Component {
   }
 
   addBoxToSide(box, side) {
-    const oldBox = {
-      side: box.side,
+    console.log(box);
+
+    const box1 = {
       id: Utils.uniqueId(),
       top: 0,
       left: 0,
@@ -41,7 +49,7 @@ export default class Grid extends React.Component {
       chartId: box.chartId,
       children: [],
     };
-    const newBox = {
+    const box2 = {
       side,
       id: Utils.uniqueId(),
       top: 0,
@@ -50,38 +58,119 @@ export default class Grid extends React.Component {
       height: 100,
       children: [],
     };
+    this.boxRefs[box2.id] = React.createRef();
 
     if (side === "left") {
-      oldBox.left = 50;
-      oldBox.width = 50;
-      newBox.width = 50;
+      box1.side = "right";
+      box1.left = 50;
+      box1.width = 50;
+      box2.width = 50;
     }
 
     if (side === "top") {
-      oldBox.top = 50;
-      oldBox.height = 50;
-      newBox.height = 50;
+      box1.side = "bottom";
+      box1.top = 50;
+      box1.height = 50;
+      box2.height = 50;
     }
 
     if (side === "right") {
-      newBox.left = 50;
-      oldBox.width = 50;
-      newBox.width = 50;
+      box1.side = "left";
+      box2.left = 50;
+      box1.width = 50;
+      box2.width = 50;
     }
 
     if (side === "bottom") {
-      newBox.top = 50;
-      oldBox.height = 50;
-      newBox.height = 50;
+      box1.side = "top";
+      box2.top = 50;
+      box1.height = 50;
+      box2.height = 50;
     }
 
     const { id } = GlobalState.createChart();
-    newBox.chartId = id;
+    box2.chartId = id;
     delete box.chartId;
 
     const { boxes } = this.state;
-    box.children = [oldBox, newBox];
+
+    if (side === "top" || side === "left") {
+      box.children = [box2, box1];
+    } else {
+      box.children = [box1, box2];
+    }
+
     GlobalState.layout.setLayout(boxes);
+  }
+
+  onClickBreakpoint(box) {
+    this.breakpointResizingBox = box;
+  }
+
+  // TODO convert to on mouse move capture to get child elements
+  onMouseMove({ movementX, movementY }) {
+    if (!this.breakpointResizingBox) return;
+    const [box1, box2] = this.breakpointResizingBox.children;
+
+    // If horizontal
+    if (box1.side === "left") {
+      let width1 = this.boxRefs[box1.id].current.clientWidth;
+      let width2 = this.boxRefs[box2.id].current.clientWidth;
+      const width = width1 + width2;
+
+      if (movementX < 0) {
+        width1 += movementX;
+        width2 -= movementX;
+      } else if (movementX > 0) {
+        width1 += movementX;
+        width2 -= movementX;
+      }
+
+      const wperc1 = (width1 / width) * 100;
+
+      this.breakpointResizingBox.children = [
+        {
+          ...box1,
+          width: wperc1,
+        },
+        {
+          ...box2,
+          left: wperc1,
+          width: (width2 / width) * 100,
+        },
+      ];
+    }
+
+    // If vertical
+    else {
+      let height1 = this.boxRefs[box1.id].current.clientHeight;
+      let height2 = this.boxRefs[box2.id].current.clientHeight;
+      const height = height1 + height2;
+
+      if (movementY < 0) {
+        height1 += movementY;
+        height2 -= movementY;
+      } else if (movementY > 0) {
+        height1 += movementY;
+        height2 -= movementY;
+      }
+
+      const hperc1 = (height1 / height) * 100;
+
+      this.breakpointResizingBox.children = [
+        {
+          ...box1,
+          height: hperc1,
+        },
+        {
+          ...box2,
+          top: hperc1,
+          height: (height2 / height) * 100,
+        },
+      ];
+    }
+
+    this.forceUpdate();
   }
 
   render() {
@@ -89,7 +178,11 @@ export default class Grid extends React.Component {
     if (!chartKeys.length) return <div></div>;
 
     return (
-      <div ref={this.grid} className="grid">
+      <div
+        ref={this.grid}
+        onMouseMove={this.onMouseMove.bind(this)}
+        className="grid"
+      >
         {this.state.boxes.map(this.renderBox.bind(this))}
       </div>
     );
@@ -99,6 +192,7 @@ export default class Grid extends React.Component {
     return (
       <div
         className="grid-box"
+        ref={this.boxRefs[box.id]}
         key={box.id}
         style={{
           top: `${box.top}%`,
@@ -152,8 +246,7 @@ export default class Grid extends React.Component {
   }
 
   renderBreakpoint(box) {
-    const parent = box.children[0];
-    const child = box.children[1];
+    const [box1] = box.children;
 
     const bp = {
       top: 0,
@@ -163,27 +256,20 @@ export default class Grid extends React.Component {
       cursor: "",
     };
 
-    if (child.side === "right") {
-      bp.left = child.width;
-      bp.height = child.height;
+    if (box1.side === "left") {
+      bp.left = box1.width;
+      bp.height = box1.height;
       bp.cursor = "ew-resize";
-    } else if (child.side === "bottom") {
-      bp.top = parent.height;
-      bp.width = child.width;
-      bp.cursor = "ns-resize";
-    } else if (child.side === "left") {
-      bp.left = child.width;
-      bp.height = child.height;
-      bp.cursor = "ew-resize";
-    } else if (child.side === "top") {
-      bp.top = child.height;
-      bp.width = child.width;
+    } else if (box1.side === "top") {
+      bp.top = box1.height;
+      bp.width = box1.width;
       bp.cursor = "ns-resize";
     }
 
     return (
       <div
         className="grid-breakpoint"
+        onMouseDown={() => this.onClickBreakpoint(box)}
         style={{
           top: `calc(${bp.top}% - 2px)`,
           left: `calc(${bp.left}% - 2px)`,
