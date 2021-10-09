@@ -34,7 +34,19 @@ export default class Grid extends React.Component {
   }
 
   onSetLayout(layout) {
-    this.setState({ boxes: layout });
+    const loop = (children) => {
+      for (let child of children) {
+        // For each child, do this
+        this.boxRefs[child.id] = React.createRef();
+
+        if (child.children.length) {
+          loop(child.children);
+        }
+      }
+      return children;
+    };
+
+    this.setState({ boxes: loop(layout) });
   }
 
   addBoxToSide(box, side) {
