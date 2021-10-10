@@ -50,8 +50,6 @@ export default class Grid extends React.Component {
   }
 
   addBoxToSide(box, side) {
-    console.log(box);
-
     const box1 = {
       id: Utils.uniqueId(),
       top: 0,

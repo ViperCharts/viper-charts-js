@@ -43,15 +43,15 @@ export default class Chart extends React.Component {
   componentDidMount() {
     const { clientWidth, clientHeight } = this.chartContainer.current;
     GlobalState.layout.addChart(this.state.id, clientWidth, clientHeight);
-    const chart = GlobalState.charts[this.state.id];
+    this.chart = GlobalState.charts[this.state.id];
 
     // If React component is re-mounting on an existing initialized chart state
-    if (chart.isInitialized) {
-      chart.onNewCanvas();
+    if (this.chart.isInitialized) {
+      this.chart.onNewCanvas();
       return;
     }
 
-    chart.init();
+    this.chart.init();
   }
 
   componentDidUpdate() {
@@ -93,6 +93,14 @@ export default class Chart extends React.Component {
     }
   }
 
+  onDoubleClick(chart) {
+    if (chart === "yScale" && !this.chart.settings.lockedYScale) {
+      this.chart.settings.lockedYScale = true;
+      const [start, end] = this.chart.range;
+      this.chart.setVisibleRange({ start, end });
+    }
+  }
+
   render() {
     return (
       <div
@@ -114,7 +122,11 @@ export default class Chart extends React.Component {
         <div className="chart-chart">
           <canvas className="chart-main" ref={this.subcharts.main}></canvas>
           <canvas className="chart-x-axis" ref={this.subcharts.xScale}></canvas>
-          <canvas className="chart-y-axis" ref={this.subcharts.yScale}></canvas>
+          <canvas
+            onDoubleClick={() => this.onDoubleClick("yScale")}
+            className="chart-y-axis"
+            ref={this.subcharts.yScale}
+          ></canvas>
         </div>
       </div>
     );

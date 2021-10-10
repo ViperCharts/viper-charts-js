@@ -35,5 +35,23 @@ export default class TimeScale {
         this.canvas.setHeight(yScale.height);
       }
     );
+
+    this.$state.global.events.addEventListener(
+      "mousemove",
+      this.onWindowMouseMove.bind(this)
+    );
+  }
+
+  onWindowMouseMove({ movementY }) {
+    if (!this.canvas.isMouseDown) return;
+    if (movementY === 0) return;
+    this.$state.chart.updateSettings({ lockedYScale: false });
+    const { range } = this.$state.chart;
+    const delta = range[3] - range[2];
+    const delta10P = delta * 0.01;
+    const change = -movementY * delta10P;
+    range[2] += change;
+    range[3] -= change;
+    this.$state.chart.range = range;
   }
 }

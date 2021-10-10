@@ -32,6 +32,7 @@ export default class ChartState extends EventEmitter {
     this.settings = {
       syncRange: false,
       syncWithCrosshair: "",
+      lockedYScale: true,
     };
   }
 
@@ -143,17 +144,23 @@ export default class ChartState extends EventEmitter {
     }
 
     this.visibleData = visibleData;
+    this.range[0] = start;
+    this.range[1] = end;
 
-    // Calculate y axis by using candle low and highs
-    let max = 0;
-    let min = Infinity;
-    for (const candle of this.visibleData) {
-      if (candle.low < min) min = candle.low;
-      if (candle.high > max) max = candle.high;
+    // If chart y scale is locked
+    if (this.settings.lockedYScale) {
+      // Calculate y axis by using candle low and highs
+      let max = 0;
+      let min = Infinity;
+      for (const candle of this.visibleData) {
+        if (candle.low < min) min = candle.low;
+        if (candle.high > max) max = candle.high;
+      }
+
+      const ySpread5P = (max - min) * 0.05;
+      this.range[2] = min - ySpread5P;
+      this.range[3] = max + ySpread5P;
     }
-
-    const ySpread5P = (max - min) * 0.05;
-    this.range = [start, end, min - ySpread5P, max + ySpread5P];
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours

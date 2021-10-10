@@ -126,18 +126,28 @@ export default class Main {
     );
   }
 
-  onWindowMouseMove(e) {
+  onWindowMouseMove({ movementX, movementY }) {
     // If mouse down on child canvas
     if (!this.canvas.isMouseDown) return;
 
     let [start, end, min, max] = this.$state.chart.range;
 
     // Get how many candles moved
-    const candlesMoved = e.movementX / this.$state.chart.pixelsPerElement;
+    const candlesMoved = movementX / this.$state.chart.pixelsPerElement;
     const timeMoved = this.$state.chart.timeframe * candlesMoved;
 
     start -= timeMoved;
     end -= timeMoved;
+
+    if (!this.$state.chart.settings.lockedYScale && movementY !== 0) {
+      const yInView = max - min;
+      // Pixels per tick
+      const ppt = yInView / this.canvas.height;
+      const y = movementY;
+      const movement = y * ppt
+      this.$state.chart.range[2] += movement;
+      this.$state.chart.range[3] += movement;
+    }
 
     this.$state.chart.setVisibleRange({ start, end });
   }
