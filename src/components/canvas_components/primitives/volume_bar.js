@@ -41,6 +41,8 @@ export default class VolumeBar extends Layer {
         h,
       ]);
     }
+
+    this.lastRange = { ...r };
   }
 
   /**
