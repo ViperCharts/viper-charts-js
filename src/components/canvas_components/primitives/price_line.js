@@ -1,11 +1,11 @@
 import Layer from "../layer.js";
 
 export default class PriceLine extends Layer {
-  constructor({ $state, canvas, color }) {
+  constructor({ $state, canvas }) {
     super(canvas);
 
     this.$state = $state;
-    this.color = color;
+    this.color = "#fff";
   }
 
   draw() {
@@ -15,9 +15,9 @@ export default class PriceLine extends Layer {
       const nextCandle = this.$state.chart.visibleData[i + 1];
       const coords = [
         thisCandle.time,
-        thisCandle.close,
+        Math.floor(thisCandle.close),
         nextCandle.time,
-        nextCandle.close,
+        Math.floor(nextCandle.close),
       ];
 
       this.canvas.drawLineByPriceAndTime(this.color, coords);
