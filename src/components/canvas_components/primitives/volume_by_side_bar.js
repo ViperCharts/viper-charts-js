@@ -31,7 +31,9 @@ export default class VolumeBySideBar extends Layer {
       const color = delta >= 0 ? this.upColor : this.downColor;
 
       // Calculate pixels height of current candle
-      const maxHeight = this.screenHeightPerc * this.canvas.canvas.height;
+      const { main } =
+        this.$state.global.layout.chartDimensions[this.$state.chart.id];
+      const maxHeight = this.screenHeightPerc * main.height;
       const volumePerc = volume / this.maxVolumeOnScreen;
       const h = Math.floor(volumePerc * maxHeight);
       const deltaPerc = Math.abs(delta / this.maxVolumeOnScreen);
@@ -51,6 +53,8 @@ export default class VolumeBySideBar extends Layer {
         h2,
       ]);
     }
+
+    this.lastRange = { ...r };
   }
 
   /**
