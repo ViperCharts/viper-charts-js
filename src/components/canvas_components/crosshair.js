@@ -2,12 +2,16 @@ import Layer from "./layer";
 
 export default class Crosshair extends Layer {
   constructor({ $state, canvas }) {
-    super(canvas);
+    super({ canvas });
 
     this.$state = $state;
+
+    this.init(this.draw.bind(this));
   }
 
   draw() {
+    console.log("sdsa");
+
     if (!this.$state.global.crosshair.visible) return;
 
     // Draw horizontal line

@@ -2,9 +2,11 @@ import Layer from "./layer.js";
 
 export default class TimeSelected extends Layer {
   constructor({ $state, canvas }) {
-    super(canvas);
+    super({ canvas });
 
     this.$state = $state;
+
+    this.init(this.draw.bind(this));
   }
 
   draw() {

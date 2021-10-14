@@ -2,17 +2,19 @@ import Layer from "./layer.js";
 
 export default class LastPriceLine extends Layer {
   constructor({ $state, canvas }) {
-    super(canvas);
+    super({ $state, canvas });
 
     this.$state = $state;
 
     this.upColor = "#C4FF4966";
     this.downColor = "#FE3A6466";
+
+    this.consumers = ["close"];
+    this.init(this.draw.bind(this));
   }
 
-  draw() {
+  draw(data) {
     // TODO dont hard code
-    const { data } = Object.values(this.$state.global.data.datasets)[0];
     const newestCandle = data[data.length - 1];
     if (!newestCandle) return;
 

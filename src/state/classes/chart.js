@@ -68,6 +68,10 @@ export default class ChartState extends EventEmitter {
     this.isInitialized = true;
   }
 
+  addDataset(dataset) {
+    this.datasets.add(dataset);
+  }
+
   addIndicator(indicator) {
     const { canvas } = this.subcharts.main;
 
@@ -125,44 +129,46 @@ export default class ChartState extends EventEmitter {
   setVisibleRange({ start, end }, movedId = this.id) {
     const visibleData = [];
 
-    // TODO dont hard code
-    const { data } = Object.values(this.$global.data.datasets)[0];
+    if (this.datasets.size > 0) {
+      // TODO dont hard code
+      const { data } = Object.values(this.$global.data.datasets)[0];
 
-    // Start loop from right to find end candle
-    for (let i = data.length - 1; i > -1; i--) {
-      const candle = data[i];
-      const timestamp = candle.time;
+      // Start loop from right to find end candle
+      for (let i = data.length - 1; i > -1; i--) {
+        const candle = data[i];
+        const timestamp = candle.time;
 
-      // If right timestamp is not less than right view boundary
-      // *We minus the timeframe to the timstamp so we can get data for candles that may be mostly
-      // cut off screen
-      if (timestamp > end + this.timeframe / 2) continue;
+        // If right timestamp is not less than right view boundary
+        // *We minus the timeframe to the timstamp so we can get data for candles that may be mostly
+        // cut off screen
+        if (timestamp > end + this.timeframe / 2) continue;
 
-      visibleData.unshift(candle);
+        visibleData.unshift(candle);
 
-      // If last requried timestamp is reached
-      if (timestamp < start + this.timeframe / 2) {
-        break;
-      }
-    }
-
-    this.visibleData = visibleData;
-    this.range[0] = start;
-    this.range[1] = end;
-
-    // If chart y scale is locked
-    if (this.settings.lockedYScale) {
-      // Calculate y axis by using candle low and highs
-      let max = 0;
-      let min = Infinity;
-      for (const candle of this.visibleData) {
-        if (candle.low < min) min = candle.low;
-        if (candle.high > max) max = candle.high;
+        // If last requried timestamp is reached
+        if (timestamp < start + this.timeframe / 2) {
+          break;
+        }
       }
 
-      const ySpread5P = (max - min) * 0.05;
-      this.range[2] = min - ySpread5P;
-      this.range[3] = max + ySpread5P;
+      this.visibleData = visibleData;
+      this.range[0] = start;
+      this.range[1] = end;
+
+      // If chart y scale is locked
+      if (this.settings.lockedYScale) {
+        // Calculate y axis by using candle low and highs
+        let max = 0;
+        let min = Infinity;
+        for (const candle of this.visibleData) {
+          if (candle.low < min) min = candle.low;
+          if (candle.high > max) max = candle.high;
+        }
+
+        const ySpread5P = (max - min) * 0.05;
+        this.range[2] = min - ySpread5P;
+        this.range[3] = max + ySpread5P;
+      }
     }
 
     // If this chart is in synced mode and other charts are also in sync mode,
@@ -232,11 +238,11 @@ export default class ChartState extends EventEmitter {
    */
   setInitialVisibleRange() {
     const { width } = this.$global.layout.chartDimensions[this.id].main;
-    // TODO dont hard code
-    const { data } = Object.values(this.$global.data.datasets)[0];
 
     // End timestamp based on last element
-    const end = data[data.length - 1].time + this.timeframe * 5;
+    const end =
+      Math.floor(Date.now() / this.timeframe) * this.timeframe +
+      this.timeframe * 5;
 
     // Calculate start timestamp using width and pixelsPerElement
     const candlesInView = width / this.pixelsPerElement;

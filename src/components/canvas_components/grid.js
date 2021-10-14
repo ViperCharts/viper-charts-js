@@ -2,10 +2,12 @@ import Layer from "./layer.js";
 
 export default class Grid extends Layer {
   constructor({ $state, canvas }) {
-    super(canvas);
+    super({ canvas });
 
     this.$state = $state;
     this.color = "#434343";
+
+    this.init(this.draw.bind(this));
   }
 
   draw() {

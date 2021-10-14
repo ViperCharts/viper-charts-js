@@ -24,7 +24,7 @@ function nFormatter(num, digits) {
 
 export default class VolumeProfile extends Layer {
   constructor({ $state, canvas }) {
-    super(canvas);
+    super({ $state, canvas });
 
     this.$state = $state;
 
@@ -32,6 +32,9 @@ export default class VolumeProfile extends Layer {
     this.downColor = "#FE3A64";
 
     this.lastRange = this.$state.chart.range;
+
+    this.consumers = ["volumeProfile", "time"];
+    this.init(this.draw.bind(this));
   }
 
   draw() {

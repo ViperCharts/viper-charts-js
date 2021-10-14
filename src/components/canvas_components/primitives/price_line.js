@@ -2,10 +2,13 @@ import Layer from "../layer.js";
 
 export default class PriceLine extends Layer {
   constructor({ $state, canvas }) {
-    super(canvas);
+    super({ $state, canvas });
 
     this.$state = $state;
     this.color = "#fff";
+
+    this.consumers = ["time", "close"];
+    this.init(this.draw.bind(this));
   }
 
   draw() {

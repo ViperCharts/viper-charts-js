@@ -34,7 +34,7 @@ export default class LayoutState extends EventEmitter {
     this.$global = $global;
 
     this.datasets = {};
-    this.sources = [];
+    this.sources = {};
   }
 
   init() {}

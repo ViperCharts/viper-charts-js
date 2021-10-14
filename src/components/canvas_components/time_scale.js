@@ -47,11 +47,11 @@ export default class TimeScale {
 
 class TimeScaleLayer extends Layer {
   constructor({ $state, canvas }) {
-    super(canvas);
+    super({ canvas });
 
     this.$state = $state;
 
-    this.renderingQueueId = this.canvas.RE.addToQueue(this.draw.bind(this));
+    this.init(this.draw.bind(this));
   }
 
   /**

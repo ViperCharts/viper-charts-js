@@ -2,7 +2,7 @@ import Layer from "../layer.js";
 
 export default class VolumeBar extends Layer {
   constructor({ $state, canvas }) {
-    super(canvas);
+    super({ $state, canvas });
 
     this.$state = $state;
 
@@ -12,6 +12,9 @@ export default class VolumeBar extends Layer {
 
     this.maxVolumeOnScreen = this.getMaxVolumeOnScreen();
     this.lastRange = this.$state.chart.range;
+
+    this.consumers = ["volume"];
+    this.init(this.draw.bind(this));
   }
 
   draw() {

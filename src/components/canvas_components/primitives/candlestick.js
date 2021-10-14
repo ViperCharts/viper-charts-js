@@ -2,12 +2,15 @@ import Layer from "../layer.js";
 
 export default class Candlestick extends Layer {
   constructor({ $state, canvas }) {
-    super(canvas);
+    super({ $state, canvas });
 
     this.$state = $state;
 
     this.upColor = "#C4FF49";
     this.downColor = "#FE3A64";
+
+    this.consumers = ["time", "open", "high", "low", "close"];
+    this.init(this.draw.bind(this));
   }
 
   draw() {
