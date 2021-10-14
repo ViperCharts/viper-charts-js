@@ -13,7 +13,17 @@ class Dataset extends EventEmitter {
    * @param {array} updates
    */
   updateData(updates) {
-    // TODO
+    // Check if new data item
+    // TODO update all listeners to re-render this particular element
+  }
+
+  /**
+   * Request historical data from master
+   * @param {object { start: integer, end: integer }} timeRange Start and end time for data request
+   */
+  requestHistoricalData({ start, end }) {
+    const params = { id: this.id, start, end };
+    this.$global.api.fireEvent("request-historical-data", params);
   }
 }
 
@@ -23,14 +33,20 @@ export default class LayoutState extends EventEmitter {
 
     this.$global = $global;
 
-    this.datasets = new Map();
+    this.datasets = {};
+    this.sources = [];
   }
 
   init() {}
 
+  setAllDataSources(sources) {
+    this.sources = sources;
+    this.fireEvent("set-all-data-sources", this.sources);
+  }
+
   addDataset(id, name, data) {
     const dataset = new Dataset(id, name, data);
-    this.datasets.set(dataset.id, dataset);
+    this.datasets[dataset.id] = dataset;
     this.fireEvent("add-dataset", dataset);
   }
 }

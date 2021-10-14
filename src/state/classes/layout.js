@@ -56,8 +56,24 @@ export default class LayoutState extends EventEmitter {
   }
 
   setInitialLayout(layout) {
-    const { id } = this.$global.createChart();
-    layout[0].chartId = id;
+    // If no layout, create default layout with one chart on 15m timeframe
+    if (!layout.length) {
+      const { id: chartId } = this.$global.createChart();
+      layout = [
+        {
+          id: Utils.uniqueId(),
+          chartId,
+          top: 0,
+          left: 0,
+          width: 100,
+          height: 100,
+          children: [],
+        },
+      ];
+    }
+
+    // Loop through all charts and create charts based on data
+
     this.setLayout(layout);
   }
 

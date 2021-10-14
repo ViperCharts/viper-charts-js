@@ -2,7 +2,7 @@ import Constants from "../../constants.js";
 
 import Utils from "../../utils.js";
 
-import Main from "../../chart/main.js";
+import Main from "../../components/canvas_components/main.js";
 import TimeScale from "../../components/canvas_components/time_scale.js";
 import PriceScale from "../../components/canvas_components/price_scale.js";
 
@@ -11,17 +11,18 @@ import StorageManager from "../../managers/storage.js";
 import EventEmitter from "../../events/event_emitter.ts";
 
 export default class ChartState extends EventEmitter {
-  constructor({ $global }) {
+  constructor({ $global, timeframe = Constants.MINUTE15 }) {
     super();
 
     this.$global = $global;
     this.isInitialized = false;
 
     this.id = Utils.uniqueId();
-    this.timeframe = Constants.MINUTE;
+    this.timeframe = timeframe;
     this.pixelsPerElement = 10;
     this.indicators = {};
     this.range = [];
+    this.datasets = new Set();
     this.visibleData = [];
     this.visibleScales = { x: [], y: [] };
     this.subcharts = {
@@ -85,6 +86,7 @@ export default class ChartState extends EventEmitter {
       id: indicator.id,
       name: indicator.name,
       visible: true,
+      dataset: "",
     };
 
     this.indicators[instance.renderingQueueId] = indi;
@@ -123,7 +125,8 @@ export default class ChartState extends EventEmitter {
   setVisibleRange({ start, end }, movedId = this.id) {
     const visibleData = [];
 
-    const { data } = Array.from(this.$global.data.datasets.values())[0];
+    // TODO dont hard code
+    const { data } = Object.values(this.$global.data.datasets)[0];
 
     // Start loop from right to find end candle
     for (let i = data.length - 1; i > -1; i--) {
@@ -229,7 +232,8 @@ export default class ChartState extends EventEmitter {
    */
   setInitialVisibleRange() {
     const { width } = this.$global.layout.chartDimensions[this.id].main;
-    const { data } = Array.from(this.$global.data.datasets.values())[0];
+    // TODO dont hard code
+    const { data } = Object.values(this.$global.data.datasets)[0];
 
     // End timestamp based on last element
     const end = data[data.length - 1].time + this.timeframe * 5;

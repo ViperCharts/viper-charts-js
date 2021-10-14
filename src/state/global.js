@@ -11,7 +11,12 @@ import SettingsState from "./classes/settings";
 class GlobalState extends EventEmitter {
   constructor() {
     super();
+
+    // This state
     this.selectedChartId = null;
+    this.api = null;
+
+    // Child states
     this.charts = {};
     this.settings = new SettingsState({ $global: this });
     this.crosshair = new CrosshairState({ $global: this });

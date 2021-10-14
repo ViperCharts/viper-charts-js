@@ -11,7 +11,8 @@ export default class LastPriceLine extends Layer {
   }
 
   draw() {
-    const { data } = Array.from(this.$state.global.data.datasets.values())[0];
+    // TODO dont hard code
+    const { data } = Object.values(this.$state.global.data.datasets)[0];
     const newestCandle = data[data.length - 1];
     if (!newestCandle) return;
 

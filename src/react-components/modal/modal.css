@@ -42,3 +42,8 @@
   border: 0;
   cursor: pointer;
 }
+
+.modal-body {
+  padding: 1rem;
+  padding-top: 0;
+}

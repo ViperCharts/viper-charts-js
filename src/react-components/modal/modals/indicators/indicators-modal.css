@@ -1,0 +1,25 @@
+.indicators-modal button {
+  outline: 0;
+  background: rgb(75, 75, 75);
+  border: 0;
+  color: rgb(160, 160, 160);
+  cursor: pointer;
+}
+
+.source {
+  width: 100%;
+}
+
+button.source-expanded {
+  background: rgb(160, 160, 160);
+  color: rgb(75, 75, 75);
+}
+
+.datasets {
+  display: flex;
+  margin-right: -1rem;
+}
+
+.dataset {
+  margin-right: 1rem;
+}

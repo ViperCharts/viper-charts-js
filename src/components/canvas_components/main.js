@@ -1,12 +1,12 @@
-import Canvas from "../components/canvas.js";
-import Background from "../components/canvas_components/background.js";
-import Grid from "../components/canvas_components/grid.js";
-import Crosshair from "../components/canvas_components/crosshair.js";
-import LastPriceLine from "../components/canvas_components/last_price_line.js";
+import Canvas from "../canvas.js";
+import Background from "./background.js";
+import Grid from "./grid.js";
+import Crosshair from "./crosshair.js";
+import LastPriceLine from "./last_price_line.js";
 
-import Indicators, { indicators } from "../components/indicators.js";
+import Indicators, { indicators } from "../indicators.js";
 
-import StorageManager from "../managers/storage.js";
+import StorageManager from "../../managers/storage.js";
 
 export default class Main {
   constructor({ $state }) {
@@ -40,14 +40,14 @@ export default class Main {
     // Load initial indicators TEMP REMOVED
     // const settings = StorageManager.getChartSettings();
     const settings = {};
-    if (settings.indicators) {
-      for (const indicator of settings.indicators) {
-        this.$state.chart.addIndicator(Indicators.map.get(indicator.id));
-      }
-    } else {
-      this.$state.chart.addIndicator(Indicators.map.get("candlestick"));
-      this.$state.chart.addIndicator(Indicators.map.get("volume-by-side"));
-    }
+    // if (settings.indicators) {
+    //   for (const indicator of settings.indicators) {
+    //     this.$state.chart.addIndicator(Indicators.map.get(indicator.id));
+    //   }
+    // } else {
+    //   this.$state.chart.addIndicator(Indicators.map.get("candlestick"));
+    //   this.$state.chart.addIndicator(Indicators.map.get("volume-by-side"));
+    // }
 
     this.$state.global.events.addEventListener(
       "mousemove",
@@ -144,7 +144,7 @@ export default class Main {
       // Pixels per tick
       const ppt = yInView / this.canvas.height;
       const y = movementY;
-      const movement = y * ppt
+      const movement = y * ppt;
       this.$state.chart.range[2] += movement;
       this.$state.chart.range[3] += movement;
     }
