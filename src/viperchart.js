@@ -8,10 +8,16 @@ export default class Chart extends EventEmitter {
   constructor(params = {}) {
     super();
 
-    const { layout = [], sources } = params;
+    const {
+      layout = [],
+      sources,
+      onRequestHistoricalData = async () => {},
+    } = params;
 
     this.$global = GlobalState;
     this.$global.api = this;
+    this.onRequestHistoricalData = onRequestHistoricalData;
+
     this.$global.init();
     this.setAllDataSources(sources);
     this.$global.layout.setInitialLayout(layout);
@@ -40,7 +46,6 @@ export default class Chart extends EventEmitter {
   }
 
   setAllDataSources(all) {
-    console.log(all);
     this.$global.data.setAllDataSources(all);
   }
 

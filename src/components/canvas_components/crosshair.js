@@ -10,8 +10,6 @@ export default class Crosshair extends Layer {
   }
 
   draw() {
-    console.log("sdsa");
-
     if (!this.$state.global.crosshair.visible) return;
 
     // Draw horizontal line

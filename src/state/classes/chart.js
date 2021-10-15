@@ -11,7 +11,7 @@ import StorageManager from "../../managers/storage.js";
 import EventEmitter from "../../events/event_emitter.ts";
 
 export default class ChartState extends EventEmitter {
-  constructor({ $global, timeframe = Constants.MINUTE15 }) {
+  constructor({ $global, timeframe = Constants.MINUTE }) {
     super();
 
     this.$global = $global;
@@ -22,7 +22,7 @@ export default class ChartState extends EventEmitter {
     this.pixelsPerElement = 10;
     this.indicators = {};
     this.range = [];
-    this.datasets = new Set();
+    this.datasets = [];
     this.visibleData = [];
     this.visibleScales = { x: [], y: [] };
     this.subcharts = {
@@ -68,12 +68,19 @@ export default class ChartState extends EventEmitter {
     this.isInitialized = true;
   }
 
-  addDataset(dataset) {
-    this.datasets.add(dataset);
-  }
-
-  addIndicator(indicator, datasetId) {
+  async addIndicator(indicator, datasetId) {
     // Check if this dataset exists and is loaded. If not, request from parent
+    if (!this.$global.data.datasets[datasetId]) {
+      // No dataset, create one by requesting data
+      await this.$global.data.requestHistoricalData({
+        datasetId,
+        start: this.range[0],
+        end: this.range[1],
+        timeframe: this.timeframe,
+      });
+
+      this.datasets.push(datasetId);
+    }
 
     const { canvas } = this.subcharts.main;
 
@@ -92,7 +99,7 @@ export default class ChartState extends EventEmitter {
       id: indicator.id,
       name: indicator.name,
       visible: true,
-      dataset: "",
+      dataset: datasetId,
     };
 
     this.indicators[instance.renderingQueueId] = indi;
@@ -102,9 +109,12 @@ export default class ChartState extends EventEmitter {
       indi
     );
 
-    StorageManager.setChartSettings({
-      indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
-    });
+    // If first new dataset, reset range according to data
+    this.setInitialVisibleRange();
+
+    // StorageManager.setChartSettings({
+    //   indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
+    // });
   }
 
   toggleVisibility(id) {
@@ -123,17 +133,20 @@ export default class ChartState extends EventEmitter {
     delete this.indicators[id];
 
     this.$global.ui.charts[this.id].removeIndicator(id);
-    StorageManager.setChartSettings({
-      indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
-    });
+
+    // TODO remove dataset if nothing else is using it
+
+    // StorageManager.setChartSettings({
+    //   indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
+    // });
   }
 
   setVisibleRange({ start, end }, movedId = this.id) {
     const visibleData = [];
 
-    if (this.datasets.size > 0) {
+    if (this.datasets.length > 0) {
       // TODO dont hard code
-      const { data } = Object.values(this.$global.data.datasets)[0];
+      const { data } = this.$global.data.datasets[this.datasets[0]];
 
       // Start loop from right to find end candle
       for (let i = data.length - 1; i > -1; i--) {
@@ -242,9 +255,15 @@ export default class ChartState extends EventEmitter {
     const { width } = this.$global.layout.chartDimensions[this.id].main;
 
     // End timestamp based on last element
-    const end =
-      Math.floor(Date.now() / this.timeframe) * this.timeframe +
-      this.timeframe * 5;
+    let endTimestamp;
+    if (!this.datasets.length) {
+      endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
+    } else {
+      const { data } = this.$global.data.datasets[this.datasets[0]];
+      endTimestamp = data[data.length - 1].time;
+    }
+
+    const end = endTimestamp + this.timeframe * 5;
 
     // Calculate start timestamp using width and pixelsPerElement
     const candlesInView = width / this.pixelsPerElement;

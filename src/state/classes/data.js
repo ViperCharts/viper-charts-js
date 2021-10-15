@@ -45,6 +45,28 @@ export default class LayoutState extends EventEmitter {
     this.fireEvent("set-all-data-sources", this.sources);
   }
 
+  async requestHistoricalData({ datasetId, start, end, timeframe }) {
+    const data = await this.$global.api.onRequestHistoricalData({
+      datasetId,
+      start,
+      end,
+      timeframe,
+    });
+
+    // TODO timeout or error or whatever...
+
+    const dataset = new Dataset(
+      datasetId,
+      // TODO CHANGE THIS THIS IS NOT SMART
+      datasetId.split(":")[1],
+      data,
+      timeframe
+    );
+    this.datasets[datasetId] = dataset;
+
+    return dataset;
+  }
+
   addDataset(id, name, data) {
     const dataset = new Dataset(id, name, data);
     this.datasets[dataset.id] = dataset;
