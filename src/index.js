@@ -48,7 +48,7 @@ import Utils from "./utils";
     const res = await fetch(
       `https://api.exchange.coinbase.com/products/${datasetId}/candles?granularity=60`
     );
-    const data = (await res.json()).map((data) => ({
+    const data = (await res.json()).reverse().map((data) => ({
       time: data[0] * 1000,
       low: data[1],
       high: data[2],
