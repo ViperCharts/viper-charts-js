@@ -46,8 +46,11 @@ export default class LayoutState extends EventEmitter {
   }
 
   async requestHistoricalData({ datasetId, start, end, timeframe }) {
+    let [sourceId, id] = datasetId.split(":");
+
     const data = await this.$global.api.onRequestHistoricalData({
-      datasetId,
+      sourceId,
+      datasetId: id,
       start,
       end,
       timeframe,
@@ -58,7 +61,7 @@ export default class LayoutState extends EventEmitter {
     const dataset = new Dataset(
       datasetId,
       // TODO CHANGE THIS THIS IS NOT SMART
-      datasetId.split(":")[1],
+      id,
       data,
       timeframe
     );
