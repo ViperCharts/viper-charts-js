@@ -45,4 +45,7 @@ const chart = new Chart({
       },
     ],
   },
+  onRequestHistoricalData,
 });
+
+function onRequestHistoricalData({ start, end, timeframe }) {}

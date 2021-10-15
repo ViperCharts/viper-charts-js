@@ -72,7 +72,9 @@ export default class ChartState extends EventEmitter {
     this.datasets.add(dataset);
   }
 
-  addIndicator(indicator) {
+  addIndicator(indicator, datasetId) {
+    // Check if this dataset exists and is loaded. If not, request from parent
+
     const { canvas } = this.subcharts.main;
 
     const $state = {

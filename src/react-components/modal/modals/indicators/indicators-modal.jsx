@@ -41,7 +41,10 @@ export default class IndicatorsModal extends React.Component {
 
   addIndicator(indicator, dataset) {
     const chart = GlobalState.charts[GlobalState.selectedChartId];
-    chart.addIndicator(indicator);
+    chart.addIndicator(
+      indicator,
+      `${this.state.expandedSource}:${dataset.name}`
+    );
   }
 
   render() {

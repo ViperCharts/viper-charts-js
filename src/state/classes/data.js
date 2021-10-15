@@ -1,11 +1,12 @@
 import EventEmitter from "../../events/event_emitter.ts";
 
 class Dataset extends EventEmitter {
-  constructor(id, name, data) {
+  constructor(id, name, data, timeframe) {
     super();
     this.id = id;
     this.name = name;
     this.data = data;
+    this.timeframe = timeframe;
   }
 
   /**
