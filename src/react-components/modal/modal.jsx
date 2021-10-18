@@ -19,17 +19,23 @@ export default class Modal extends React.Component {
     const { id } = this.props;
 
     let modal = getModal(id);
+    const { title, component: Component, height = 0, width = 0 } = modal;
 
     return (
       <div className="modal-container">
-        <div className="modal">
+        <div
+          className="modal"
+          style={{ height: `${height}%`, width: `${width}%` }}
+        >
           <div className="modal-top">
-            <h1>{id}</h1>
+            <h1>{title}</h1>
             <button>
               <i onClick={this.close} className="gg-close"></i>
             </button>
           </div>
-          <div className="modal-body">{modal ? modal : ""}</div>
+          <div className="modal-body">
+            <Component />
+          </div>
         </div>
       </div>
     );
@@ -37,8 +43,10 @@ export default class Modal extends React.Component {
 }
 
 function getModal(id) {
+  let Modal;
+
   switch (id) {
     case "indicators":
-      return <IndicatorsModal />;
+      return IndicatorsModal;
   }
 }
