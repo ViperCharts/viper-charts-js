@@ -12,88 +12,101 @@ export default class IndicatorsModal extends React.Component {
 
     this.state = {
       sources: GlobalState.data.sources,
-      expandedSource: "",
-      expandedIds: [],
+      selectedIndicator: {},
+      search: "",
+      searchResults: [],
     };
 
     GlobalState.data.addEventListener("set-all-data-sources", (all) => {
       this.setState({ sources: all });
+      this.updateSearchResults();
     });
   }
 
-  toggleExpandedSource(expandedSource) {
-    if (this.state.expandedSource === expandedSource) {
-      expandedSource = "";
-    }
-    this.setState({ expandedSource });
+  componentDidMount() {
+    this.updateSearchResults();
   }
 
-  toggleExpanded(id) {
-    let { expandedIds } = this.state;
-    const i = expandedIds.indexOf(id);
-    if (i > -1) {
-      expandedIds.splice(i, 1);
-    } else {
-      expandedIds.push(id);
-    }
-    this.setState({ expandedIds });
-  }
-
-  addIndicator(indicator, dataset) {
+  addIndicator(searchResult) {
     const chart = GlobalState.charts[GlobalState.selectedChartId];
-    chart.addIndicator(
-      indicator,
-      `${this.state.expandedSource}:${dataset.name}`
-    );
+    const indicator = this.state.selectedIndicator;
+
+    const { sourceId, dataset } = searchResult;
+    const id = `${sourceId}:${dataset.name}`;
+    console.log(id);
+    chart.addIndicator(indicator, id);
+  }
+
+  onSearchInput({ target }) {
+    this.setState({ search: target.value.toLowerCase() });
+    this.updateSearchResults();
+  }
+
+  updateSearchResults() {
+    const { search, sources } = this.state;
+
+    // Filter by market:datasetId
+    const results = [];
+
+    for (const sourceId of Object.keys(sources)) {
+      const source = sources[sourceId];
+      for (const dataset of source) {
+        const { name } = dataset;
+        const id = `${sourceId}:${name}`.toLowerCase();
+        if (search.length === 0 || id.match(search)) {
+          results.push({
+            sourceId,
+            dataset,
+          });
+        }
+      }
+    }
+
+    this.setState({ searchResults: results });
   }
 
   render() {
-    const sourceIds = Object.keys(this.state.sources);
-    const { expandedSource } = this.state;
-    const source = this.state.sources[expandedSource];
-
     return (
       <div className="indicators-modal">
-        <div className="sources">
-          {sourceIds.map((id) => {
-            const expanded = expandedSource === id;
-            return (
-              <button
-                onClick={() => this.toggleExpandedSource(id)}
-                key={id}
-                className={`source ${expanded ? "source-expanded" : ""}`}
-              >
-                <h2 className="source-id">{id}</h2>
-              </button>
-            );
-          })}
+        <div className="indicators">
+          {series.map(this.renderButton.bind(this))}
+          {indicators.map(this.renderButton.bind(this))}
+        </div>
+        <div className="markets-search-box">
+          <input
+            onChange={this.onSearchInput.bind(this)}
+            value={this.state.search}
+            type="text"
+            placeholder="Search for a data source here..."
+          />
         </div>
         <div className="datasets">
-          {source
-            ? source.map((dataset) => (
-                <div
-                  className="dataset"
-                  key={`${expandedSource}:${dataset.name}`}
-                >
-                  <h3 className="dataset-name">{dataset.name}</h3>
-                  <div>{series.map((i) => this.renderButton(i, dataset))}</div>
-                  <div>
-                    {indicators.map((i) => this.renderButton(i, dataset))}
-                  </div>
-                </div>
-              ))
-            : null}
+          {this.state.searchResults.map((result) => (
+            <button
+              onClick={() => this.addIndicator(result)}
+              className="dataset"
+              key={`${result.sourceId}:${result.dataset.name}`}
+            >
+              <small className="dataset-source">{result.sourceId}</small>
+              <h3 className="dataset-name">{result.dataset.name}</h3>
+            </button>
+          ))}
         </div>
       </div>
     );
   }
 
-  renderButton(indicator, dataset) {
+  renderButton(indicator) {
+    const { selectedIndicator } = this.state;
+    const selected = selectedIndicator.id === indicator.id;
+
     return (
       <button
-        onClick={() => this.addIndicator(indicator, dataset)}
+        onClick={() => this.setState({ selectedIndicator: indicator })}
         key={indicator.id}
-        className="indicator-button"
+        className={`indicator-button ${
+          selected ? "indicator-button__selected" : ""
+        }`}
       >
         {indicator.name}
       </button>

@@ -10,16 +10,45 @@
   width: 100%;
 }
 
-button.source-expanded {
+.indicators {
+  margin: 0px -4px;
+}
+
+.indicator-button {
+  margin: 4px;
+  padding: 4px 8px;
+  border-radius: 2px;
+}
+
+.indicators-modal button.indicator-button__selected {
   background: rgb(160, 160, 160);
   color: rgb(75, 75, 75);
 }
 
+.markets-search-box input {
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: 2px;
+  background: rgb(75, 75, 75);
+  border: 0;
+  color: rgb(160, 160, 160);
+  font-size: 24px;
+}
+
 .datasets {
-  display: flex;
-  margin-right: -1rem;
+  margin: 2px 0;
+}
+
+button.dataset {
+  width: 100%;
+  padding: 8px 12px;
+  margin: 2px 0;
+  text-align: left;
+}
+
+.dataset h3 {
+  margin: 0;
 }
 
 .dataset {
-  margin-right: 1rem;
 }
