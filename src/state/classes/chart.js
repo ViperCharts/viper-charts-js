@@ -11,7 +11,7 @@ import StorageManager from "../../managers/storage.js";
 import EventEmitter from "../../events/event_emitter.ts";
 
 export default class ChartState extends EventEmitter {
-  constructor({ $global, timeframe = Constants.MINUTE }) {
+  constructor({ $global, timeframe = Constants.DAY }) {
     super();
 
     this.$global = $global;

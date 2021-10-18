@@ -45,8 +45,9 @@ import Utils from "./utils";
     end,
     timeframe,
   }) {
+    const seconds = timeframe / 1000;
     const res = await fetch(
-      `https://api.exchange.coinbase.com/products/${datasetId}/candles?granularity=60`
+      `https://api.exchange.coinbase.com/products/${datasetId}/candles?granularity=${seconds}`
     );
     const data = (await res.json()).reverse().map((data) => ({
       time: data[0] * 1000,
