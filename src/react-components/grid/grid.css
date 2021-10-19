@@ -30,7 +30,7 @@
 }
 
 .grid-box-controls > div:hover {
-  background: blue;
+  background: rgba(37, 180, 56);
 }
 
 .grid-box-controls-left {

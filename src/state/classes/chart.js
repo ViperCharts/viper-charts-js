@@ -18,7 +18,7 @@ export default class ChartState extends EventEmitter {
     this.isInitialized = false;
 
     this.id = Utils.uniqueId();
-    this.timeframe = timeframe;
+    this.timeframe = 0;
     this.pixelsPerElement = 10;
     this.indicators = {};
     this.range = [];
@@ -35,6 +35,8 @@ export default class ChartState extends EventEmitter {
       syncWithCrosshair: "",
       lockedYScale: true,
     };
+
+    this.setTimeframe(timeframe);
   }
 
   init() {
@@ -115,6 +117,13 @@ export default class ChartState extends EventEmitter {
     // StorageManager.setChartSettings({
     //   indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
     // });
+  }
+
+  setTimeframe(timeframe) {
+    this.timeframe = timeframe;
+    this.fireEvent("set-timeframe", timeframe);
+
+    // TODO Refetch data from datastore and unsubscribe from all listeners of current timeframes
   }
 
   toggleVisibility(id) {

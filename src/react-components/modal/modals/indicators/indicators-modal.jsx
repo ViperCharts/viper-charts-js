@@ -37,7 +37,6 @@ export default {
 
       const { sourceId, dataset } = searchResult;
       const id = `${sourceId}:${dataset.name}`;
-      console.log(id);
       chart.addIndicator(indicator, id);
     }
 
@@ -49,7 +48,6 @@ export default {
 
     updateSearchResults(search = "") {
       const { sources } = this.state;
-      console.log(search);
 
       // Filter by market:datasetId
       const results = [];

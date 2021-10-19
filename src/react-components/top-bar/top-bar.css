@@ -35,3 +35,8 @@ button.top-bar-item:hover {
 button.top-bar-item i {
   transform: scale(-0.6);
 }
+
+button.top-bar-item.timeframe__active {
+  color: rgba(37, 180, 56, 0.76);
+  font-weight: bold;
+}

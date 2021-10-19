@@ -96,12 +96,13 @@ export default class Main {
 
     // If horizontal scroll, move range
     if (e.deltaX !== 0) {
-      const ppe = this.$state.chart.pixelsPerElement;
+      const { pixelsPerElement: ppe, timeframe } = this.$state.chart;
       const { width } =
         this.$state.global.layout.chartDimensions[this.$state.chart.id].main;
 
       const d = e.deltaX;
-      const change = (d > 0 ? d * 100 : -d * -100) * (width / ppe);
+      const change =
+        (d > 0 ? d * 100 : -d * -100) * (width / ppe) * (timeframe / 60000);
 
       let [start, end] = this.$state.chart.range;
       start += change;

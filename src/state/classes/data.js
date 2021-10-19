@@ -7,6 +7,7 @@ class Dataset extends EventEmitter {
     this.name = name;
     this.data = data;
     this.timeframe = timeframe;
+    this.subscribers = {};
   }
 
   /**
