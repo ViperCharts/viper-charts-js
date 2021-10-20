@@ -70,18 +70,20 @@ export default class ChartState extends EventEmitter {
     this.isInitialized = true;
   }
 
-  async addIndicator(indicator, datasetId) {
+  async addIndicator(indicator, dataset) {
+    dataset.timeframe = this.timeframe;
+    dataset.id = `${dataset.source}:${dataset.name}:${this.timeframe}`;
     // Check if this dataset exists and is loaded. If not, request from parent
-    if (!this.$global.data.datasets[datasetId]) {
+    if (!this.$global.data.datasets[dataset.id]) {
       // No dataset, create one by requesting data
       await this.$global.data.requestHistoricalData({
-        datasetId,
+        dataset,
         start: this.range[0],
         end: this.range[1],
-        timeframe: this.timeframe,
+        timeframe: dataset.timeframe,
       });
 
-      this.datasets.push(datasetId);
+      this.datasets.push(dataset.id);
     }
 
     const { canvas } = this.subcharts.main;
@@ -101,7 +103,7 @@ export default class ChartState extends EventEmitter {
       id: indicator.id,
       name: indicator.name,
       visible: true,
-      dataset: datasetId,
+      dataset: dataset.id,
     };
 
     this.indicators[instance.renderingQueueId] = indi;
@@ -119,11 +121,43 @@ export default class ChartState extends EventEmitter {
     // });
   }
 
-  setTimeframe(timeframe) {
+  async setTimeframe(timeframe) {
+    const datasets = [];
+    // TODO Refetch data from datastore and unsubscribe from all listeners of current timeframes
+    for (const datasetId of this.datasets) {
+      const dataset = this.$global.data.datasets[datasetId];
+      dataset.id = `${dataset.source}:${dataset.name}:${timeframe}`;
+      dataset.timeframe = timeframe;
+      dataset.data = [];
+      datasets.push(dataset);
+
+      // TODO remove listener from dataset and remove dataset if no more listeners in data store
+    }
+
+    this.datasets = [];
     this.timeframe = timeframe;
     this.fireEvent("set-timeframe", timeframe);
+    // Take all old dataasets and re-subscribe based on active timeframe
 
-    // TODO Refetch data from datastore and unsubscribe from all listeners of current timeframes
+    // Check if this dataset exists and is loaded. If not, request from parent
+    if (datasets.length) {
+      for (const dataset of datasets) {
+        // if (!this.$global.data.datasets[dataset.id]) {
+        // No dataset, create one by requesting data
+        await this.$global.data.requestHistoricalData({
+          dataset,
+          start: this.range[0],
+          end: this.range[1],
+          timeframe: dataset.timeframe,
+        });
+
+        this.datasets.push(dataset.id);
+        // }
+      }
+
+      console.log(this.$global.data.datasets);
+      this.setInitialVisibleRange();
+    }
   }
 
   toggleVisibility(id) {

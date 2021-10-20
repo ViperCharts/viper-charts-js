@@ -22,6 +22,11 @@
   color: rgb(172, 172, 172);
 }
 
+.indicator-subtitle {
+  font-size: 8px;
+  opacity: 0.8;
+}
+
 .indicator button {
   background: transparent;
   border: 0;

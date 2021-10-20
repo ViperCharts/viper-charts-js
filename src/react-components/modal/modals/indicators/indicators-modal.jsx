@@ -31,13 +31,15 @@ export default {
       this.updateSearchResults();
     }
 
+    /**
+     * Add an indicator with spefified dataset
+     * @param {object} searchResult The datasaet from searchResults array
+     */
     addIndicator(searchResult) {
       const chart = GlobalState.charts[GlobalState.selectedChartId];
       const indicator = this.state.selectedIndicator;
 
-      const { sourceId, dataset } = searchResult;
-      const id = `${sourceId}:${dataset.name}`;
-      chart.addIndicator(indicator, id);
+      chart.addIndicator(indicator, searchResult);
     }
 
     onSearchInput({ target }) {
@@ -49,7 +51,7 @@ export default {
     updateSearchResults(search = "") {
       const { sources } = this.state;
 
-      // Filter by market:datasetId
+      // Filter by dataset id
       const results = [];
 
       for (const sourceId of Object.keys(sources)) {
@@ -59,8 +61,8 @@ export default {
           const id = `${sourceId}:${name}`.toLowerCase();
           if (search.length === 0 || id.match(search)) {
             results.push({
-              sourceId,
-              dataset,
+              ...dataset,
+              source: sourceId,
             });
           }
         }
@@ -89,10 +91,10 @@ export default {
               <button
                 onClick={() => this.addIndicator(result)}
                 className="dataset"
-                key={`${result.sourceId}:${result.dataset.name}`}
+                key={`${result.source}:${result.name}`}
               >
-                <small className="dataset-source">{result.sourceId}</small>
-                <h3 className="dataset-name">{result.dataset.name}</h3>
+                <small className="dataset-source">{result.source}</small>
+                <h3 className="dataset-name">{result.name}</h3>
               </button>
             ))}
           </div>

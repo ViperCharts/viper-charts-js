@@ -22,10 +22,17 @@ export default class Indicator extends React.Component {
   render() {
     const { indicator } = this.props;
     const v = indicator.visible;
+    const dataset = GlobalState.data.datasets[indicator.dataset];
+    console.log(dataset);
 
     return (
       <div className={`indicator v-noselect ${v ? "" : "invisible"}`}>
-        <span className="indicator-title">{indicator.name}</span>
+        <span className="indicator-title">
+          <div className="indicator-subtitle">
+            {`${dataset.source} ${dataset.name}`}
+          </div>
+          {indicator.name}
+        </span>
         <button onClick={this.toggleVisibility.bind(this)}>
           {v ? <i className="gg-eye"></i> : <i className="gg-eye-alt"></i>}
         </button>

@@ -21,6 +21,7 @@ import Utils from "./utils";
   ).json();
 
   const COINBASE = pairs.map((pair) => ({
+    source: "COINBASE",
     name: pair.id,
     timeframes: [
       Constants.MINUTE,
@@ -39,25 +40,27 @@ import Utils from "./utils";
   });
 
   async function onRequestHistoricalData({
-    sourceId,
-    datasetId,
+    source,
+    name,
+    timeframe,
     start,
     end,
-    timeframe,
   }) {
-    const seconds = timeframe / 1000;
-    const res = await fetch(
-      `https://api.exchange.coinbase.com/products/${datasetId}/candles?granularity=${seconds}`
-    );
-    const data = (await res.json()).reverse().map((data) => ({
-      time: data[0] * 1000,
-      low: data[1],
-      high: data[2],
-      open: data[3],
-      close: data[4],
-      volume: data[5],
-    }));
+    if (source === "COINBASE") {
+      const seconds = timeframe / 1000;
+      const res = await fetch(
+        `https://api.exchange.coinbase.com/products/${name}/candles?granularity=${seconds}`
+      );
+      const data = (await res.json()).reverse().map((data) => ({
+        time: data[0] * 1000,
+        low: data[1],
+        high: data[2],
+        open: data[3],
+        close: data[4],
+        volume: data[5],
+      }));
 
-    return data;
+      return data;
+    }
   }
 })();

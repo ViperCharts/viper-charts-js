@@ -1,12 +1,13 @@
 import EventEmitter from "../../events/event_emitter.ts";
 
 class Dataset extends EventEmitter {
-  constructor(id, name, data, timeframe) {
+  constructor(id, source, name, timeframe, data) {
     super();
     this.id = id;
+    this.source = source;
     this.name = name;
-    this.data = data;
     this.timeframe = timeframe;
+    this.data = data;
     this.subscribers = {};
   }
 
@@ -46,27 +47,26 @@ export default class LayoutState extends EventEmitter {
     this.fireEvent("set-all-data-sources", this.sources);
   }
 
-  async requestHistoricalData({ datasetId, start, end, timeframe }) {
-    let [sourceId, id] = datasetId.split(":");
-
+  // TODO dispatch this to an event queue on seperate thread
+  async requestHistoricalData({ dataset, start, end }) {
     const data = await this.$global.api.onRequestHistoricalData({
-      sourceId,
-      datasetId: id,
+      source: dataset.source,
+      name: dataset.name,
+      timeframe: dataset.timeframe,
       start,
       end,
-      timeframe,
     });
 
     // TODO timeout or error or whatever...
 
-    const dataset = new Dataset(
-      datasetId,
-      // TODO CHANGE THIS THIS IS NOT SMART
-      id,
-      data,
-      timeframe
+    dataset = new Dataset(
+      dataset.id,
+      dataset.source,
+      dataset.name,
+      dataset.timeframe,
+      data
     );
-    this.datasets[datasetId] = dataset;
+    this.datasets[dataset.id] = dataset;
 
     return dataset;
   }
