@@ -125,13 +125,27 @@ export default class ChartState extends EventEmitter {
     const datasets = [];
     // TODO Refetch data from datastore and unsubscribe from all listeners of current timeframes
     for (const datasetId of this.datasets) {
-      const dataset = this.$global.data.datasets[datasetId];
-      dataset.id = `${dataset.source}:${dataset.name}:${timeframe}`;
-      dataset.timeframe = timeframe;
-      dataset.data = [];
-      datasets.push(dataset);
+      const oldDataset = this.$global.data.datasets[datasetId];
 
-      // TODO remove listener from dataset and remove dataset if no more listeners in data store
+      // Unsubscribe from dataset
+
+      // Create new dataset if doesnt exist for timeframe
+      const id = `${oldDataset.source}:${oldDataset.name}:${timeframe}`;
+      let dataset = this.$global.data.datasets[id];
+      if (!dataset) {
+        dataset = await this.$global.data.requestHistoricalData({
+          dataset: {
+            id,
+            source: oldDataset.source,
+            name: oldDataset.name,
+            timeframe,
+          },
+          start: this.range[0],
+          end: this.range[1],
+        });
+      }
+
+      datasets.push(dataset);
     }
 
     this.datasets = [];
@@ -142,20 +156,9 @@ export default class ChartState extends EventEmitter {
     // Check if this dataset exists and is loaded. If not, request from parent
     if (datasets.length) {
       for (const dataset of datasets) {
-        // if (!this.$global.data.datasets[dataset.id]) {
-        // No dataset, create one by requesting data
-        await this.$global.data.requestHistoricalData({
-          dataset,
-          start: this.range[0],
-          end: this.range[1],
-          timeframe: dataset.timeframe,
-        });
-
         this.datasets.push(dataset.id);
-        // }
       }
 
-      console.log(this.$global.data.datasets);
       this.setInitialVisibleRange();
     }
   }
@@ -172,10 +175,12 @@ export default class ChartState extends EventEmitter {
   removeIndicator(id) {
     const { RE } = this.subcharts.main.canvas;
 
+    const indicator = this.indicators[id];
     RE.removeFromQueue(id);
     delete this.indicators[id];
 
     this.$global.ui.charts[this.id].removeIndicator(id);
+    this.datasets.splice(this.datasets.indexOf(indicator.dataset));
 
     // TODO remove dataset if nothing else is using it
 
@@ -187,45 +192,48 @@ export default class ChartState extends EventEmitter {
   setVisibleRange({ start, end }, movedId = this.id) {
     const visibleData = [];
 
+    let max = 0;
+    let min = Infinity;
+
     if (this.datasets.length > 0) {
-      // TODO dont hard code
-      const { data } = this.$global.data.datasets[this.datasets[0]];
+      // Loop through each dataset and find the max value
+      for (const datasetId of this.datasets) {
+        const { data } = this.$global.data.datasets[datasetId];
 
-      // Start loop from right to find end candle
-      for (let i = data.length - 1; i > -1; i--) {
-        const candle = data[i];
-        const timestamp = candle.time;
+        // Start loop from right to find end candle
+        for (let i = data.length - 1; i > -1; i--) {
+          const candle = data[i];
+          const timestamp = candle.time;
 
-        // If right timestamp is not less than right view boundary
-        // *We minus the timeframe to the timstamp so we can get data for candles that may be mostly
-        // cut off screen
-        if (timestamp > end + this.timeframe / 2) continue;
+          // If right timestamp is not less than right view boundary
+          // *We minus the timeframe to the timstamp so we can get data for candles that may be mostly
+          // cut off screen
+          if (timestamp > end + this.timeframe / 2) continue;
 
-        visibleData.unshift(candle);
+          visibleData.unshift(candle);
 
-        // If last requried timestamp is reached
-        if (timestamp < start + this.timeframe / 2) {
-          break;
-        }
-      }
-
-      this.visibleData = visibleData;
-      this.range[0] = start;
-      this.range[1] = end;
-
-      // If chart y scale is locked
-      if (this.settings.lockedYScale) {
-        // Calculate y axis by using candle low and highs
-        let max = 0;
-        let min = Infinity;
-        for (const candle of this.visibleData) {
-          if (candle.low < min) min = candle.low;
-          if (candle.high > max) max = candle.high;
+          // If last requried timestamp is reached
+          if (timestamp < start + this.timeframe / 2) {
+            break;
+          }
         }
 
-        const ySpread5P = (max - min) * 0.05;
-        this.range[2] = min - ySpread5P;
-        this.range[3] = max + ySpread5P;
+        this.visibleData = visibleData;
+        this.range[0] = start;
+        this.range[1] = end;
+
+        // If chart y scale is locked
+        if (this.settings.lockedYScale) {
+          // Calculate y axis by using candle low and highs
+          for (const candle of this.visibleData) {
+            if (candle.low < min) min = candle.low;
+            if (candle.high > max) max = candle.high;
+          }
+
+          const ySpread5P = (max - min) * 0.05;
+          this.range[2] = min - ySpread5P;
+          this.range[3] = max + ySpread5P;
+        }
       }
     }
 
