@@ -50,7 +50,6 @@ export default class RenderingEngine {
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     const keys = [...this.renderingOrder];
-    const { timeframe } = this.$state.chart;
 
     // Loop through all rendering keys
     for (let i = 0; i < keys.length; ) {

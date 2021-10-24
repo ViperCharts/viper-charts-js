@@ -16,13 +16,13 @@ export default class Layer {
 
   drawFunc(data) {
     // If doesn't require state to be rendered
-    if (!this.$state) {
+    if (!this.consumers.length) {
       this.drawImplentation();
       return;
     }
 
     // Is any data available?
-    if (!data) return;
+    // if (!data) return;
 
     // Check if all required variables are present in each candle, then render
     // TODO cache this result and only rerun if visibleData changes

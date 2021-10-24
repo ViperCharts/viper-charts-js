@@ -13,13 +13,15 @@ export default class LastPriceLine extends Layer {
     this.init(this.draw.bind(this));
   }
 
-  draw(data) {
+  draw() {
+    // TODO fix this shitty fucking component
+    return;
     // TODO dont hard code
-    const newestCandle = data[data.length - 1];
-    if (!newestCandle) return;
+    // const lastPoint = this.$state.visibleData[]
+    if (!lastPoint) return;
 
     // Get last candle and draw price line
-    const { close, open } = newestCandle;
+    const { close, open } = lastPoint;
     const isUp = close >= open;
     const color = isUp ? this.upColor : this.downColor;
 
