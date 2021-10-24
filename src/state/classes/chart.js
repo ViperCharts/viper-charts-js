@@ -22,7 +22,7 @@ export default class ChartState extends EventEmitter {
     this.pixelsPerElement = 10;
     this.indicators = {};
     this.range = [];
-    this.datasets = [];
+    this.datasets = {};
     this.visibleData = {};
     this.visibleScales = { x: [], y: [] };
     this.subcharts = {
@@ -72,19 +72,19 @@ export default class ChartState extends EventEmitter {
 
   async addIndicator(indicator, dataset) {
     dataset.timeframe = this.timeframe;
-    dataset.id = `${dataset.source}:${dataset.name}:${this.timeframe}`;
-    // Check if this dataset exists and is loaded. If not, request from parent
-    if (!this.$global.data.datasets[dataset.id]) {
-      // No dataset, create one by requesting data
-      await this.$global.data.requestHistoricalData({
-        dataset,
-        start: this.range[0],
-        end: this.range[1],
-        timeframe: dataset.timeframe,
-      });
 
-      this.datasets.push(dataset.id);
-    }
+    // Create or fetch dataset
+    dataset = await this.$global.data.requestHistoricalData({
+      dataset,
+      start: this.range[0],
+      end: this.range[1],
+      timeframe: dataset.timeframe,
+    });
+
+    const localId = dataset.getTimeframeAgnosticId();
+
+    // Add dataset to dictionary of subscribed datasets
+    this.datasets[localId] = dataset;
 
     const { canvas } = this.subcharts.main;
 
@@ -94,72 +94,58 @@ export default class ChartState extends EventEmitter {
     };
 
     // Create an instance of the indicator class
-    const instance = new indicator.class({
+    const indicatorClass = new indicator.class({
       $state,
       canvas,
-      datasetId: dataset.id,
+      datasetId: localId,
     });
 
-    const indi = {
+    indicator = {
       id: indicator.id,
       name: indicator.name,
       visible: true,
-      dataset: dataset.id,
+      datasetId: localId,
     };
 
-    this.indicators[instance.renderingQueueId] = indi;
+    this.indicators[indicatorClass.renderingQueueId] = indicator;
 
     this.$global.ui.charts[this.id].addIndicator(
-      instance.renderingQueueId,
-      indi
+      indicatorClass.renderingQueueId,
+      indicator
     );
 
     // If first new dataset, reset range according to data
     this.setInitialVisibleRange();
-
-    // StorageManager.setChartSettings({
-    //   indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
-    // });
   }
 
   async setTimeframe(timeframe) {
-    const datasets = [];
+    const newDatasets = {};
+
     // TODO Refetch data from datastore and unsubscribe from all listeners of current timeframes
-    for (const datasetId of this.datasets) {
-      const oldDataset = this.$global.data.datasets[datasetId];
+    for (const oldDataset of Object.values(this.datasets)) {
+      // TODO Unsubscribe from dataset
 
-      // Unsubscribe from dataset
+      // Create or fetch dataset for new timeframe
+      dataset = await this.$global.data.requestHistoricalData({
+        dataset: {
+          source: oldDataset.source,
+          name: oldDataset.name,
+          timeframe,
+        },
+        start: this.range[0],
+        end: this.range[1],
+      });
 
-      // Create new dataset if doesnt exist for timeframe
-      const id = `${oldDataset.source}:${oldDataset.name}:${timeframe}`;
-      let dataset = this.$global.data.datasets[id];
-      if (!dataset) {
-        dataset = await this.$global.data.requestHistoricalData({
-          dataset: {
-            id,
-            source: oldDataset.source,
-            name: oldDataset.name,
-            timeframe,
-          },
-          start: this.range[0],
-          end: this.range[1],
-        });
-      }
-
-      datasets.push(dataset);
+      newDatasets[dataset.getTimeframeAgnosticId()] = dataset;
     }
 
-    this.datasets = [];
+    this.datasets = newDatasets;
     this.timeframe = timeframe;
     this.fireEvent("set-timeframe", timeframe);
-    // Take all old dataasets and re-subscribe based on active timeframe
+    // Take all old datasets and re-subscribe based on active timeframe
 
     // Check if this dataset exists and is loaded. If not, request from parent
-    if (datasets.length) {
-      for (const dataset of datasets) {
-        this.datasets.push(dataset.id);
-      }
-
+    if (Object.keys(this.datasets).length) {
       this.setInitialVisibleRange();
     }
   }
@@ -193,15 +179,16 @@ export default class ChartState extends EventEmitter {
   setVisibleRange({ start, end }, movedId = this.id) {
     const visibleData = {};
 
-    if (this.datasets.length > 0) {
+    const datasets = Object.values(this.datasets);
+    if (datasets.length > 0) {
       let max = 0;
       let min = Infinity;
 
       // Loop through each dataset and find the max value
-      for (const datasetId of this.datasets) {
-        const { data } = this.$global.data.datasets[datasetId];
-
-        visibleData[datasetId] = [];
+      for (const dataset of datasets) {
+        const { data } = dataset;
+        const localId = dataset.getTimeframeAgnosticId();
+        visibleData[localId] = [];
 
         // Start loop from right to find end candle
         for (let i = data.length - 1; i > -1; i--) {
@@ -213,7 +200,7 @@ export default class ChartState extends EventEmitter {
           // cut off screen
           if (timestamp > end + this.timeframe / 2) continue;
 
-          visibleData[datasetId].unshift(candle);
+          visibleData[localId].unshift(candle);
 
           // If chart y scale is locked
           if (this.settings.lockedYScale) {
@@ -311,7 +298,8 @@ export default class ChartState extends EventEmitter {
     if (!this.datasets.length) {
       endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
     } else {
-      const { data } = this.$global.data.datasets[this.datasets[0]];
+      const id = `${this.datasets[0]}:${this.timeframe}`;
+      const { data } = this.$global.data.datasets[id];
       endTimestamp = data[data.length - 1].time;
     }
 

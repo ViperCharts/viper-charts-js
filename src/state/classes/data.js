@@ -1,14 +1,21 @@
 import EventEmitter from "../../events/event_emitter.ts";
 
 class Dataset extends EventEmitter {
-  constructor(id, source, name, timeframe, data) {
+  constructor(source, name, timeframe, data) {
     super();
-    this.id = id;
     this.source = source;
     this.name = name;
     this.timeframe = timeframe;
     this.data = data;
     this.subscribers = {};
+  }
+
+  getId() {
+    return `${this.source}:${this.name}:${this.timeframe}`;
+  }
+
+  getTimeframeAgnosticId() {
+    return `${this.source}:${this.name}`;
   }
 
   /**
@@ -49,31 +56,35 @@ export default class LayoutState extends EventEmitter {
 
   // TODO dispatch this to an event queue on seperate thread
   async requestHistoricalData({ dataset, start, end }) {
-    const data = await this.$global.api.onRequestHistoricalData({
-      source: dataset.source,
-      name: dataset.name,
-      timeframe: dataset.timeframe,
-      start,
-      end,
-    });
+    const { source, name, timeframe } = dataset;
+    const id = `${source}:${name}:${timeframe}`;
 
-    // TODO timeout or error or whatever...
+    // If dataset does not exist, fetch and create
+    if (!this.datasets[id]) {
+      const data = await this.$global.api.onRequestHistoricalData({
+        source,
+        name,
+        timeframe,
+        start,
+        end,
+      });
 
-    dataset = new Dataset(
-      dataset.id,
-      dataset.source,
-      dataset.name,
-      dataset.timeframe,
-      data
-    );
-    this.datasets[dataset.id] = dataset;
+      // TODO timeout or error or whatever...
+
+      dataset = new Dataset(source, name, timeframe, data);
+      this.datasets[dataset.getId()] = dataset;
+    } else {
+      dataset = this.datasets[id];
+
+      // TODO call requestHistoricalData if not all data between start and end is loaded
+    }
 
     return dataset;
   }
 
   addDataset(id, name, data) {
     const dataset = new Dataset(id, name, data);
-    this.datasets[dataset.id] = dataset;
+    this.datasets[dataset.getId()] = dataset;
     this.fireEvent("add-dataset", dataset);
   }
 }

@@ -22,7 +22,7 @@ export default class Indicator extends React.Component {
   render() {
     const { indicator } = this.props;
     const v = indicator.visible;
-    const dataset = GlobalState.data.datasets[indicator.dataset];
+    const dataset = this.chart.datasets[indicator.datasetId];
 
     return (
       <div className={`indicator v-noselect ${v ? "" : "invisible"}`}>
