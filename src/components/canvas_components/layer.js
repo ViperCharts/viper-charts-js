@@ -2,18 +2,19 @@
  * This class represents any individual peice of a canvas to be drawn
  */
 export default class Layer {
-  constructor({ $state, canvas }) {
+  constructor({ $state, canvas, type = "" }) {
     this.$state = $state;
     this.canvas = canvas;
+    this.type = type;
     this.consumers = [];
   }
 
   init(drawImplentation) {
     this.drawImplentation = drawImplentation;
-    this.renderingQueueId = this.canvas.RE.addToQueue(this.drawFunc.bind(this));
+    this.renderingQueueId = this.canvas.RE.addToQueue(this);
   }
 
-  drawFunc() {
+  drawFunc(data) {
     // If doesn't require state to be rendered
     if (!this.$state) {
       this.drawImplentation();
@@ -21,21 +22,20 @@ export default class Layer {
     }
 
     // Is any data available?
-    const { visibleData } = this.$state.chart;
-    if (!visibleData.length) return;
+    if (!data) return;
 
     // Check if all required variables are present in each candle, then render
     // TODO cache this result and only rerun if visibleData changes
-    if (this.consumers.length) {
-      for (const data of visibleData) {
-        for (const consumer of this.consumers) {
-          if (data[consumer] === undefined) {
-            return;
-          }
-        }
-      }
-    }
+    // if (this..length) {
+    //   for (const data of visibleData) {
+    //     for (const consumer of this.consumers) {
+    //       if (data[consumer] === undefined) {
+    //         return;
+    //       }
+    //     }
+    //   }
+    // }
 
-    this.drawImplentation(visibleData);
+    this.drawImplentation(data);
   }
 }

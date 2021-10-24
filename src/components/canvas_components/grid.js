@@ -2,7 +2,7 @@ import Layer from "./layer.js";
 
 export default class Grid extends Layer {
   constructor({ $state, canvas }) {
-    super({ canvas });
+    super({ canvas, type: "single" });
 
     this.$state = $state;
     this.color = "#434343";

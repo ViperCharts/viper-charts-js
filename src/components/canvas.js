@@ -19,7 +19,10 @@ export default class Canvas {
   }
 
   init() {
-    this.RE = new RenderingEngine(this);
+    this.RE = new RenderingEngine({
+      canvas: this,
+      $state: this.$state,
+    });
   }
 
   setCanvasElement(canvas) {

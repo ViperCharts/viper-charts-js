@@ -2,7 +2,7 @@ import Layer from "./layer";
 
 export default class Crosshair extends Layer {
   constructor({ $state, canvas }) {
-    super({ canvas });
+    super({ canvas, type: "single" });
 
     this.$state = $state;
 

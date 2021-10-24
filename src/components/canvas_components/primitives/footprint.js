@@ -24,7 +24,7 @@ function nFormatter(num, digits) {
 
 export default class VolumeProfile extends Layer {
   constructor({ $state, canvas }) {
-    super({ $state, canvas });
+    super({ $state, canvas, type: "multi" });
 
     this.$state = $state;
 

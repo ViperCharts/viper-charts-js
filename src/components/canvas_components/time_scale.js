@@ -47,7 +47,7 @@ export default class TimeScale {
 
 class TimeScaleLayer extends Layer {
   constructor({ $state, canvas }) {
-    super({ canvas });
+    super({ canvas, type: "single" });
 
     this.$state = $state;
 

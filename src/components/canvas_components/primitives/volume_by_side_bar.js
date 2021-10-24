@@ -2,7 +2,7 @@ import Layer from "../layer.js";
 
 export default class VolumeBySideBar extends Layer {
   constructor({ $state, canvas }) {
-    super({ $state, canvas });
+    super({ $state, canvas, type: "multi" });
 
     this.$state = $state;
 
