@@ -118,7 +118,7 @@ export default class ChartState extends EventEmitter {
     this.setInitialVisibleRange();
   }
 
-  async setTimeframe(timeframe) {
+  async setTimeframe(timeframe, movedId = this.id) {
     const newDatasets = {};
 
     // TODO Refetch data from datastore and unsubscribe from all listeners of current timeframes
@@ -126,7 +126,7 @@ export default class ChartState extends EventEmitter {
       // TODO Unsubscribe from dataset
 
       // Create or fetch dataset for new timeframe
-      dataset = await this.$global.data.requestHistoricalData({
+      const dataset = await this.$global.data.requestHistoricalData({
         dataset: {
           source: oldDataset.source,
           name: oldDataset.name,
@@ -147,6 +147,18 @@ export default class ChartState extends EventEmitter {
     // Check if this dataset exists and is loaded. If not, request from parent
     if (Object.keys(this.datasets).length) {
       this.setInitialVisibleRange();
+    }
+
+    if (this.settings.syncRange && movedId === this.id) {
+      for (const chartId in this.$global.charts) {
+        const chart = this.$global.charts[chartId];
+
+        // If chart is in sync mode and timeframes dont match
+        if (chart.settings.syncRange && chart.timeframe !== this.timeframe) {
+          // Sync timeframe
+          chart.setTimeframe(this.timeframe, this.id);
+        }
+      }
     }
   }
 
