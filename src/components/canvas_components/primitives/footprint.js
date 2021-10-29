@@ -39,7 +39,7 @@ export default class VolumeProfile extends Layer {
 
   draw() {
     // Loop through and render all candles
-    for (const candle of this.$state.chart.visibleData) {
+    for (const candle of this.$state.chart.visibleData.data) {
       const w = this.$state.chart.pixelsPerElement;
 
       if (!candle.volumeProfile) continue;

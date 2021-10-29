@@ -34,6 +34,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
+      scaleType: "percent",
     };
 
     this.setTimeframe(timeframe);
@@ -214,7 +215,12 @@ export default class ChartState extends EventEmitter {
       for (const dataset of datasets) {
         const { data } = dataset;
         const localId = dataset.getTimeframeAgnosticId();
-        visibleData[localId] = [];
+
+        visibleData[localId] = {
+          data: [],
+          min: Infinity,
+          max: 0,
+        };
 
         // Loop through all subscribed indicators to verify at least one is visible
         let isOneVisible = false;
@@ -225,10 +231,13 @@ export default class ChartState extends EventEmitter {
             break;
           }
         }
+
         // If no subscribed indicators are visible, skip this dataset from calculation
         if (!isOneVisible) {
           continue;
         }
+
+        const visibleDataItem = visibleData[localId];
 
         // Start loop from right to find end candle
         for (let i = data.length - 1; i > -1; i--) {
@@ -240,12 +249,16 @@ export default class ChartState extends EventEmitter {
           // cut off screen
           if (timestamp > end + this.timeframe / 2) continue;
 
-          visibleData[localId].unshift(candle);
+          visibleDataItem.data.unshift(candle);
 
           // If chart y scale is locked
           if (this.settings.lockedYScale) {
-            if (candle.low < min) min = candle.low;
-            if (candle.high > max) max = candle.high;
+            if (candle.low < visibleDataItem.min) {
+              visibleDataItem.min = candle.low;
+            }
+            if (candle.high > visibleDataItem.max) {
+              visibleDataItem.max = candle.high;
+            }
           }
 
           // If last requried timestamp is reached
@@ -253,6 +266,16 @@ export default class ChartState extends EventEmitter {
             break;
           }
         }
+
+        if (this.settings.scaleType === "percent") {
+          const { close } = visibleDataItem.data[0];
+          visibleData.max = ((visibleDataItem.max - close) / close) * 100;
+          visibleData.min =
+            ((close - visibleDataItem.min) / visibleDataItem.min) * 100;
+        }
+
+        if (visibleDataItem.max > max) max = visibleDataItem.max;
+        if (visibleDataItem.min < min) min = visibleDataItem.min;
       }
 
       this.visibleData = visibleData;

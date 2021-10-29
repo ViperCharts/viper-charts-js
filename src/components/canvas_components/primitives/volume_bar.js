@@ -27,7 +27,7 @@ export default class VolumeBar extends Layer {
     }
 
     // Loop through and render all candles
-    for (const candle of this.$state.chart.visibleData) {
+    for (const candle of this.$state.chart.visibleData.data) {
       const isUp = candle.close >= candle.open;
       const color = isUp ? this.upColor : this.downColor;
 
@@ -56,7 +56,7 @@ export default class VolumeBar extends Layer {
     let maxVolumeOnScreen = 0;
 
     // Loop through all visible candles
-    for (const { volume } of this.$state.chart.visibleData) {
+    for (const { volume } of this.$state.chart.visibleData.data) {
       if (volume > maxVolumeOnScreen) {
         maxVolumeOnScreen = volume;
       }

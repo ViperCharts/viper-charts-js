@@ -27,7 +27,7 @@ export default class VolumeBySideBar extends Layer {
     }
 
     // Loop through and render all candles
-    for (const candle of this.$state.chart.visibleData) {
+    for (const candle of this.$state.chart.visibleData.data) {
       const delta = candle.buy_volume - candle.sell_volume;
       const volume = candle.buy_volume + candle.sell_volume;
 
@@ -68,7 +68,8 @@ export default class VolumeBySideBar extends Layer {
     let maxVolumeOnScreen = 0;
 
     // Loop through all visible candles
-    for (const { buy_volume, sell_volume } of this.$state.chart.visibleData) {
+    for (const { buy_volume, sell_volume } of this.$state.chart.visibleData
+      .data) {
       const volume = buy_volume + sell_volume;
       if (volume > maxVolumeOnScreen) {
         maxVolumeOnScreen = volume;

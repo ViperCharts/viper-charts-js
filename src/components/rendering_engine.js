@@ -73,7 +73,7 @@ export default class RenderingEngine {
       if (layer.type === "multi") {
         // Loop through all visible data of type
         const visibleData = this.$state.chart.visibleData[layer.datasetId];
-        for (const data of visibleData) {
+        for (const data of visibleData.data) {
           draw(data);
         }
       }

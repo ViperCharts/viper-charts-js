@@ -27,7 +27,7 @@ export default class Layer {
     // Check if all required variables are present in each candle, then render
     // TODO cache this result and only rerun if visibleData changes
     // if (this..length) {
-    //   for (const data of visibleData) {
+    //   for (const data of visibleData.data) {
     //     for (const consumer of this.consumers) {
     //       if (data[consumer] === undefined) {
     //         return;
