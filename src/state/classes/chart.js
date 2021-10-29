@@ -139,7 +139,7 @@ export default class ChartState extends EventEmitter {
         dataset.addSubscriber(this.id, renderingQueueId);
 
         // Unsubscribe from old dataset
-        dataset.removeSubscriber(this.id, renderingQueueId);
+        oldDataset.removeSubscriber(this.id, renderingQueueId);
       }
 
       newDatasets[dataset.getTimeframeAgnosticId()] = dataset;
@@ -260,9 +260,12 @@ export default class ChartState extends EventEmitter {
       this.range[0] = start;
       this.range[1] = end;
 
-      const ySpread5P = (max - min) * 0.05;
-      this.range[2] = min - ySpread5P;
-      this.range[3] = max + ySpread5P;
+      // If price / y scale is locked, set min and max y values
+      if (this.settings.lockedYScale) {
+        const ySpread5P = (max - min) * 0.05;
+        this.range[2] = min - ySpread5P;
+        this.range[3] = max + ySpread5P;
+      }
     }
 
     // If this chart is in synced mode and other charts are also in sync mode,
