@@ -81,17 +81,14 @@ export default class ChartState extends EventEmitter {
       timeframe: dataset.timeframe,
     });
 
-    const localId = dataset.getTimeframeAgnosticId();
-
-    // Add dataset to dictionary of subscribed datasets
-    this.datasets[localId] = dataset;
-
     const { canvas } = this.subcharts.main;
 
     const $state = {
       chart: this,
       global: this.$global,
     };
+
+    const localId = dataset.getTimeframeAgnosticId();
 
     // Create an instance of the indicator class
     const indicatorClass = new indicator.class({
@@ -107,6 +104,9 @@ export default class ChartState extends EventEmitter {
       datasetId: localId,
     };
 
+    dataset.addSubscriber(this.id, indicatorClass.renderingQueueId);
+    this.datasets[localId] = dataset;
+
     this.indicators[indicatorClass.renderingQueueId] = indicator;
 
     this.$global.ui.charts[this.id].addIndicator(
@@ -121,10 +121,7 @@ export default class ChartState extends EventEmitter {
   async setTimeframe(timeframe, movedId = this.id) {
     const newDatasets = {};
 
-    // TODO Refetch data from datastore and unsubscribe from all listeners of current timeframes
     for (const oldDataset of Object.values(this.datasets)) {
-      // TODO Unsubscribe from dataset
-
       // Create or fetch dataset for new timeframe
       const dataset = await this.$global.data.requestHistoricalData({
         dataset: {
@@ -135,6 +132,15 @@ export default class ChartState extends EventEmitter {
         start: this.range[0],
         end: this.range[1],
       });
+
+      // Re-instantiate all subscribers
+      const subscribers = oldDataset.subscribers[this.id];
+      for (const renderingQueueId of subscribers) {
+        dataset.addSubscriber(this.id, renderingQueueId);
+
+        // Unsubscribe from old dataset
+        dataset.removeSubscriber(this.id, renderingQueueId);
+      }
 
       newDatasets[dataset.getTimeframeAgnosticId()] = dataset;
     }
@@ -169,6 +175,9 @@ export default class ChartState extends EventEmitter {
     const visible = !this.indicators[id].visible;
     this.indicators[id].visible = visible;
     this.$global.ui.charts[this.id].updateIndicator(id, { visible });
+
+    // Re calculate visible range
+    this.setVisibleRange({ start: this.range[0], end: this.range[1] });
   }
 
   removeIndicator(id) {
@@ -178,14 +187,19 @@ export default class ChartState extends EventEmitter {
     RE.removeFromQueue(id);
     delete this.indicators[id];
 
+    // Remove dataset listener and dataset if no more listeners;
+    const dataset = this.datasets[indicator.datasetId];
+    const subscribers = dataset.removeSubscriber(this.id, id);
+    if (!subscribers.length) {
+      delete this.datasets[dataset.getTimeframeAgnosticId()];
+    }
+
     this.$global.ui.charts[this.id].removeIndicator(id);
-    this.datasets.splice(this.datasets.indexOf(indicator.dataset));
 
-    // TODO remove dataset if nothing else is using it
-
-    // StorageManager.setChartSettings({
-    //   indicators: Object.values(this.indicators).map((i) => ({ id: i.id })),
-    // });
+    this.setVisibleRange({
+      start: this.range[0],
+      end: this.range[1],
+    });
   }
 
   setVisibleRange({ start, end }, movedId = this.id) {
@@ -201,6 +215,20 @@ export default class ChartState extends EventEmitter {
         const { data } = dataset;
         const localId = dataset.getTimeframeAgnosticId();
         visibleData[localId] = [];
+
+        // Loop through all subscribed indicators to verify at least one is visible
+        let isOneVisible = false;
+        for (const renderingQueueId of dataset.subscribers[this.id]) {
+          const indicator = this.indicators[renderingQueueId];
+          if (indicator.visible) {
+            isOneVisible = true;
+            break;
+          }
+        }
+        // If no subscribed indicators are visible, skip this dataset from calculation
+        if (!isOneVisible) {
+          continue;
+        }
 
         // Start loop from right to find end candle
         for (let i = data.length - 1; i > -1; i--) {
