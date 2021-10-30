@@ -280,9 +280,6 @@ export default class ChartState extends EventEmitter {
 
       this.visibleData = visibleData;
 
-      this.range[0] = start;
-      this.range[1] = end;
-
       // If price / y scale is locked, set min and max y values
       if (this.settings.lockedYScale) {
         const ySpread5P = (max - min) * 0.05;
@@ -290,6 +287,9 @@ export default class ChartState extends EventEmitter {
         this.range[3] = max + ySpread5P;
       }
     }
+
+    this.range[0] = start;
+    this.range[1] = end;
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours
