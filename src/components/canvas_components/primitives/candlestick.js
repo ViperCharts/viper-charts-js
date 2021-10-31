@@ -14,7 +14,7 @@ export default class Candlestick extends Layer {
     this.init(this.draw.bind(this));
   }
 
-  draw({ time, open, high, low, close }) {
+  draw({ time, open, high, low, close, plot, plotBox }) {
     const isUp = close >= open;
     const color = isUp ? this.upColor : this.downColor;
 

@@ -7,6 +7,7 @@ import TimeScale from "../../components/canvas_components/time_scale.js";
 import PriceScale from "../../components/canvas_components/price_scale.js";
 
 import StorageManager from "../../managers/storage.js";
+import ComputedData from "./computed_data.js";
 
 import EventEmitter from "../../events/event_emitter.ts";
 
@@ -24,6 +25,7 @@ export default class ChartState extends EventEmitter {
     this.range = [];
     this.datasets = {};
     this.visibleData = {};
+    this.computedData = new ComputedData({ $global, $parent: this });
     this.visibleScales = { x: [], y: [] };
     this.subcharts = {
       main: undefined,
@@ -34,7 +36,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
-      scaleType: "percent",
+      scaleType: "default",
     };
 
     this.setTimeframe(timeframe);
