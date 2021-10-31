@@ -54,6 +54,17 @@ const TIMESCALES = [
   MILLISECOND,
 ];
 
+const TIMEFRAMES = {
+  ms: MILLISECOND,
+  s: SECOND,
+  m: MINUTE,
+  h: HOUR,
+  d: DAY,
+  w: WEEK,
+  mo: MONTH,
+  y: YEAR,
+};
+
 export default {
   MILLISECOND,
   MILLISECOND100,
@@ -69,4 +80,5 @@ export default {
   MONTH,
   YEAR,
   TIMESCALES,
+  TIMEFRAMES,
 };

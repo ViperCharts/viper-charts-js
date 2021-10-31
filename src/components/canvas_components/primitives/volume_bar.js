@@ -1,20 +1,24 @@
 import Layer from "../layer.js";
 
-import chartState from "../../../state/chart.js";
-
 export default class VolumeBar extends Layer {
-  constructor({ canvas }) {
-    super(canvas);
+  constructor({ $state, canvas }) {
+    super({ $state, canvas, type: "multi" });
+
+    this.$state = $state;
+
     this.screenHeightPerc = 0.2;
     this.upColor = "#C4FF4988";
     this.downColor = "#FE3A6488";
 
     this.maxVolumeOnScreen = this.getMaxVolumeOnScreen();
-    this.lastRange = chartState.range;
+    this.lastRange = this.$state.chart.range;
+
+    this.consumers = ["volume"];
+    this.init(this.draw.bind(this));
   }
 
   draw() {
-    const r = chartState.range;
+    const r = this.$state.chart.range;
     const lr = this.lastRange;
 
     // Check if visible timestamp range has changed since last render
@@ -23,7 +27,7 @@ export default class VolumeBar extends Layer {
     }
 
     // Loop through and render all candles
-    for (const candle of chartState.visibleData) {
+    for (const candle of this.$state.chart.visibleData.data) {
       const isUp = candle.close >= candle.open;
       const color = isUp ? this.upColor : this.downColor;
 
@@ -32,14 +36,16 @@ export default class VolumeBar extends Layer {
       const volumePerc = candle.volume / this.maxVolumeOnScreen;
       const h = Math.floor(volumePerc * maxHeight);
 
-      const x = chartState.getXCoordByTimestamp(candle.time);
+      const x = this.$state.chart.getXCoordByTimestamp(candle.time);
       this.canvas.drawBox(color, [
-        x - chartState.pixelsPerElement / 2 + 1,
+        x - this.$state.chart.pixelsPerElement / 2 + 1,
         this.canvas.height - h,
-        Math.max(chartState.pixelsPerElement - 1, 1),
+        Math.max(this.$state.chart.pixelsPerElement - 1, 1),
         h,
       ]);
     }
+
+    this.lastRange = { ...r };
   }
 
   /**
@@ -50,7 +56,7 @@ export default class VolumeBar extends Layer {
     let maxVolumeOnScreen = 0;
 
     // Loop through all visible candles
-    for (const { volume } of chartState.visibleData) {
+    for (const { volume } of this.$state.chart.visibleData.data) {
       if (volume > maxVolumeOnScreen) {
         maxVolumeOnScreen = volume;
       }

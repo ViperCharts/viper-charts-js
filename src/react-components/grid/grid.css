@@ -1,0 +1,62 @@
+.grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: black;
+}
+
+.grid-box {
+  position: absolute;
+  background: lightgray;
+  padding: 2px;
+}
+
+.grid-breakpoint {
+  position: absolute;
+  z-index: 15;
+}
+
+.grid-box-controls {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-box-controls > div {
+  position: absolute;
+  cursor: pointer;
+  transition-duration: 50ms;
+  z-index: 99;
+}
+
+.grid-box-controls > div:hover {
+  background: rgba(37, 180, 56);
+}
+
+.grid-box-controls-left {
+  position: absolute;
+  left: 0;
+  height: 100%;
+  width: 24px;
+}
+
+.grid-box-controls-top {
+  position: absolute;
+  top: 0;
+  height: 24px;
+  width: 100%;
+}
+
+.grid-box-controls-right {
+  position: absolute;
+  right: 0;
+  height: 100%;
+  width: 24px;
+}
+
+.grid-box-controls-bottom {
+  position: absolute;
+  bottom: 0;
+  height: 24px;
+  width: 100%;
+}

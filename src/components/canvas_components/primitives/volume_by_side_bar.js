@@ -1,20 +1,24 @@
 import Layer from "../layer.js";
 
-import chartState from "../../../state/chart.js";
-
 export default class VolumeBySideBar extends Layer {
-  constructor({ canvas }) {
-    super(canvas);
+  constructor({ $state, canvas }) {
+    super({ $state, canvas, type: "multi" });
+
+    this.$state = $state;
+
     this.screenHeightPerc = 0.2;
     this.upColor = "#C4FF4944";
     this.downColor = "#FE3A6444";
 
     this.maxVolumeOnScreen = this.getMaxVolumeOnScreen();
-    this.lastRange = chartState.range;
+    this.lastRange = this.$state.chart.range;
+
+    this.consumers = ["buy_volume", "sell_volume"];
+    this.init(this.draw.bind(this));
   }
 
   draw() {
-    const r = chartState.range;
+    const r = this.$state.chart.range;
     const lr = this.lastRange;
 
     // Check if visible timestamp range has changed since last render
@@ -23,33 +27,37 @@ export default class VolumeBySideBar extends Layer {
     }
 
     // Loop through and render all candles
-    for (const candle of chartState.visibleData) {
+    for (const candle of this.$state.chart.visibleData.data) {
       const delta = candle.buy_volume - candle.sell_volume;
       const volume = candle.buy_volume + candle.sell_volume;
 
       const color = delta >= 0 ? this.upColor : this.downColor;
 
       // Calculate pixels height of current candle
-      const maxHeight = this.screenHeightPerc * this.canvas.canvas.height;
+      const { main } =
+        this.$state.global.layout.chartDimensions[this.$state.chart.id];
+      const maxHeight = this.screenHeightPerc * main.height;
       const volumePerc = volume / this.maxVolumeOnScreen;
       const h = Math.floor(volumePerc * maxHeight);
       const deltaPerc = Math.abs(delta / this.maxVolumeOnScreen);
       const h2 = Math.floor(deltaPerc * maxHeight);
 
-      const x = chartState.getXCoordByTimestamp(candle.time);
+      const x = this.$state.chart.getXCoordByTimestamp(candle.time);
       this.canvas.drawBox(color, [
-        x - chartState.pixelsPerElement / 2 + 1,
+        x - this.$state.chart.pixelsPerElement / 2 + 1,
         this.canvas.height - h,
-        Math.max(chartState.pixelsPerElement - 1, 1),
+        Math.max(this.$state.chart.pixelsPerElement - 1, 1),
         h,
       ]);
       this.canvas.drawBox(color, [
-        x - chartState.pixelsPerElement / 2 + 1,
+        x - this.$state.chart.pixelsPerElement / 2 + 1,
         this.canvas.height - h2,
-        Math.max(chartState.pixelsPerElement - 1, 1),
+        Math.max(this.$state.chart.pixelsPerElement - 1, 1),
         h2,
       ]);
     }
+
+    this.lastRange = { ...r };
   }
 
   /**
@@ -60,7 +68,8 @@ export default class VolumeBySideBar extends Layer {
     let maxVolumeOnScreen = 0;
 
     // Loop through all visible candles
-    for (const { buy_volume, sell_volume } of chartState.visibleData) {
+    for (const { buy_volume, sell_volume } of this.$state.chart.visibleData
+      .data) {
       const volume = buy_volume + sell_volume;
       if (volume > maxVolumeOnScreen) {
         maxVolumeOnScreen = volume;

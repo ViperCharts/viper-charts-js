@@ -1,0 +1,42 @@
+.top-bar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 32px;
+  background: rgb(46, 46, 46);
+}
+
+.top-bar-item {
+  padding: 4px;
+}
+
+button.top-bar-item {
+  display: flex;
+  align-items: center;
+  color: rgb(173, 173, 173);
+  /* font-weight: bold; */
+  border: 0;
+  background: transparent;
+  margin: 0;
+  cursor: pointer;
+  height: 32px;
+  padding: 4px 8px;
+  min-width: 32px;
+}
+
+.top-bar-seperator {
+  flex-grow: 1;
+}
+
+button.top-bar-item:hover {
+  background: rgb(70, 70, 70);
+}
+
+button.top-bar-item i {
+  transform: scale(-0.6);
+}
+
+button.top-bar-item.timeframe__active {
+  color: rgba(37, 180, 56, 0.76);
+  font-weight: bold;
+}

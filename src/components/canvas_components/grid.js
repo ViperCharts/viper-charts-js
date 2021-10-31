@@ -1,17 +1,19 @@
 import Layer from "./layer.js";
 
-import chartState from "../../state/chart.js";
-
 export default class Grid extends Layer {
-  constructor({ canvas }) {
-    super(canvas);
+  constructor({ $state, canvas }) {
+    super({ canvas, type: "single" });
+
+    this.$state = $state;
     this.color = "#434343";
+
+    this.init(this.draw.bind(this));
   }
 
   draw() {
     // Loop through all visible candles
-    for (const time of chartState.visibleScales.x) {
-      const x = chartState.getXCoordByTimestamp(time);
+    for (const time of this.$state.chart.visibleScales.x) {
+      const x = this.$state.chart.getXCoordByTimestamp(time);
       this.canvas.drawLine(this.color, [x, 0, x, this.canvas.height]);
     }
   }

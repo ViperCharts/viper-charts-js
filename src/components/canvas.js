@@ -1,45 +1,46 @@
 import RenderingEngine from "./rendering_engine.js";
 
-import chartState from "../state/chart.js";
-import uiState from "../state/ui.js";
-
 export default class Canvas {
-  constructor({ id, height, width, cursor = "default", position }) {
-    this.height = height;
-    this.width = width;
-    this.id = id;
+  constructor({ $state, canvas, cursor = "default" }) {
+    this.$state = $state;
+
     this.canvas = null;
     this.ctx = null;
     this.RE = null;
-    this.sizing = {};
     this.cursor = cursor;
 
     this.isMouseDown = false;
-    this.mouseDownListener = null;
-    this.mouseUpListener = null;
-    this.mouseMoveListener = null;
-    this.count = 0;
 
-    this.init({ position });
+    this.width = 0;
+    this.height = 0;
+
+    this.setCanvasElement(canvas);
+    this.init();
   }
 
-  init({ position }) {
-    this.canvas = document.createElement("canvas");
-    this.canvas.id = this.id;
-    this.ctx = this.canvas.getContext("2d");
+  init() {
+    this.RE = new RenderingEngine({
+      canvas: this,
+      $state: this.$state,
+    });
+  }
 
-    this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
-    this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
-    this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
-    this.canvas.style.cursor = this.cursor;
-    this.canvas.style.position = "absolute";
-    this.canvas.style[position] = "0px";
+  setCanvasElement(canvas) {
+    this.ctx = canvas.getContext("2d");
 
-    this.setHeight(this.height);
-    this.setWidth(this.width);
+    canvas.style.cursor = this.cursor;
+    canvas.width = canvas.clientWidth;
+    this.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    this.height = canvas.clientHeight;
 
-    uiState.chartsElements.appendChild(this.canvas);
-    this.RE = new RenderingEngine(this);
+    canvas.addEventListener("mousedown", () => (this.isMouseDown = true));
+    this.$state.global.events.addEventListener(
+      "mouseup",
+      () => (this.isMouseDown = false)
+    );
+
+    this.canvas = canvas;
   }
 
   /**
@@ -70,11 +71,11 @@ export default class Canvas {
    */
   drawBoxByPriceAndPercWidthOfTime(color, coords, width) {
     // Get percentage of element width
-    const w = chartState.pixelsPerElement * width;
+    const w = this.$state.chart.pixelsPerElement * width;
 
-    const x = chartState.getXCoordByTimestamp(coords[0]);
-    const y1 = chartState.getYCoordByPrice(coords[1]);
-    const y2 = chartState.getYCoordByPrice(coords[2]);
+    const x = this.$state.chart.getXCoordByTimestamp(coords[0]);
+    const y1 = this.$state.chart.getYCoordByPrice(coords[1]);
+    const y2 = this.$state.chart.getYCoordByPrice(coords[2]);
 
     const h = y2 - y1;
 
@@ -105,11 +106,11 @@ export default class Canvas {
   drawLineByPriceAndTime(color, coords) {
     this.ctx.strokeStyle = color;
     this.ctx.beginPath();
-    const x1 = chartState.getXCoordByTimestamp(coords[0]);
-    const y1 = chartState.getYCoordByPrice(coords[1]);
+    const x1 = this.$state.chart.getXCoordByTimestamp(coords[0]);
+    const y1 = this.$state.chart.getYCoordByPrice(coords[1]);
     this.ctx.moveTo(x1, y1);
-    const x2 = chartState.getXCoordByTimestamp(coords[2]);
-    const y2 = chartState.getYCoordByPrice(coords[3]);
+    const x2 = this.$state.chart.getXCoordByTimestamp(coords[2]);
+    const y2 = this.$state.chart.getYCoordByPrice(coords[3]);
     this.ctx.lineTo(x2, y2);
     this.ctx.stroke();
     this.ctx.closePath();
@@ -118,21 +119,19 @@ export default class Canvas {
   drawTextAtPriceAndTime(color, coords, text) {
     this.ctx.textAlign = "center";
     this.ctx.fillStyle = color;
-    const x = chartState.getXCoordByTimestamp(coords[0]);
+    const x = this.$state.chart.getXCoordByTimestamp(coords[0]);
     this.ctx.fillText(text, x, coords[1]);
   }
 
   setWidth(width) {
     this.width = width;
     this.canvas.width = width;
-    this.canvas.style.width = width;
     if (this.RE) this.RE.draw();
   }
 
   setHeight(height) {
     this.height = height;
     this.canvas.height = height;
-    this.canvas.style.height = height;
     if (this.RE) this.RE.draw();
   }
 
@@ -142,11 +141,5 @@ export default class Canvas {
 
   onMouseUp() {
     this.isMouseDown = false;
-  }
-
-  onMouseMove(e) {
-    if (this.isMouseDown) {
-      chartState.handleMouseRangeChange(e.movementX, e.movementY);
-    }
   }
 }

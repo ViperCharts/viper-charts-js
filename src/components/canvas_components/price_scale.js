@@ -1,54 +1,57 @@
-import chartState from "../../state/chart.js";
-import layoutState from "../../state/layout.js";
-
 import Canvas from "../canvas.js";
 import Background from "./background.js";
-import Layer from "./layer.js";
 import PriceSelected from "./price_selected.js";
 
 export default class TimeScale {
-  constructor() {
+  constructor({ $state }) {
+    this.$state = $state;
+
+    this.canvas = null;
+  }
+
+  init() {
     this.canvas = new Canvas({
+      $state: this.$state,
       id: `canvas-pricescale`,
-      height: layoutState.height.height - 20,
+      canvas:
+        this.$state.global.ui.charts[this.$state.chart.id].subcharts.yScale
+          .current,
+      height: this.$state.dimensions.height - 20,
       width: 50,
       cursor: "n-resize",
       position: "right",
     });
-    this.background = new Background({
+
+    new Background({
+      $state: this.$state,
       canvas: this.canvas,
       color: "#080019",
     });
-    this.priceSelected = new PriceSelected({ canvas: this.canvas });
+    new PriceSelected({ $state: this.$state, canvas: this.canvas });
 
-    this.init();
-  }
+    this.$state.global.layout.addEventListener(
+      `resize-${this.$state.chart.id}`,
+      ({ yScale }) => {
+        this.canvas.setHeight(yScale.height);
+      }
+    );
 
-  init() {
-    layoutState.height.addEventListener("setHeight", (height) =>
-      this.canvas.setHeight(height - 20)
+    this.$state.global.events.addEventListener(
+      "mousemove",
+      this.onWindowMouseMove.bind(this)
     );
   }
+
+  onWindowMouseMove({ movementY }) {
+    if (!this.canvas.isMouseDown) return;
+    if (movementY === 0) return;
+    this.$state.chart.updateSettings({ lockedYScale: false });
+    const { range } = this.$state.chart;
+    const delta = range[3] - range[2];
+    const delta10P = delta * 0.01;
+    const change = -movementY * delta10P;
+    range[2] += change;
+    range[3] -= change;
+    this.$state.chart.range = range;
+  }
 }
-
-// class TimeScaleLayer extends Layer {
-//   constructor({ canvas }) {
-//     super(canvas);
-
-//     this.renderingQueueId = this.canvas.RE.addToQueue(this.draw.bind(this));
-//   }
-
-//   /**
-//    * Draw canvas function, this is a placeholder
-//    */
-//   draw() {
-//     for (const time of chartState.visibleScales.x) {
-//       const d = new Date(time);
-//       this.canvas.drawTextAtPriceAndTime(
-//         "#A7A8B3",
-//         [time, 15],
-//         "" + `${d.getHours()}:${`0${d.getMinutes()}`.slice(-2)}`
-//       );
-//     }
-//   }
-// }

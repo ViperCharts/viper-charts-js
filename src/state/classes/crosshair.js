@@ -1,39 +1,64 @@
 import EventEmitter from "../../events/event_emitter.ts";
-import chartState from "../../state/chart.js";
-import layoutState from "../../state/layout.js";
 
-export default class Crosshair extends EventEmitter {
-  constructor() {
+export default class CrosshairState extends EventEmitter {
+  constructor({ $global }) {
     super();
-    this.x = -1;
-    this.y = -1;
+
+    this.$global = $global;
+
+    this.visible = false;
     this.timestamp = -1;
     this.price = -1;
+
+    this.crosshairs = {};
   }
 
-  updateCrosshair(x, y) {
-    this.y = y;
+  init() {}
 
-    let timestamp = chartState.getTimestampByXCoord(x);
+  /**
+   * Add a crosshair to crosshair object
+   * @param {string} chartId
+   */
+  addCrosshair(chartId) {
+    this.crosshairs[chartId] = { x: -1, y: -1 };
+  }
+
+  /**
+   *
+   * @param {ChartState} chart
+   * @param {int} x Canvas x position
+   * @param {int} y Canvas y position
+   */
+  updateCrosshair(chart, x, y) {
+    if (!this.visible) return;
+    let timestamp = chart.getTimestampByXCoord(x);
 
     // Check if timestamp remainder is less than half a single timeframe unit
     // (that means left candle is closer than right candle)
-    const remainder = timestamp % chartState.timeframe;
-    if (remainder < chartState.timeframe / 2) {
+    const remainder = timestamp % chart.timeframe;
+    if (remainder < chart.timeframe / 2) {
       timestamp -= remainder;
-      this.x = chartState.getXCoordByTimestamp(timestamp);
     } else {
-      timestamp += chartState.timeframe - remainder;
-      this.x = chartState.getXCoordByTimestamp(timestamp);
+      timestamp += chart.timeframe - remainder;
     }
 
-    const range = chartState.range[3] - chartState.range[2];
-    const screenPerc = y / layoutState.height.height;
+    const range = chart.range[3] - chart.range[2];
+    const screenPerc =
+      y / this.$global.layout.chartDimensions[chart.id].main.height;
     const rangeOffset = (1 - screenPerc) * range;
-    const price = chartState.range[2] + rangeOffset;
+    const price = chart.range[2] + rangeOffset;
 
     this.timestamp = timestamp;
     this.price = Math.round(price);
-    this.fireEvent("updateCrosshair", { x, y });
+
+    // Loop through all charts and get x and y pos using timestamp and price
+    for (const chartId in this.$global.charts) {
+      chart = this.$global.charts[chartId];
+      if (!chart.isInitialized) continue;
+      this.crosshairs[chart.id] = {
+        x: chart.getXCoordByTimestamp(this.timestamp),
+        y: chart.getYCoordByPrice(this.price),
+      };
+    }
   }
 }

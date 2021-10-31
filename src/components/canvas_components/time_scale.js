@@ -1,49 +1,64 @@
-import chartState from "../../state/chart.js";
-import layoutState from "../../state/layout.js";
-
 import Canvas from "../canvas.js";
 import Background from "./background.js";
 import Layer from "./layer.js";
 import TimeSelected from "./time_selected.js";
 
 export default class TimeScale {
-  constructor() {
+  constructor({ $state }) {
+    this.$state = $state;
+
+    this.canvas = null;
+  }
+
+  init() {
     this.canvas = new Canvas({
+      $state: this.$state,
       id: `canvas-timescale`,
+      canvas:
+        this.$state.global.ui.charts[this.$state.chart.id].subcharts.xScale
+          .current,
       height: 20,
-      width: layoutState.width.width - 50,
+      width: this.$state.dimensions.width - 50,
       cursor: "e-resize",
       position: "bottom",
     });
+
     this.background = new Background({
       canvas: this.canvas,
       color: "#080019",
     });
-    this.timeScaleLayer = new TimeScaleLayer({ canvas: this.canvas });
-    this.timeSelected = new TimeSelected({ canvas: this.canvas });
+    this.timeScaleLayer = new TimeScaleLayer({
+      $state: this.$state,
+      canvas: this.canvas,
+    });
+    this.timeSelected = new TimeSelected({
+      $state: this.$state,
+      canvas: this.canvas,
+    });
 
-    this.init();
-  }
-
-  init() {
-    layoutState.width.addEventListener("setWidth", (width) =>
-      this.canvas.setWidth(width - 50)
+    this.$state.global.layout.addEventListener(
+      `resize-${this.$state.chart.id}`,
+      ({ xScale }) => {
+        this.canvas.setWidth(xScale.width);
+      }
     );
   }
 }
 
 class TimeScaleLayer extends Layer {
-  constructor({ canvas }) {
-    super(canvas);
+  constructor({ $state, canvas }) {
+    super({ canvas, type: "single" });
 
-    this.renderingQueueId = this.canvas.RE.addToQueue(this.draw.bind(this));
+    this.$state = $state;
+
+    this.init(this.draw.bind(this));
   }
 
   /**
    * Draw canvas function, this is a placeholder
    */
   draw() {
-    for (const time of chartState.visibleScales.x) {
+    for (const time of this.$state.chart.visibleScales.x) {
       const d = new Date(time);
       this.canvas.drawTextAtPriceAndTime(
         "#A7A8B3",

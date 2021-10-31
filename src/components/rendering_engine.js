@@ -9,11 +9,13 @@ export default class RenderingEngine {
    * @param {Canvas} canvas
    * @param {object} settings
    */
-  constructor(canvas, settings) {
+  constructor({ canvas, $state, settings }) {
+    this.$state = $state;
+
     this.canvas = canvas;
     /**
      * Instructions map for canvas drawings
-     * @type {Map<string,Function>}
+     * @type {Map<string,Layer>}
      */
     this.queue = new Map();
     /**
@@ -47,19 +49,44 @@ export default class RenderingEngine {
     // Reset canvas
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    for (const key of this.renderingOrder) {
-      const item = this.queue.get(key);
-      if (!item.visible) continue;
+    const keys = [...this.renderingOrder];
 
-      item.func();
+    // Loop through all rendering keys
+    for (let i = 0; i < keys.length; ) {
+      const key = keys[i];
+      const item = this.queue.get(key);
+
+      if (!item.visible) {
+        i++;
+        continue;
+      }
+
+      const { layer } = item;
+      const draw = layer.drawFunc.bind(layer);
+
+      if (layer.type === "single") {
+        keys.splice(i, 1);
+        draw();
+        continue;
+      }
+
+      if (layer.type === "multi") {
+        // Loop through all visible data of type
+        const visibleData = this.$state.chart.visibleData[layer.datasetId];
+        for (const data of visibleData.data) {
+          draw(data);
+        }
+      }
+
+      i++;
     }
   }
 
   /**
    * Add a canvas layer drawing function to the queue
-   * @param {Function} func
+   * @param {Layer} layer
    */
-  addToQueue(func, index) {
+  addToQueue(layer, index) {
     // Generate a key that is not yet used
     let id = Utils.uniqueId();
     do {
@@ -68,7 +95,7 @@ export default class RenderingEngine {
 
     // Add to the queue
     this.queue.set(id, {
-      func,
+      layer,
       visible: true,
     });
     this.renderingOrder.push(id);
@@ -101,6 +128,7 @@ export default class RenderingEngine {
 
     this.renderingOrder.splice(i, 1);
     this.queue.delete(id);
+
     return true;
   }
 }
