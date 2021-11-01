@@ -13,11 +13,8 @@ export default class RenderingEngine {
     this.$state = $state;
 
     this.canvas = canvas;
-    /**
-     * Instructions map for canvas drawings
-     * @type {Map<string,Layer>}
-     */
-    this.queue = new Map();
+
+    this.overlayQueue = new Map();
     /**
      * Rendering order of queue Map IDs (first rendered in back, last rendered in front)
      * @type {Array<string>} id
@@ -46,10 +43,46 @@ export default class RenderingEngine {
    * This can be used for when user interacts with the window like resizing
    */
   draw() {
+    const { computedData } = this.$state.chart;
+    computedData.calculateAllSets();
+
     // Reset canvas
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    const keys = [...this.renderingOrder];
+    const ids = [...this.renderingOrder];
+
+    // Loop through all rendering ids
+    for (const id of ids) {
+      let item = this.overlayQueue.get(id);
+
+      // If overlay and not indicator
+      if (item) {
+        const { overlay } = item;
+        overlay.drawFunc.bind(overlay)();
+        continue;
+      }
+
+      const instructions = computedData.instructions[id];
+
+      // Else, indicator, loop through all instructions and their plot points
+      const times = Object.keys(instructions);
+      for (let i = 0; i < times.length; i++) {
+        const instructionsForTime = instructions[times[i]];
+
+        for (let j = 0; j < instructionsForTime.length; j++) {
+          const a = instructionsForTime[j];
+
+          if (a.type === "line") {
+            let b = instructions[times[i + 1]];
+            if (!b) continue;
+            b = b[j];
+            this.canvas.drawLine("#FFF", [a.x, a.y, b.x, b.y]);
+          }
+        }
+      }
+    }
+
+    return;
 
     // Loop through all rendering keys
     for (let i = 0; i < keys.length; ) {
@@ -82,44 +115,11 @@ export default class RenderingEngine {
     }
   }
 
-  /**
-   * Add a canvas layer drawing function to the queue
-   * @param {Layer} layer
-   */
-  addToQueue(layer, index) {
-    // Generate a key that is not yet used
-    let id = Utils.uniqueId();
-    do {
-      id = Utils.uniqueId();
-    } while (this.queue.has(id));
-
-    // Add to the queue
-    this.queue.set(id, {
-      layer,
-      visible: true,
-    });
+  addToRenderingOrder(id) {
     this.renderingOrder.push(id);
-
-    return id;
   }
 
-  toggleVisibility(id) {
-    if (!this.queue.has(id)) {
-      console.error(`${id} was not found in rendering queue`);
-      return;
-    }
-
-    const item = this.queue.get(id);
-    item.visible = !item.visible;
-    this.queue.set(id, item);
-  }
-
-  removeFromQueue(id) {
-    if (!this.queue.has(id)) {
-      console.error(`${id} was not found in rendering queue`);
-      return false;
-    }
-
+  removeFromRenderingOrder(id) {
     const i = this.renderingOrder.indexOf(id);
     if (i < 0) {
       console.error(`${id} was not found in rendering order`);
@@ -127,8 +127,21 @@ export default class RenderingEngine {
     }
 
     this.renderingOrder.splice(i, 1);
-    this.queue.delete(id);
+  }
 
-    return true;
+  addOverlay(overlay) {
+    let id = Utils.uniqueId();
+    do {
+      id = Utils.uniqueId();
+    } while (this.renderingOrder.includes(id));
+
+    this.overlayQueue.set(id, {
+      overlay,
+      visible: true,
+    });
+
+    this.addToRenderingOrder(id);
+
+    return id;
   }
 }

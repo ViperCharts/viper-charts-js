@@ -2,6 +2,7 @@ import Canvas from "../canvas.js";
 import Background from "./background.js";
 import PriceSelected from "./price_selected.js";
 
+// TODO rename to PriceScale
 export default class TimeScale {
   constructor({ $state }) {
     this.$state = $state;

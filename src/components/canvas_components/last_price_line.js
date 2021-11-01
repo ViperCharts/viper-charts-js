@@ -1,15 +1,12 @@
-import Layer from "./layer.js";
+import Overlay from "./overlay.js";
 
-export default class LastPriceLine extends Layer {
+export default class LastPriceLine extends Overlay {
   constructor({ $state, canvas }) {
-    super({ $state, canvas, type: "single" });
-
-    this.$state = $state;
+    super({ $state, canvas });
 
     this.upColor = "#C4FF4966";
     this.downColor = "#FE3A6466";
 
-    this.consumers = ["close"];
     this.init(this.draw.bind(this));
   }
 

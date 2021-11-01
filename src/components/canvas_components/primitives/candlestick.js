@@ -1,20 +1,18 @@
-import Layer from "../layer.js";
+import Indicator from "../indicator.js";
 
-export default class Candlestick extends Layer {
-  constructor({ $state, canvas, datasetId }) {
-    super({ $state, canvas, type: "multi" });
-
-    this.$state = $state;
+export default class Candlestick extends Indicator {
+  constructor({ $state, datasetId }) {
+    super({
+      $state,
+      datasetId,
+      consumers: ["time", "open", "high", "low", "close"],
+    });
 
     this.upColor = "#C4FF49";
     this.downColor = "#FE3A64";
-
-    this.datasetId = datasetId;
-    this.consumers = ["time", "open", "high", "low", "close"];
-    this.init(this.draw.bind(this));
   }
 
-  draw({ time, open, high, low, close, plot, plotBox }) {
+  draw({ time, open, high, low, close, plot, plotLine, plotBox }) {
     const isUp = close >= open;
     const color = isUp ? this.upColor : this.downColor;
 

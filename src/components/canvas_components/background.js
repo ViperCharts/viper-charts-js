@@ -1,8 +1,8 @@
-import Layer from "./layer.js";
+import Overlay from "./overlay.js";
 
-export default class Background extends Layer {
+export default class Background extends Overlay {
   constructor({ canvas }) {
-    super({ canvas, type: "single" });
+    super({ canvas });
 
     this.color = "#080019";
 

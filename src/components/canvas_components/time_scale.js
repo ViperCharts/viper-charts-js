@@ -1,6 +1,6 @@
 import Canvas from "../canvas.js";
 import Background from "./background.js";
-import Layer from "./layer.js";
+import Overlay from "./overlay.js";
 import TimeSelected from "./time_selected.js";
 
 export default class TimeScale {
@@ -27,7 +27,7 @@ export default class TimeScale {
       canvas: this.canvas,
       color: "#080019",
     });
-    this.timeScaleLayer = new TimeScaleLayer({
+    this.timeScaleOverlay = new TimeScaleOverlay({
       $state: this.$state,
       canvas: this.canvas,
     });
@@ -45,7 +45,7 @@ export default class TimeScale {
   }
 }
 
-class TimeScaleLayer extends Layer {
+class TimeScaleOverlay extends Overlay {
   constructor({ $state, canvas }) {
     super({ canvas, type: "single" });
 

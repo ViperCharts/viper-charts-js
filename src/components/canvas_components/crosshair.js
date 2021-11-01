@@ -1,10 +1,8 @@
-import Layer from "./layer";
+import Overlay from "./overlay";
 
-export default class Crosshair extends Layer {
+export default class Crosshair extends Overlay {
   constructor({ $state, canvas }) {
-    super({ canvas, type: "single" });
-
-    this.$state = $state;
+    super({ canvas, $state });
 
     this.init(this.draw.bind(this));
   }

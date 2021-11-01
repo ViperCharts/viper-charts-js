@@ -1,4 +1,7 @@
 import EventEmitter from "../../events/event_emitter.ts";
+import Utils from "../../utils";
+
+import ScriptFunctions from "../../viper_script/script_functions";
 
 class ComputedSet {
   constructor() {
@@ -15,17 +18,95 @@ export default class ComputedData extends EventEmitter {
     this.$global = $global;
     this.$parent = $parent;
 
+    this.queue = new Map();
     this.sets = {};
     this.instructions = {};
   }
 
   calculateAllSets() {
+    let iteratedKey = "";
+    let iteratedTime = 0;
+    this.sets = {};
+
+    const funcWraps = {};
+    for (const funcName in ScriptFunctions) {
+      funcWraps[funcName] = function () {
+        ScriptFunctions[funcName](...arguments, {
+          renderingQueueId: iteratedKey,
+          chartId: this.$parent.id,
+          time: iteratedTime,
+        });
+      }.bind(this);
+    }
+
     // Loop through each indicator that is multi, and build sets for it
+    for (iteratedKey of Array.from(this.queue.keys())) {
+      const item = this.queue.get(iteratedKey);
+      const { indicator, visible } = item;
+
+      if (!visible) continue;
+
+      // Loop through each visible item of dataset indicator is subscribed to
+      const visibleData = this.$parent.visibleData[indicator.datasetId];
+
+      // Run the indicator function for this candle and get all results
+      for (const point of visibleData.data) {
+        iteratedTime = point.time;
+
+        indicator.drawFunc.bind(indicator)({
+          ...point,
+          ...funcWraps,
+        });
+      }
+    }
+
+    this.generateInstructions();
+  }
+
+  addToQueue(indicator, index) {
+    let id = Utils.uniqueId();
+    do {
+      id = Utils.uniqueId();
+    } while (this.queue.has(id));
+
+    this.queue.set(id, {
+      indicator,
+      visible: true,
+    });
+
+    const { canvas } = this.$parent.subcharts.main;
+    canvas.RE.addToRenderingOrder(id);
+
+    return id;
+  }
+
+  toggleVisibility(id) {
+    if (!this.queue.has(id)) {
+      console.error(`${id} was not found in rendering queue`);
+      return;
+    }
+
+    const item = this.queue.get(id);
+    item.visible = !item.visible;
+    this.queue.set(id, item);
+  }
+
+  removeFromQueue(id) {
+    if (!this.queue.has(id)) {
+      console.error(`${id} was not found in rendering queue`);
+      return false;
+    }
+
+    const { canvas } = this.$parent.subcharts.main;
+    canvas.RE.removeFromRenderingOrder(id);
+    this.queue.delete(id);
+
+    return true;
   }
 
   addSetItem(id, time, type, values) {
     if (!this.sets[id]) {
-      this.sets[id] = new Set();
+      this.sets[id] = new ComputedSet();
     }
 
     const set = this.sets[id];
@@ -63,19 +144,20 @@ export default class ComputedData extends EventEmitter {
         // Loop through all instructions for this time
         for (let i = 0; i < item.length; i++) {
           const { type, values } = item[i];
+          const { series } = values;
 
           if (type === "line") {
             instructions[id][time].push({
               type: "line",
               x,
-              y: chart.getYCoordByPrice(values[0]),
+              y: chart.getYCoordByPrice(series[0]),
             });
           }
 
           if (type === "box") {
-            const y1 = chart.getYCoordByPrice(values[0]);
-            const y2 = chart.getYCoordByPrice(values[1]);
-            const w = chart.pixelsPerElement * values[3];
+            const y1 = chart.getYCoordByPrice(series[0]);
+            const y2 = chart.getYCoordByPrice(series[1]);
+            const w = chart.pixelsPerElement * series[3];
             // const height = y2 - y1;
 
             instructions[id][time].push({

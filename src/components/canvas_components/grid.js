@@ -1,10 +1,9 @@
-import Layer from "./layer.js";
+import Overlay from "./overlay.js";
 
-export default class Grid extends Layer {
+export default class Grid extends Overlay {
   constructor({ $state, canvas }) {
-    super({ canvas, type: "single" });
+    super({ canvas, $state });
 
-    this.$state = $state;
     this.color = "#434343";
 
     this.init(this.draw.bind(this));

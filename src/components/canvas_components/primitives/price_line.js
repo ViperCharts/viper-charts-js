@@ -1,14 +1,12 @@
-import Layer from "../layer.js";
+import Indicator from "../indicator.js";
 
-export default class PriceLine extends Layer {
-  constructor({ $state, canvas, datasetId }) {
-    super({ $state, canvas, type: "multi" });
+export default class PriceLine extends Indicator {
+  constructor({ $state, datasetId }) {
+    super({ $state, datasetId, consumers: ["time", "close"] });
 
     this.$state = $state;
     this.color = "#fff";
 
-    this.datasetId = datasetId;
-    this.consumers = ["time", "close"];
     this.init(this.draw.bind(this));
   }
 

@@ -1,10 +1,8 @@
-import Layer from "./layer.js";
+import Overlay from "./overlay.js";
 
-export default class TimeSelected extends Layer {
+export default class TimeSelected extends Overlay {
   constructor({ $state, canvas }) {
-    super({ canvas, type: "single" });
-
-    this.$state = $state;
+    super({ canvas, $state });
 
     this.init(this.draw.bind(this));
   }
