@@ -1,14 +1,11 @@
 import GlobalState from "../state/global.js";
 
-const getChart = (id) => GlobalState.charts[id];
-const getDataset = (id) => GlobalState.data.datasets[id];
-
 export default {
   plot(
     { renderingQueueId, chart, time },
     series,
     title,
-    color,
+    color = "#FFF",
     linewidth,
     style,
     trackprice,
@@ -21,30 +18,43 @@ export default {
   ) {
     chart.computedData.addSetItem(renderingQueueId, time, "line", {
       series: [series],
+      colors: { color },
     });
   },
 
-  plotBox({ renderingQueueId, chart, time }, topValue, bottomValue, width) {
+  plotBox(
+    { renderingQueueId, chart, time },
+    topValue,
+    bottomValue,
+    width,
+    title,
+    color = "#FFF"
+  ) {
     chart.computedData.addSetItem(renderingQueueId, time, "box", {
       series: [topValue, bottomValue, width],
+      colors: { color },
     });
   },
 
   plotCandle(
-    { renderingQueueId, chartId, time },
+    { renderingQueueId, chart, time },
     open,
     high,
     low,
     close,
     title,
-    color,
-    wickcolor,
+    color = "#FFF",
+    wickcolor = "#FFF",
     editable,
     show_last,
     bordercolor
   ) {
     chart.computedData.addSetItem(renderingQueueId, time, "candle", {
       series: [open, high, low, close],
+      colors: {
+        color,
+        wickcolor,
+      },
     });
   },
 

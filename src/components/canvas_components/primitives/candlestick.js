@@ -5,25 +5,18 @@ export default class Candlestick extends Indicator {
     super({
       $state,
       datasetId,
-      consumers: ["time", "open", "high", "low", "close"],
+      consumers: ["open", "high", "low", "close"],
     });
 
     this.upColor = "#C4FF49";
     this.downColor = "#FE3A64";
+
+    this.init(this.draw.bind(this));
   }
 
-  draw({ time, open, high, low, close, plot, plotLine, plotBox }) {
-    const isUp = close >= open;
-    const color = isUp ? this.upColor : this.downColor;
-
-    // Draw wick from high to low as line
-    this.canvas.drawLineByPriceAndTime(color, [time, high, time, low]);
-
-    // Draw body from open to close
-    this.canvas.drawBoxByPriceAndPercWidthOfTime(
-      color,
-      [time, open, close],
-      0.9
-    );
+  draw({ open, high, low, close, plot, plotCandle }) {
+    const color = close >= open ? this.upColor : this.downColor;
+    plot(close - close * 0.2);
+    plotCandle(open, high, low, close, "Candlestick", color, color);
   }
 }

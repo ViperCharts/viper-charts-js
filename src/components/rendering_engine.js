@@ -76,42 +76,18 @@ export default class RenderingEngine {
             let b = instructions[times[i + 1]];
             if (!b) continue;
             b = b[j];
-            this.canvas.drawLine("#FFF", [a.x, a.y, b.x, b.y]);
+            this.canvas.drawLine(a.color, [a.x, a.y, b.x, b.y]);
+          }
+
+          if (a.type === "box") {
+            this.canvas.drawBox(a.color, [a.x, a.y, a.w, a.h]);
+          }
+
+          if (a.type === "single-line") {
+            this.canvas.drawLine(a.color, [a.x, a.y, a.x2, a.y2]);
           }
         }
       }
-    }
-
-    return;
-
-    // Loop through all rendering keys
-    for (let i = 0; i < keys.length; ) {
-      const key = keys[i];
-      const item = this.queue.get(key);
-
-      if (!item.visible) {
-        i++;
-        continue;
-      }
-
-      const { layer } = item;
-      const draw = layer.drawFunc.bind(layer);
-
-      if (layer.type === "single") {
-        keys.splice(i, 1);
-        draw();
-        continue;
-      }
-
-      if (layer.type === "multi") {
-        // Loop through all visible data of type
-        const visibleData = this.$state.chart.visibleData[layer.datasetId];
-        for (const data of visibleData.data) {
-          draw(data);
-        }
-      }
-
-      i++;
     }
   }
 

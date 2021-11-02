@@ -127,7 +127,6 @@ export default class ComputedData extends EventEmitter {
   }
 
   generateInstructions() {
-    const { canvas } = this.$parent;
     const chart = this.$parent;
     const instructions = {};
 
@@ -154,6 +153,7 @@ export default class ComputedData extends EventEmitter {
               type: "line",
               x,
               y: chart.getYCoordByPrice(series[0]),
+              color: values.colors.color,
             });
           }
 
@@ -161,7 +161,6 @@ export default class ComputedData extends EventEmitter {
             const y1 = chart.getYCoordByPrice(series[0]);
             const y2 = chart.getYCoordByPrice(series[1]);
             const w = chart.pixelsPerElement * series[3];
-            // const height = y2 - y1;
 
             instructions[id][time].push({
               type: "box",
@@ -169,6 +168,33 @@ export default class ComputedData extends EventEmitter {
               y: y1,
               w: w,
               h: Math.abs(y2) - Math.abs(y1),
+              color: values.colors.color,
+            });
+          }
+
+          if (type === "candle") {
+            const y1 = chart.getYCoordByPrice(series[0]);
+            const y2 = chart.getYCoordByPrice(series[1]);
+            const y3 = chart.getYCoordByPrice(series[2]);
+            const y4 = chart.getYCoordByPrice(series[3]);
+            const w = chart.pixelsPerElement * 0.9;
+
+            instructions[id][time].push({
+              type: "box",
+              x: x - w / 2,
+              y: y1,
+              w: w,
+              h: Math.abs(y4) - Math.abs(y1),
+              color: values.colors.color,
+            });
+
+            instructions[id][time].push({
+              type: "single-line",
+              x,
+              y: y2,
+              x2: x,
+              y2: y3,
+              color: values.colors.wickcolor,
             });
           }
         }
