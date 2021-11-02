@@ -59,4 +59,7 @@ export default {
   },
 
   plotText() {},
+
+  // TODO add more functions
+  sma({ renderingQueueId, chart, time, index }, source, length) {},
 };
