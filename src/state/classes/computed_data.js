@@ -31,11 +31,14 @@ export default class ComputedData extends EventEmitter {
     const funcWraps = {};
     for (const funcName in ScriptFunctions) {
       funcWraps[funcName] = function () {
-        ScriptFunctions[funcName](...arguments, {
-          renderingQueueId: iteratedKey,
-          chartId: this.$parent.id,
-          time: iteratedTime,
-        });
+        ScriptFunctions[funcName](
+          {
+            renderingQueueId: iteratedKey,
+            chart: this.$parent,
+            time: iteratedTime,
+          },
+          ...arguments
+        );
       }.bind(this);
     }
 
