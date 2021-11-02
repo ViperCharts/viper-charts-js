@@ -25,7 +25,7 @@ export default class ChartState extends EventEmitter {
     this.range = [];
     this.datasets = {};
     this.visibleData = {};
-    this.computedData = new ComputedData({ $global, $parent: this });
+    this.computedData = new ComputedData({ $global, $chart: this });
     this.visibleScales = { x: [], y: [] };
     this.subcharts = {
       main: undefined,
@@ -36,7 +36,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
-      scaleType: "default",
+      scaleType: "percent",
     };
 
     this.setTimeframe(timeframe);

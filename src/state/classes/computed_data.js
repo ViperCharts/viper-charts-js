@@ -12,11 +12,11 @@ class ComputedSet {
 }
 
 export default class ComputedData extends EventEmitter {
-  constructor({ $global, $parent }) {
+  constructor({ $global, $chart }) {
     super();
 
     this.$global = $global;
-    this.$parent = $parent;
+    this.$chart = $chart;
 
     this.queue = new Map();
     this.sets = {};
@@ -34,7 +34,7 @@ export default class ComputedData extends EventEmitter {
         ScriptFunctions[funcName](
           {
             renderingQueueId: iteratedKey,
-            chart: this.$parent,
+            chart: this.$chart,
             time: iteratedTime,
           },
           ...arguments
@@ -50,7 +50,7 @@ export default class ComputedData extends EventEmitter {
       if (!visible) continue;
 
       // Loop through each visible item of dataset indicator is subscribed to
-      const visibleData = this.$parent.visibleData[indicator.datasetId];
+      const visibleData = this.$chart.visibleData[indicator.datasetId];
 
       // Run the indicator function for this candle and get all results
       for (const point of visibleData.data) {
@@ -77,7 +77,7 @@ export default class ComputedData extends EventEmitter {
       visible: true,
     });
 
-    const { canvas } = this.$parent.subcharts.main;
+    const { canvas } = this.$chart.subcharts.main;
     canvas.RE.addToRenderingOrder(id);
 
     return id;
@@ -100,7 +100,7 @@ export default class ComputedData extends EventEmitter {
       return false;
     }
 
-    const { canvas } = this.$parent.subcharts.main;
+    const { canvas } = this.$chart.subcharts.main;
     canvas.RE.removeFromRenderingOrder(id);
     this.queue.delete(id);
 
@@ -127,7 +127,7 @@ export default class ComputedData extends EventEmitter {
   }
 
   generateInstructions() {
-    const chart = this.$parent;
+    const chart = this.$chart;
     const instructions = {};
 
     for (const id in this.sets) {
@@ -137,7 +137,7 @@ export default class ComputedData extends EventEmitter {
       instructions[id] = {};
 
       for (const time in data) {
-        const item = data[time];
+        const item = JSON.parse(JSON.stringify(data[time]));
 
         instructions[id][time] = [];
 
@@ -146,6 +146,20 @@ export default class ComputedData extends EventEmitter {
         // Loop through all instructions for this time
         for (let i = 0; i < item.length; i++) {
           const { type, values } = item[i];
+
+          // If percent, loop through all instructions at and loop through every value for each instruction
+          // and compare it to starting value
+          if (this.$chart.settings.scaleType === "percent") {
+            const firstInstructions = data[Object.keys(data)[0]];
+
+            if (firstInstructions) {
+              const { series: firstSeries } = firstInstructions[i].values;
+              values.series = values.series.map((val, j) => {
+                return ((val - firstSeries[j]) / firstSeries[j]) * 100;
+              });
+            }
+          }
+
           const { series } = values;
 
           if (type === "line") {
