@@ -20,6 +20,8 @@ export default class ComputedData extends EventEmitter {
 
     this.queue = new Map();
     this.sets = {};
+    this.max = -Infinity;
+    this.min = Infinity;
     this.instructions = {};
   }
 
@@ -117,16 +119,25 @@ export default class ComputedData extends EventEmitter {
     else set.data[time].push({ type, values });
 
     // Update max & min if applicable
-    for (const key in values) {
-      if (values[key] < set.min) {
-        set.min = values[key];
-      } else if (values[key] > set.max) {
-        set.max = values[key];
+    const { series } = values;
+    for (const val of series) {
+      if (val < set.min) {
+        set.min = val;
+      }
+      if (val > set.max) {
+        set.max = val;
       }
     }
+
+    this.sets[id] = set;
   }
 
   generateInstructions() {
+    // TODO refactor so we only calculate indicator data where necissary
+
+    let max = -Infinity;
+    let min = Infinity;
+
     const chart = this.$chart;
     const instructions = {};
 
@@ -161,6 +172,16 @@ export default class ComputedData extends EventEmitter {
           }
 
           const { series } = values;
+
+          // Compute max plotted visible data
+          for (const value of series) {
+            if (value > max) {
+              max = value;
+            }
+            if (value < min) {
+              min = value;
+            }
+          }
 
           if (type === "line") {
             instructions[id][time].push({
@@ -216,5 +237,7 @@ export default class ComputedData extends EventEmitter {
     }
 
     this.instructions = instructions;
+    this.max = max;
+    this.min = min;
   }
 }

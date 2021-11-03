@@ -36,7 +36,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
-      scaleType: "percent",
+      scaleType: "default",
     };
 
     this.setTimeframe(timeframe);
@@ -269,21 +269,16 @@ export default class ChartState extends EventEmitter {
           }
         }
 
-        if (this.settings.scaleType === "percent") {
-          const { close } = visibleDataItem.data[0];
-          visibleData.max = ((visibleDataItem.max - close) / close) * 100;
-          visibleData.min =
-            ((close - visibleDataItem.min) / visibleDataItem.min) * 100;
-        }
-
         if (visibleDataItem.max > max) max = visibleDataItem.max;
         if (visibleDataItem.min < min) min = visibleDataItem.min;
       }
 
       this.visibleData = visibleData;
+      this.computedData.calculateAllSets();
 
       // If price / y scale is locked, set min and max y values
       if (this.settings.lockedYScale) {
+        const { min, max } = this.computedData;
         const ySpread5P = (max - min) * 0.05;
         this.range[2] = min - ySpread5P;
         this.range[3] = max + ySpread5P;

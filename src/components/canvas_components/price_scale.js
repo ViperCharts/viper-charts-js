@@ -54,5 +54,6 @@ export default class TimeScale {
     range[2] += change;
     range[3] -= change;
     this.$state.chart.range = range;
+    this.$state.chart.computedData.generateInstructions();
   }
 }

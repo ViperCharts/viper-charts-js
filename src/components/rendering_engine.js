@@ -44,7 +44,6 @@ export default class RenderingEngine {
    */
   draw() {
     const { computedData } = this.$state.chart;
-    computedData.calculateAllSets();
 
     // Reset canvas
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
