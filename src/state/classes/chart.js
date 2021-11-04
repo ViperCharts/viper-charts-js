@@ -171,9 +171,7 @@ export default class ChartState extends EventEmitter {
   }
 
   toggleVisibility(id) {
-    const { RE } = this.subcharts.main.canvas;
-
-    RE.toggleVisibility(id);
+    this.computedData.toggleVisibility(id);
     const visible = !this.indicators[id].visible;
     this.indicators[id].visible = visible;
     this.$global.ui.charts[this.id].updateIndicator(id, { visible });
@@ -183,10 +181,8 @@ export default class ChartState extends EventEmitter {
   }
 
   removeIndicator(id) {
-    const { RE } = this.subcharts.main.canvas;
-
     const indicator = this.indicators[id];
-    RE.removeFromQueue(id);
+    this.computedData.removeFromQueue(id);
     delete this.indicators[id];
 
     // Remove dataset listener and dataset if no more listeners;

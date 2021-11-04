@@ -11,7 +11,8 @@ export default class Indicator extends Layer {
 
   init(drawImplentation) {
     this.drawImplentation = drawImplentation;
-    this.$state.chart.computedData.addToQueue(this);
+    const id = this.$state.chart.computedData.addToQueue(this);
+    this.renderingQueueId = id;
   }
 
   drawFunc(data) {
