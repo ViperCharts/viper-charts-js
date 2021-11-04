@@ -189,6 +189,7 @@ export default class ComputedData extends EventEmitter {
               x,
               y: chart.getYCoordByPrice(series[0]),
               color: values.colors.color,
+              linewidth: values.linewidth,
             });
           }
 

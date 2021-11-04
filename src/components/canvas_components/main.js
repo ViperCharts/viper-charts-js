@@ -34,6 +34,7 @@ export default class Main {
       ({ main }) => {
         this.canvas.setWidth(main.width);
         this.canvas.setHeight(main.height);
+        this.$state.chart.setVisibleRange();
       }
     );
 

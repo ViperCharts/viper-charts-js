@@ -36,7 +36,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
-      scaleType: "default",
+      scaleType: "percent",
     };
 
     this.setTimeframe(timeframe);
@@ -153,7 +153,6 @@ export default class ChartState extends EventEmitter {
     this.fireEvent("set-timeframe", timeframe);
     // Take all old datasets and re-subscribe based on active timeframe
 
-    // Check if this dataset exists and is loaded. If not, request from parent
     if (Object.keys(this.datasets).length) {
       this.setInitialVisibleRange();
     }
@@ -180,7 +179,7 @@ export default class ChartState extends EventEmitter {
     this.$global.ui.charts[this.id].updateIndicator(id, { visible });
 
     // Re calculate visible range
-    this.setVisibleRange({ start: this.range[0], end: this.range[1] });
+    this.setVisibleRange();
   }
 
   removeIndicator(id) {
@@ -199,14 +198,14 @@ export default class ChartState extends EventEmitter {
 
     this.$global.ui.charts[this.id].removeIndicator(id);
 
-    this.setVisibleRange({
-      start: this.range[0],
-      end: this.range[1],
-    });
+    this.setVisibleRange();
   }
 
-  setVisibleRange({ start, end }, movedId = this.id) {
+  setVisibleRange(newRange = {}, movedId = this.id) {
+    const { start = this.range[0], end = this.range[1] } = newRange;
     const visibleData = {};
+
+    const { range } = this;
 
     const datasets = Object.values(this.datasets);
     if (datasets.length > 0) {
@@ -274,19 +273,21 @@ export default class ChartState extends EventEmitter {
       }
 
       this.visibleData = visibleData;
-      this.computedData.calculateAllSets();
 
       // If price / y scale is locked, set min and max y values
       if (this.settings.lockedYScale) {
         const { min, max } = this.computedData;
         const ySpread5P = (max - min) * 0.05;
-        this.range[2] = min - ySpread5P;
-        this.range[3] = max + ySpread5P;
+        range[2] = min - ySpread5P;
+        range[3] = max + ySpread5P;
       }
     }
 
-    this.range[0] = start;
-    this.range[1] = end;
+    range[0] = start;
+    range[1] = end;
+
+    // Update range and recalculate all indicator data
+    this.setRange(range);
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours
@@ -394,6 +395,16 @@ export default class ChartState extends EventEmitter {
     const start = end - candlesInView * this.timeframe;
 
     this.setVisibleRange({ start, end });
+  }
+
+  setRange({
+    start = this.range[0],
+    end = this.range[1],
+    min = this.range[2],
+    max = this.range[3],
+  }) {
+    this.computedData.calculateAllSets();
+    this.range = [start, end, min, max];
   }
 
   getTimestampByXCoord(x) {

@@ -75,7 +75,7 @@ export default class RenderingEngine {
             let b = instructions[times[i + 1]];
             if (!b) continue;
             b = b[j];
-            this.canvas.drawLine(a.color, [a.x, a.y, b.x, b.y]);
+            this.canvas.drawLine(a.color, [a.x, a.y, b.x, b.y], a.linewidth);
           }
 
           if (a.type === "box") {

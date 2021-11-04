@@ -19,6 +19,7 @@ export default {
     chart.computedData.addSetItem(renderingQueueId, time, "line", {
       series: [series],
       colors: { color },
+      linewidth,
     });
   },
 

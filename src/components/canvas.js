@@ -1,5 +1,7 @@
 import RenderingEngine from "./rendering_engine.js";
 
+import Utils from "../utils";
+
 export default class Canvas {
   constructor({ $state, canvas, cursor = "default" }) {
     this.$state = $state;
@@ -50,7 +52,12 @@ export default class Canvas {
    */
   drawBox(color, [x, y, w, h]) {
     this.ctx.fillStyle = color;
-    this.ctx.fillRect(x, y, w, h);
+    this.ctx.fillRect(
+      x,
+      y,
+      Utils.getNegativeAgnosticMax(w, 1),
+      Utils.getNegativeAgnosticMax(h, 1)
+    );
   }
 
   drawText(color, [x, y], text, options) {
@@ -88,9 +95,11 @@ export default class Canvas {
    * Draw line between 2 points using canvas pixel coords
    * @param {string} color Hex color
    * @param {number[]} coords Coordinates to draw line from and to
+   * @param {number} linewidth Width in pixels of the line to draw
    */
-  drawLine(color, coords) {
+  drawLine(color, coords, linewidth = 1) {
     this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = linewidth;
     this.ctx.beginPath();
     this.ctx.moveTo(Math.floor(coords[0]), Math.floor(coords[1]));
     this.ctx.lineTo(Math.floor(coords[2]), Math.floor(coords[3]));
