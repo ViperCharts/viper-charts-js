@@ -205,19 +205,12 @@ export default class ChartState extends EventEmitter {
 
     const datasets = Object.values(this.datasets);
     if (datasets.length > 0) {
-      let max = 0;
-      let min = Infinity;
-
       // Loop through each dataset and find the max value
       for (const dataset of datasets) {
         const { data } = dataset;
         const localId = dataset.getTimeframeAgnosticId();
 
-        visibleData[localId] = {
-          data: [],
-          min: Infinity,
-          max: 0,
-        };
+        visibleData[localId] = { data: [] };
 
         // Loop through all subscribed indicators to verify at least one is visible
         let isOneVisible = false;
@@ -236,36 +229,21 @@ export default class ChartState extends EventEmitter {
 
         const visibleDataItem = visibleData[localId];
 
-        // Start loop from right to find end candle
-        for (let i = data.length - 1; i > -1; i--) {
-          const candle = data[i];
-          const timestamp = candle.time;
+        for (
+          let timestamp = start - (start % this.timeframe);
+          timestamp <= end + (this.timeframe - (end % this.timeframe));
+          timestamp += this.timeframe
+        ) {
+          const candle = data[timestamp];
 
-          // If right timestamp is not less than right view boundary
-          // *We minus the timeframe to the timstamp so we can get data for candles that may be mostly
-          // cut off screen
-          if (timestamp > end + this.timeframe / 2) continue;
-
-          visibleDataItem.data.unshift(candle);
-
-          // If chart y scale is locked
-          if (this.settings.lockedYScale) {
-            if (candle.low < visibleDataItem.min) {
-              visibleDataItem.min = candle.low;
-            }
-            if (candle.high > visibleDataItem.max) {
-              visibleDataItem.max = candle.high;
-            }
-          }
-
-          // If last requried timestamp is reached
-          if (timestamp < start + this.timeframe / 2) {
-            break;
+          // Check if candle has not been loaded or if its loaded, but no data was available at time
+          if (candle !== undefined) {
+            visibleDataItem.data.push({
+              time: timestamp,
+              ...candle,
+            });
           }
         }
-
-        if (visibleDataItem.max > max) max = visibleDataItem.max;
-        if (visibleDataItem.min < min) min = visibleDataItem.min;
       }
 
       this.visibleData = visibleData;
