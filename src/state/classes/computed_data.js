@@ -165,7 +165,10 @@ export default class ComputedData extends EventEmitter {
 
             if (firstInstructions) {
               const { series: firstSeries } = firstInstructions[i].values;
+
+              // TODO fix this so we dont compare EVERY value to start candle
               values.series = values.series.map((val, j) => {
+                console;
                 return ((val - firstSeries[j]) / firstSeries[j]) * 100;
               });
             }

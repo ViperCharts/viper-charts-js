@@ -8,11 +8,7 @@ export default class Chart extends EventEmitter {
   constructor(params = {}) {
     super();
 
-    const {
-      layout = [],
-      sources,
-      onRequestHistoricalData = async () => {},
-    } = params;
+    const { layout = [], sources, onRequestHistoricalData = () => {} } = params;
 
     this.$global = GlobalState;
     this.$global.api = this;

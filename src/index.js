@@ -45,11 +45,15 @@ import Utils from "./utils";
     timeframe,
     start,
     end,
+    callback,
   }) {
     if (source === "COINBASE") {
+      start = new Date(start).toISOString();
+      end = new Date(end).toISOString();
+
       const seconds = timeframe / 1000;
       const res = await fetch(
-        `https://api.exchange.coinbase.com/products/${name}/candles?granularity=${seconds}`
+        `https://api.exchange.coinbase.com/products/${name}/candles?granularity=${seconds}&start=${start}&end=${end}`
       );
 
       const json = (await res.json()).reverse();
@@ -64,7 +68,7 @@ import Utils from "./utils";
         };
       }
 
-      return data;
+      callback(data);
     }
   }
 })();
