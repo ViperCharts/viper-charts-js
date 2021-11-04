@@ -61,9 +61,14 @@ export default class RenderingEngine {
         continue;
       }
 
+      // Else, indicator, loop through all instructions and their plot points
       const instructions = computedData.instructions[id];
 
-      // Else, indicator, loop through all instructions and their plot points
+      // If no instructions
+      if (!instructions || typeof instructions !== "object") {
+        continue;
+      }
+
       const times = Object.keys(instructions);
       for (let i = 0; i < times.length; i++) {
         const instructionsForTime = instructions[times[i]];
