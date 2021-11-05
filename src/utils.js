@@ -3,7 +3,7 @@ export default {
     return Math.random().toString(36).substr(2, 13);
   },
 
-  getNegativeAgnosticMax(value, max) {
+  getAbsoluteMax(value, max) {
     if (value < 0) return Math.min(value, -max);
     return Math.max(value, max);
   },

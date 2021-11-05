@@ -55,8 +55,8 @@ export default class Canvas {
     this.ctx.fillRect(
       x,
       y,
-      Utils.getNegativeAgnosticMax(w, 1),
-      Utils.getNegativeAgnosticMax(h, 1)
+      Utils.getAbsoluteMax(w, 1),
+      Utils.getAbsoluteMax(h, 1)
     );
   }
 

@@ -34,10 +34,11 @@ export default class ComputedData extends EventEmitter {
   calculateOneSet(key) {
     const { indicator, visible } = this.queue.get(key);
 
+    // Delete old set
+    delete this.sets[key];
+
     // If indicator is set to invisible, dont calculate data
     if (!visible) return;
-
-    delete this.sets[key];
 
     let iteratedTime = 0;
 

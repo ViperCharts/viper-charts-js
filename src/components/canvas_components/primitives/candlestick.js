@@ -14,7 +14,7 @@ export default class Candlestick extends Indicator {
     this.init(this.draw.bind(this));
   }
 
-  draw({ open, high, low, close, plot, plotCandle }) {
+  draw({ open, high, low, close, plotCandle }) {
     const color = close >= open ? this.upColor : this.downColor;
     plotCandle(open, high, low, close, "Candlestick", color, color);
   }

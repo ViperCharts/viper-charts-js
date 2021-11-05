@@ -36,7 +36,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
-      scaleType: "percent",
+      scaleType: "default",
     };
 
     this.setTimeframe(timeframe);
@@ -252,8 +252,8 @@ export default class ChartState extends EventEmitter {
     range[0] = start;
     range[1] = end;
 
-    // Update range and recalculate all indicator data
-    this.setRange(range);
+    // Re-calculate all set visible data
+    this.computedData.calculateAllSets();
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours
