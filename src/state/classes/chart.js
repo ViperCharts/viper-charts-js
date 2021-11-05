@@ -237,7 +237,7 @@ export default class ChartState extends EventEmitter {
           const candle = data[timestamp];
 
           // Check if candle has not been loaded or if its loaded, but no data was available at time
-          if (candle !== undefined) {
+          if (candle !== undefined && candle !== null) {
             visibleDataItem.data.push({
               time: timestamp,
               ...candle,

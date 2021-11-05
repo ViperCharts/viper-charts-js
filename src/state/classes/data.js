@@ -14,7 +14,6 @@ class Request {
   }
 
   fireRequest() {
-    console.log(1);
     const { source, name, timeframe, data } = this.dataset;
 
     // Make sure that some of the candles in this time spread from start to end
@@ -26,7 +25,6 @@ class Request {
       timestamp += timeframe
     ) {
       // Null means it was fetched already, so if not null, fetch
-      console.log(data[timestamp]);
       if (data[timestamp] !== null) {
         isOkToFetch = true;
         break;
@@ -37,7 +35,6 @@ class Request {
       return;
     }
 
-    console.log(2);
     // Tell client to fire request
     this.$global.api.onRequestHistoricalData({
       source,
@@ -49,8 +46,6 @@ class Request {
         this.dataset.updateDataset(this.start, this.end, updates);
       }).bind(this.dataset),
     });
-
-    console.log(3);
 
     // TODO create timeout for requests never returned
   }
@@ -99,6 +94,7 @@ class Dataset extends EventEmitter {
     // Decrement requests in progress count and attempt to load another request if it exists'
     const { count } = this.$global.data.requests;
     this.$global.data.requests.count = Math.max(count - 1, 0);
+
     this.$global.data.attemptToLoadNextRequest();
   }
 
