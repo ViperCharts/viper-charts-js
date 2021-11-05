@@ -26,16 +26,27 @@ export default class ComputedData extends EventEmitter {
   }
 
   calculateAllSets() {
-    let iteratedKey = "";
+    // Loop through each indicator and build sets for its plotted data
+    Array.from(this.queue.keys()).forEach(this.calculateOneSet.bind(this));
+    this.generateInstructions();
+  }
+
+  calculateOneSet(key) {
+    const { indicator, visible } = this.queue.get(key);
+
+    // If indicator is set to invisible, dont calculate data
+    if (!visible) return;
+
+    delete this.sets[key];
+
     let iteratedTime = 0;
-    this.sets = {};
 
     const funcWraps = {};
     for (const funcName in ScriptFunctions) {
       funcWraps[funcName] = function () {
         ScriptFunctions[funcName](
           {
-            renderingQueueId: iteratedKey,
+            renderingQueueId: key,
             chart: this.$chart,
             time: iteratedTime,
           },
@@ -44,28 +55,18 @@ export default class ComputedData extends EventEmitter {
       }.bind(this);
     }
 
-    // Loop through each indicator that is multi, and build sets for it
-    for (iteratedKey of Array.from(this.queue.keys())) {
-      const item = this.queue.get(iteratedKey);
-      const { indicator, visible } = item;
+    // Loop through each visible item of dataset indicator is subscribed to
+    const visibleData = this.$chart.visibleData[indicator.datasetId];
 
-      if (!visible) continue;
+    // Run the indicator function for this candle and get all results
+    for (const point of visibleData.data) {
+      iteratedTime = point.time;
 
-      // Loop through each visible item of dataset indicator is subscribed to
-      const visibleData = this.$chart.visibleData[indicator.datasetId];
-
-      // Run the indicator function for this candle and get all results
-      for (const point of visibleData.data) {
-        iteratedTime = point.time;
-
-        indicator.drawFunc.bind(indicator)({
-          ...point,
-          ...funcWraps,
-        });
-      }
+      indicator.drawFunc.bind(indicator)({
+        ...point,
+        ...funcWraps,
+      });
     }
-
-    this.generateInstructions();
   }
 
   addToQueue(indicator, index) {
@@ -133,14 +134,24 @@ export default class ComputedData extends EventEmitter {
   }
 
   generateInstructions() {
-    // TODO refactor so we only calculate indicator data where necissary
-
     let max = -Infinity;
     let min = Infinity;
+
+    // Loop through all sets and set values and calculate min and max plotted values
+    // Object.keys(this.sets).forEach((setKey) => {
+    //   const { data } = this.sets[setKey];
+    //   Object.keys(data).forEach((time) => {
+    //     const items = JSON.parse(JSON.stringify(data[time]));
+    //     for (let i = 0; i < items.length; i++) {
+    //       const { values } = items[i];
+    //     }
+    //   });
+    // });
 
     const chart = this.$chart;
     const instructions = {};
 
+    // Calculate actual instructions
     for (const id in this.sets) {
       const set = this.sets[id];
       const { data } = set;
@@ -168,7 +179,6 @@ export default class ComputedData extends EventEmitter {
 
               // TODO fix this so we dont compare EVERY value to start candle
               values.series = values.series.map((val, j) => {
-                console;
                 return ((val - firstSeries[j]) / firstSeries[j]) * 100;
               });
             }

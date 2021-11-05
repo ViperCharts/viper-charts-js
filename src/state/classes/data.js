@@ -89,7 +89,24 @@ class Dataset extends EventEmitter {
     // Apply updates
     Object.assign(this.data, updates);
 
-    // TODO update all listeners to re-render this particular element
+    // Update all listeners to re-render this particular element
+    for (const chartId in this.subscribers) {
+      const chart = this.$global.charts[chartId];
+
+      // Load the visible data for this chart range
+      chart.setVisibleRange();
+
+      // Calculate all indicator data for subscribers to dataset
+      const indicatorIdArray = this.subscribers[chartId];
+      for (const renderingQueueId of indicatorIdArray) {
+        chart.computedData.calculateOneSet(renderingQueueId);
+      }
+
+      // Re-generate pixel instructions for canvas
+      // This MUST be done once. Otherwise it will waste resources
+      // and be very laggy
+      chart.computedData.generateInstructions();
+    }
 
     // Decrement requests in progress count and attempt to load another request if it exists'
     const { count } = this.$global.data.requests;
