@@ -134,45 +134,29 @@ export default class ComputedData extends EventEmitter {
   }
 
   generateInstructions() {
+    // TODO queue this and debounce it
+
     let max = -Infinity;
     let min = Infinity;
 
+    const dataDictionaryCopy = {};
+
     // Loop through all sets and set values and calculate min and max plotted values
-    // Object.keys(this.sets).forEach((setKey) => {
-    //   const { data } = this.sets[setKey];
-    //   Object.keys(data).forEach((time) => {
-    //     const items = JSON.parse(JSON.stringify(data[time]));
-    //     for (let i = 0; i < items.length; i++) {
-    //       const { values } = items[i];
-    //     }
-    //   });
-    // });
-
-    const chart = this.$chart;
-    const instructions = {};
-
-    // Calculate actual instructions
     for (const id in this.sets) {
       const set = this.sets[id];
-      const { data } = set;
-
-      instructions[id] = {};
+      dataDictionaryCopy[id] = JSON.parse(JSON.stringify(set.data));
+      const data = dataDictionaryCopy[id];
 
       for (const time in data) {
-        const item = JSON.parse(JSON.stringify(data[time]));
+        const item = data[time];
 
-        instructions[id][time] = [];
-
-        const x = chart.getXCoordByTimestamp(time);
-
-        // Loop through all instructions for this time
         for (let i = 0; i < item.length; i++) {
-          const { type, values } = item[i];
+          const { values } = item[i];
 
           // If percent, loop through all instructions at and loop through every value for each instruction
           // and compare it to starting value
           if (this.$chart.settings.scaleType === "percent") {
-            const firstInstructions = data[Object.keys(data)[0]];
+            const firstInstructions = set.data[Object.keys(set.data)[0]];
 
             if (firstInstructions) {
               const { series: firstSeries } = firstInstructions[i].values;
@@ -195,6 +179,33 @@ export default class ComputedData extends EventEmitter {
               min = value;
             }
           }
+        }
+      }
+    }
+
+    this.max = max;
+    this.min = min;
+    const chart = this.$chart;
+    chart.setRange({ min, max }, true);
+    const instructions = {};
+
+    // Calculate actual instructions
+    for (const id in dataDictionaryCopy) {
+      const data = dataDictionaryCopy[id];
+
+      instructions[id] = {};
+
+      for (const time in data) {
+        const item = JSON.parse(JSON.stringify(data[time]));
+
+        instructions[id][time] = [];
+
+        const x = chart.getXCoordByTimestamp(time);
+
+        // Loop through all instructions for this time
+        for (let i = 0; i < item.length; i++) {
+          const { type, values } = item[i];
+          const { series } = values;
 
           if (type === "line") {
             instructions[id][time].push({
@@ -251,7 +262,5 @@ export default class ComputedData extends EventEmitter {
     }
 
     this.instructions = instructions;
-    this.max = max;
-    this.min = min;
   }
 }

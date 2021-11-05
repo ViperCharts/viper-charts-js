@@ -247,14 +247,6 @@ export default class ChartState extends EventEmitter {
       }
 
       this.visibleData = visibleData;
-
-      // If price / y scale is locked, set min and max y values
-      if (this.settings.lockedYScale) {
-        const { min, max } = this.computedData;
-        const ySpread5P = (max - min) * 0.05;
-        range[2] = min - ySpread5P;
-        range[3] = max + ySpread5P;
-      }
     }
 
     range[0] = start;
@@ -371,14 +363,26 @@ export default class ChartState extends EventEmitter {
     this.setVisibleRange({ start, end });
   }
 
-  setRange({
-    start = this.range[0],
-    end = this.range[1],
-    min = this.range[2],
-    max = this.range[3],
-  }) {
-    this.computedData.calculateAllSets();
-    this.range = [start, end, min, max];
+  setRange(
+    {
+      start = this.range[0],
+      end = this.range[1],
+      min = this.range[2],
+      max = this.range[3],
+    },
+    noRecalc
+  ) {
+    if (!noRecalc) this.computedData.calculateAllSets();
+
+    this.range[0] = start;
+    this.range[1] = end;
+
+    // If price / y scale is locked, set min and max y values
+    if (this.settings.lockedYScale) {
+      const ySpread5P = (max - min) * 0.05;
+      this.range[2] = min - ySpread5P;
+      this.range[3] = max + ySpread5P;
+    }
   }
 
   getTimestampByXCoord(x) {
