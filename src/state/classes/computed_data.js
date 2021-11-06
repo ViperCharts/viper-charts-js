@@ -58,6 +58,7 @@ export default class ComputedData extends EventEmitter {
 
     // Loop through each visible item of dataset indicator is subscribed to
     const visibleData = this.$chart.visibleData[indicator.datasetId];
+    if (!visibleData || !visibleData.data) return;
 
     // Run the indicator function for this candle and get all results
     for (const point of visibleData.data) {

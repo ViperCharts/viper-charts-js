@@ -36,7 +36,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
-      scaleType: "default",
+      scaleType: "percent",
     };
 
     this.setTimeframe(timeframe);
@@ -122,9 +122,25 @@ export default class ChartState extends EventEmitter {
   }
 
   async setTimeframe(timeframe, movedId = this.id) {
-    const newDatasets = {};
+    const oldDatasets = {};
 
+    // Copy all datasets so we can reset master in preperation for setting new visible range
     for (const oldDataset of Object.values(this.datasets)) {
+      oldDatasets[oldDataset.getTimeframeAgnosticId()] = oldDataset;
+    }
+
+    // Now that we have unsubscribed from datasets, and emptied the local dataset array
+    // We can reset to initial default range
+    this.visibleData = {};
+    this.datasets = {};
+    this.timeframe = timeframe;
+    this.fireEvent("set-timeframe", timeframe);
+    if (this.isInitialized) {
+      this.setInitialVisibleRange();
+    }
+
+    // Create new datasets based on old dataset values
+    for (const oldDataset of Object.values(oldDatasets)) {
       // Create or fetch dataset for new timeframe
       const dataset = await this.$global.data.requestHistoricalData({
         dataset: {
@@ -140,23 +156,13 @@ export default class ChartState extends EventEmitter {
       const subscribers = oldDataset.subscribers[this.id];
       for (const renderingQueueId of subscribers) {
         dataset.addSubscriber(this.id, renderingQueueId);
-
-        // Unsubscribe from old dataset
         oldDataset.removeSubscriber(this.id, renderingQueueId);
       }
 
-      newDatasets[dataset.getTimeframeAgnosticId()] = dataset;
+      this.datasets[dataset.getTimeframeAgnosticId()] = dataset;
     }
 
-    this.datasets = newDatasets;
-    this.timeframe = timeframe;
-    this.fireEvent("set-timeframe", timeframe);
     // Take all old datasets and re-subscribe based on active timeframe
-
-    if (Object.keys(this.datasets).length) {
-      this.setInitialVisibleRange();
-    }
-
     if (this.settings.syncRange && movedId === this.id) {
       for (const chartId in this.$global.charts) {
         const chart = this.$global.charts[chartId];
