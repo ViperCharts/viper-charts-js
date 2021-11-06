@@ -1,5 +1,7 @@
 import EventEmitter from "../../events/event_emitter.ts";
 
+import Utils from "../../utils";
+
 class Request {
   constructor($global, dataset, start, end) {
     this.$global = $global;
@@ -19,11 +21,8 @@ class Request {
     // Make sure that some of the candles in this time spread from start to end
     // have not yet been loaded
     let isOkToFetch = false;
-    for (
-      let timestamp = this.start - (this.start % timeframe);
-      timestamp <= this.end + (timeframe - (this.end % timeframe));
-      timestamp += timeframe
-    ) {
+    const { start, end } = this;
+    for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
       // Null means it was fetched already, so if not null, fetch
       if (data[timestamp] !== null) {
         isOkToFetch = true;
@@ -77,11 +76,8 @@ class Dataset extends EventEmitter {
    */
   updateDataset(start, end, updates) {
     // Check if new data item
-    for (
-      let timestamp = start - (start % this.timeframe);
-      timestamp <= end + (this.timeframe - (end % this.timeframe));
-      timestamp += this.timeframe
-    ) {
+    const { timeframe } = this;
+    for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
       const point = updates[timestamp];
       if (!point) updates[timestamp] = null;
     }
@@ -175,7 +171,7 @@ export default class DataState extends EventEmitter {
   }
 
   // TODO dispatch this to an event queue on seperate thread
-  async requestHistoricalData({ dataset, start, end }) {
+  requestHistoricalData({ dataset, start, end }) {
     const { source, name, timeframe } = dataset;
     const id = `${source}:${name}:${timeframe}`;
 

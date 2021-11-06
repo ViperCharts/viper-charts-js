@@ -37,10 +37,9 @@ export default class Canvas {
     this.height = canvas.clientHeight;
 
     canvas.addEventListener("mousedown", () => (this.isMouseDown = true));
-    this.$state.global.events.addEventListener(
-      "mouseup",
-      () => (this.isMouseDown = false)
-    );
+    this.$state.global.events.addEventListener("mouseup", () => {
+      this.isMouseDown = false;
+    });
 
     this.canvas = canvas;
   }

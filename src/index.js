@@ -56,8 +56,14 @@ import Utils from "./utils";
         `https://api.exchange.coinbase.com/products/${name}/candles?granularity=${seconds}&start=${start}&end=${end}`
       );
 
-      const json = (await res.json()).reverse();
       const data = {};
+
+      if (res.status !== 200) {
+        callback(data);
+        return;
+      }
+
+      const json = (await res.json()).reverse();
       for (const item of json) {
         data[item[0] * 1000] = {
           low: item[1],

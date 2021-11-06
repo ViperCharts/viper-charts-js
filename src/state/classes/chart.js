@@ -11,6 +11,11 @@ import ComputedData from "./computed_data.js";
 
 import EventEmitter from "../../events/event_emitter.ts";
 
+import _ from "lodash";
+import utils from "../../utils.js";
+
+const debouncedFunctions = {};
+
 export default class ChartState extends EventEmitter {
   constructor({ $global, timeframe = Constants.DAY }) {
     super();
@@ -36,7 +41,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
-      scaleType: "percent",
+      scaleType: "default",
     };
 
     this.setTimeframe(timeframe);
@@ -73,11 +78,11 @@ export default class ChartState extends EventEmitter {
     this.isInitialized = true;
   }
 
-  async addIndicator(indicator, dataset) {
+  addIndicator(indicator, dataset) {
     dataset.timeframe = this.timeframe;
 
     // Create or fetch dataset
-    dataset = await this.$global.data.requestHistoricalData({
+    dataset = this.$global.data.requestHistoricalData({
       dataset,
       start: this.range[0],
       end: this.range[1],
@@ -121,7 +126,7 @@ export default class ChartState extends EventEmitter {
     this.setInitialVisibleRange();
   }
 
-  async setTimeframe(timeframe, movedId = this.id) {
+  setTimeframe(timeframe, movedId = this.id) {
     const oldDatasets = {};
 
     // Copy all datasets so we can reset master in preperation for setting new visible range
@@ -142,7 +147,7 @@ export default class ChartState extends EventEmitter {
     // Create new datasets based on old dataset values
     for (const oldDataset of Object.values(oldDatasets)) {
       // Create or fetch dataset for new timeframe
-      const dataset = await this.$global.data.requestHistoricalData({
+      const dataset = this.$global.data.requestHistoricalData({
         dataset: {
           source: oldDataset.source,
           name: oldDataset.name,
@@ -216,6 +221,40 @@ export default class ChartState extends EventEmitter {
         const { data } = dataset;
         const localId = dataset.getTimeframeAgnosticId();
 
+        // Loop through every time point of range and check if any data is not loaded,
+        let minTimestamp = Infinity;
+        let maxTimestamp = -Infinity;
+        for (const timestamp of Utils.getAllTimestampsIn(
+          start,
+          end,
+          this.timeframe
+        )) {
+          // If item is undefined, it means it was never fetched
+          if (data[timestamp] === undefined) {
+            if (timestamp < minTimestamp) minTimestamp = timestamp;
+            if (timestamp > maxTimestamp) maxTimestamp = timestamp;
+          }
+        }
+
+        // If a range of unloaded timestamps, request to fetch the data via a debounce
+        if (minTimestamp !== Infinity && maxTimestamp !== -Infinity) {
+          if (!debouncedFunctions[localId]) {
+            const callback = () => {
+              delete debouncedFunctions[localId];
+              this.$global.data.requestHistoricalData({
+                dataset,
+                start: minTimestamp,
+                end: maxTimestamp,
+              });
+            };
+
+            debouncedFunctions[localId] = _.debounce(callback, 250, {
+              maxWait: 100,
+            });
+          }
+          debouncedFunctions[localId]();
+        }
+
         visibleData[localId] = { data: [] };
 
         // Loop through all subscribed indicators to verify at least one is visible
@@ -235,11 +274,11 @@ export default class ChartState extends EventEmitter {
 
         const visibleDataItem = visibleData[localId];
 
-        for (
-          let timestamp = start - (start % this.timeframe);
-          timestamp <= end + (this.timeframe - (end % this.timeframe));
-          timestamp += this.timeframe
-        ) {
+        for (const timestamp of Utils.getAllTimestampsIn(
+          start,
+          end,
+          this.timeframe
+        )) {
           const candle = data[timestamp];
 
           // Check if candle has not been loaded or if its loaded, but no data was available at time

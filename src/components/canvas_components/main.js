@@ -4,10 +4,6 @@ import Grid from "./grid.js";
 import Crosshair from "./crosshair.js";
 import LastPriceLine from "./last_price_line.js";
 
-import Indicators, { indicators } from "../indicators.js";
-
-import StorageManager from "../../managers/storage.js";
-
 export default class Main {
   constructor({ $state }) {
     this.$state = $state;
@@ -37,18 +33,6 @@ export default class Main {
         this.$state.chart.setVisibleRange();
       }
     );
-
-    // Load initial indicators TEMP REMOVED
-    // const settings = StorageManager.getChartSettings();
-    const settings = {};
-    // if (settings.indicators) {
-    //   for (const indicator of settings.indicators) {
-    //     this.$state.chart.addIndicator(Indicators.map.get(indicator.id));
-    //   }
-    // } else {
-    //   this.$state.chart.addIndicator(Indicators.map.get("candlestick"));
-    //   this.$state.chart.addIndicator(Indicators.map.get("volume-by-side"));
-    // }
 
     this.$state.global.events.addEventListener(
       "mousemove",
