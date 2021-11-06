@@ -34,19 +34,29 @@ class Request {
       return;
     }
 
-    // Tell client to fire request
-    this.$global.api.onRequestHistoricalData({
-      source,
-      name,
-      timeframe,
-      start: this.start,
-      end: this.end,
-      callback: ((updates) => {
-        this.dataset.updateDataset(this.start, this.end, updates);
-      }).bind(this.dataset),
-    });
+    // Loop from end to start timeframe on timeframe * 100 interval to batch requests to max of 100 data points per
+    let i = (end - start) / (timeframe * 100);
+    const buildNextRequest = () => {
+      if (i <= 0) return;
 
-    // TODO create timeout for requests never returned
+      let leftBound = i <= 1 ? start : end - timeframe * 100;
+
+      // Tell client to fire request
+      this.$global.api.onRequestHistoricalData({
+        source,
+        name,
+        timeframe,
+        start: leftBound,
+        end,
+        callback: ((updates) => {
+          this.dataset.updateDataset(leftBound, end, updates);
+          buildNextRequest();
+        }).bind(this.dataset),
+      });
+
+      i = i - 1;
+    };
+    buildNextRequest();
   }
 }
 
