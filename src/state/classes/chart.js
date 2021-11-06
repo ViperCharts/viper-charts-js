@@ -12,7 +12,6 @@ import ComputedData from "./computed_data.js";
 import EventEmitter from "../../events/event_emitter.ts";
 
 import _ from "lodash";
-import utils from "../../utils.js";
 
 const debouncedFunctions = {};
 
