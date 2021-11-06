@@ -1,8 +1,6 @@
 import Canvas from "../canvas.js";
 import Background from "./background.js";
 import PriceSelected from "./price_selected.js";
-import PlottedLineValue from "./plotted_lIne_value.js";
-import { textChangeRangeIsUnchanged } from "typescript";
 
 // TODO rename to PriceScale
 export default class TimeScale {
