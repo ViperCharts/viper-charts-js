@@ -13,6 +13,11 @@ export default class PriceLine extends Indicator {
   }
 
   draw({ close, plot }) {
-    plot(close, "Price line", this.color, 2);
+    plot({
+      value: close,
+      title: "Price line",
+      color: this.color,
+      linewidth: 2,
+    });
   }
 }

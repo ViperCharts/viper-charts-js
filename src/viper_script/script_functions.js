@@ -3,21 +3,11 @@ import GlobalState from "../state/global.js";
 export default {
   plot(
     { renderingQueueId, chart, time },
-    series,
-    title,
-    color = "#FFF",
-    linewidth,
-    style,
-    trackprice,
-    transp,
-    histbase,
-    offset,
-    join,
-    editable,
-    show_last
+    { value, title, color = "#FFF", linewidth }
   ) {
     chart.computedData.addSetItem(renderingQueueId, time, "line", {
-      series: [series],
+      series: [value],
+      title,
       colors: { color },
       linewidth,
     });
@@ -25,33 +15,22 @@ export default {
 
   plotBox(
     { renderingQueueId, chart, time },
-    topValue,
-    bottomValue,
-    width,
-    title,
-    color = "#FFF"
+    { top, bottom, width, title, color = "#FFF" }
   ) {
     chart.computedData.addSetItem(renderingQueueId, time, "box", {
-      series: [topValue, bottomValue, width],
+      series: [top, bottom, width],
+      title,
       colors: { color },
     });
   },
 
   plotCandle(
     { renderingQueueId, chart, time },
-    open,
-    high,
-    low,
-    close,
-    title,
-    color = "#FFF",
-    wickcolor = "#FFF",
-    editable,
-    show_last,
-    bordercolor
+    { open, high, low, close, title, color = "#FFF", wickcolor = "#FFF" }
   ) {
     chart.computedData.addSetItem(renderingQueueId, time, "candle", {
       series: [open, high, low, close],
+      title,
       colors: {
         color,
         wickcolor,
