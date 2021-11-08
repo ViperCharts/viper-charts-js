@@ -22,7 +22,11 @@ export default class ComputedData extends EventEmitter {
     this.sets = {};
     this.max = -Infinity;
     this.min = Infinity;
-    this.instructions = {};
+    this.instructions = {
+      main: {},
+      yScale: {},
+      xScale: {},
+    };
   }
 
   calculateAllSets() {
@@ -108,6 +112,7 @@ export default class ComputedData extends EventEmitter {
     const { canvas } = this.$chart.subcharts.main;
     canvas.RE.removeFromRenderingOrder(id);
     this.queue.delete(id);
+    delete this.sets[id];
 
     return true;
   }
@@ -165,7 +170,10 @@ export default class ComputedData extends EventEmitter {
 
               // TODO fix this so we dont compare EVERY value to start candle
               values.series = values.series.map((val, j) => {
-                return ((val - firstSeries[j]) / firstSeries[j]) * 100;
+                return Utils.toFixed(
+                  ((val - firstSeries[j]) / firstSeries[j]) * 100,
+                  2
+                );
               });
             }
           }
@@ -190,6 +198,7 @@ export default class ComputedData extends EventEmitter {
     const chart = this.$chart;
     chart.setRange({ min, max }, true);
     const instructions = {};
+    const yScaleInstructions = {};
 
     // Calculate actual instructions
     for (const id in dataDictionaryCopy) {
@@ -216,10 +225,9 @@ export default class ComputedData extends EventEmitter {
               y: chart.getYCoordByPrice(series[0]),
               color: values.colors.color,
               linewidth: values.linewidth,
+              ylabel: values.ylabel,
             });
-          }
-
-          if (type === "box") {
+          } else if (type === "box") {
             const y1 = chart.getYCoordByPrice(series[0]);
             const y2 = chart.getYCoordByPrice(series[1]);
             const w = chart.pixelsPerElement * series[3];
@@ -232,9 +240,7 @@ export default class ComputedData extends EventEmitter {
               h: Math.abs(y2) - Math.abs(y1),
               color: values.colors.color,
             });
-          }
-
-          if (type === "candle") {
+          } else if (type === "candle") {
             const y1 = chart.getYCoordByPrice(series[0]);
             const y2 = chart.getYCoordByPrice(series[1]);
             const y3 = chart.getYCoordByPrice(series[2]);
@@ -248,6 +254,7 @@ export default class ComputedData extends EventEmitter {
               w: w,
               h: Math.abs(y4) - Math.abs(y1),
               color: values.colors.color,
+              ylabel: values.ylabel,
             });
 
             instructions[id][time].push({
@@ -261,8 +268,73 @@ export default class ComputedData extends EventEmitter {
           }
         }
       }
+
+      // Get last time item and check if each item at time has ylabel set to true
+      const times = Object.keys(data);
+      for (const item of data[times[times.length - 1]]) {
+        const { type, values } = item;
+        if (values.ylabel === true) {
+          const value = values.series[{ line: 0, candle: 3 }[type]];
+          const id = Utils.uniqueId();
+
+          const dimensions =
+            this.$global.layout.chartDimensions[this.$chart.id];
+
+          const y = chart.getYCoordByPrice(value);
+          let textColor = Utils.isColorLight(values.colors.color)
+            ? "#000"
+            : "#FFF";
+
+          const symbol = value >= 0 ? "+" : "-";
+          yScaleInstructions[id] = {
+            type: "text",
+            x: dimensions.yScale.width / 2,
+            y,
+            color: textColor,
+            text: `${symbol}${value}%`,
+          };
+
+          const id2 = Utils.uniqueId();
+          yScaleInstructions[id2] = {
+            type: "box",
+            x: 0,
+            y: y - 13,
+            w: dimensions.yScale.width,
+            h: 20,
+            color: values.colors.color,
+          };
+
+          // instructions[id] = {
+          //   type: "text",
+          //   x: dimensions.main.width - 25,
+          //   y,
+          //   color: textColor,
+          //   text: `${id}`,
+          // };
+
+          // instructions[id2] = {
+          //   type: "box",
+          //   x: dimensions.main.width - 40,
+          //   y: y - 13,
+          //   w: 40,
+          //   h: 20,
+          //   color: values.colors.color,
+          // };
+
+          this.$chart.subcharts.yScale.canvas.RE.addToRenderingOrder(id, 1);
+          this.$chart.subcharts.yScale.canvas.RE.addToRenderingOrder(id2, 1);
+          // this.$chart.subcharts.main.canvas.RE.addToRenderingOrder(id);
+          // this.$chart.subcharts.main.canvas.RE.addToRenderingOrder(id2);
+        }
+      }
     }
 
-    this.instructions = instructions;
+    this.instructions.main = instructions;
+
+    // Reset yScale
+    for (const id in this.instructions.yScale) {
+      this.$chart.subcharts.yScale.canvas.RE.removeFromRenderingOrder(id);
+    }
+    this.instructions.yScale = yScaleInstructions;
   }
 }

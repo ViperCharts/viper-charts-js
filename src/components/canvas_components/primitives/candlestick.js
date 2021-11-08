@@ -24,6 +24,7 @@ export default class Candlestick extends Indicator {
       title: "Candlestick",
       color,
       wickcolor: color,
+      ylabel: true,
     });
   }
 }

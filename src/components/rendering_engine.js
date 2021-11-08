@@ -9,10 +9,11 @@ export default class RenderingEngine {
    * @param {Canvas} canvas
    * @param {object} settings
    */
-  constructor({ canvas, $state, settings }) {
+  constructor({ canvas, $state, type, settings }) {
     this.$state = $state;
 
     this.canvas = canvas;
+    this.type = type;
 
     this.overlayQueue = new Map();
     /**
@@ -43,12 +44,18 @@ export default class RenderingEngine {
    * This can be used for when user interacts with the window like resizing
    */
   draw() {
-    const { computedData } = this.$state.chart;
-
     // Reset canvas
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     const ids = [...this.renderingOrder];
+
+    const allInstructions =
+      this.$state.chart.computedData.instructions[this.type];
+
+    // If no instructions
+    if (!allInstructions || typeof allInstructions !== "object") {
+      return;
+    }
 
     // Loop through all rendering ids
     for (const id of ids) {
@@ -61,8 +68,8 @@ export default class RenderingEngine {
         continue;
       }
 
-      // Else, indicator, loop through all instructions and their plot points
-      const instructions = computedData.instructions[id];
+      // Else, is this an indicator?
+      const instructions = allInstructions[id];
 
       // If no instructions
       if (!instructions || typeof instructions !== "object") {
@@ -70,42 +77,43 @@ export default class RenderingEngine {
       }
 
       const times = Object.keys(instructions);
-      for (let i = 0; i < times.length; i++) {
-        const instructionsForTime = instructions[times[i]];
 
-        for (let j = 0; j < instructionsForTime.length; j++) {
-          const a = instructionsForTime[j];
+      const parseInstruction = (a, i, j) => {
+        if (a.type === "line") {
+          if (i === undefined || j === undefined) return;
+          let b = instructions[times[i + 1]];
+          if (!b) return;
+          b = b[j];
+          this.canvas.drawLine(a.color, [a.x, a.y, b.x, b.y], a.linewidth);
+        } else if (a.type === "box") {
+          this.canvas.drawBox(a.color, [a.x, a.y, a.w, a.h]);
+        } else if (a.type === "single-line") {
+          this.canvas.drawLine(a.color, [a.x, a.y, a.x2, a.y2]);
+        } else if (a.type === "text") {
+          this.canvas.drawText(a.color, [a.x, a.y], a.text);
+        }
+      };
 
-          if (a.type === "line") {
-            let b = instructions[times[i + 1]];
-            if (!b) continue;
-            b = b[j];
-            this.canvas.drawLine(a.color, [a.x, a.y, b.x, b.y], a.linewidth);
-          }
-
-          if (a.type === "box") {
-            this.canvas.drawBox(a.color, [a.x, a.y, a.w, a.h]);
-          }
-
-          if (a.type === "single-line") {
-            this.canvas.drawLine(a.color, [a.x, a.y, a.x2, a.y2]);
+      if (this.type === "main") {
+        for (let i = 0; i < times.length; i++) {
+          const instructionsForTime = instructions[times[i]];
+          for (let j = 0; j < instructionsForTime.length; j++) {
+            parseInstruction(instructionsForTime[j], i, j);
           }
         }
+      } else {
+        parseInstruction(allInstructions[id]);
       }
     }
   }
 
-  addToRenderingOrder(id) {
-    this.renderingOrder.push(id);
+  addToRenderingOrder(id, index = this.renderingOrder.length) {
+    this.renderingOrder.join();
+    this.renderingOrder.splice(index, 0, id);
   }
 
   removeFromRenderingOrder(id) {
     const i = this.renderingOrder.indexOf(id);
-    if (i < 0) {
-      console.error(`${id} was not found in rendering order`);
-      return false;
-    }
-
     this.renderingOrder.splice(i, 1);
   }
 

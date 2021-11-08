@@ -16,7 +16,7 @@ import _ from "lodash";
 const debouncedFunctions = {};
 
 export default class ChartState extends EventEmitter {
-  constructor({ $global, timeframe = Constants.DAY }) {
+  constructor({ $global, timeframe = Constants.HOUR }) {
     super();
 
     this.$global = $global;

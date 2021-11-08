@@ -3,13 +3,14 @@ import GlobalState from "../state/global.js";
 export default {
   plot(
     { renderingQueueId, chart, time },
-    { value, title, color = "#FFF", linewidth }
+    { value, title, color = "#FFF", linewidth, ylabel = false }
   ) {
     chart.computedData.addSetItem(renderingQueueId, time, "line", {
       series: [value],
       title,
       colors: { color },
       linewidth,
+      ylabel,
     });
   },
 
@@ -21,12 +22,22 @@ export default {
       series: [top, bottom, width],
       title,
       colors: { color },
+      ylabel,
     });
   },
 
   plotCandle(
     { renderingQueueId, chart, time },
-    { open, high, low, close, title, color = "#FFF", wickcolor = "#FFF" }
+    {
+      open,
+      high,
+      low,
+      close,
+      title,
+      color = "#FFF",
+      wickcolor = "#FFF",
+      ylabel = false,
+    }
   ) {
     chart.computedData.addSetItem(renderingQueueId, time, "candle", {
       series: [open, high, low, close],
@@ -35,6 +46,7 @@ export default {
         color,
         wickcolor,
       },
+      ylabel,
     });
   },
 

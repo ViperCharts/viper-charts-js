@@ -46,6 +46,7 @@ export default class Main {
         $state: this.$state,
         id: `canvas-${this.$state.chart.id}-main`,
         canvas,
+        type: "main",
         height: this.$state.dimensions.height - 20,
         width: this.$state.dimensions.width - 50,
         cursor: "crosshair",

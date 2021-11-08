@@ -18,6 +18,7 @@ export default class PriceLine extends Indicator {
       title: "Price line",
       color: this.color,
       linewidth: 2,
+      ylabel: true,
     });
   }
 }

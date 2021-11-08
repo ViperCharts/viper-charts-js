@@ -3,12 +3,13 @@ import RenderingEngine from "./rendering_engine.js";
 import Utils from "../utils";
 
 export default class Canvas {
-  constructor({ $state, canvas, cursor = "default" }) {
+  constructor({ $state, canvas, type = "", cursor = "default" }) {
     this.$state = $state;
 
     this.canvas = null;
     this.ctx = null;
     this.RE = null;
+    this.type = type;
     this.cursor = cursor;
 
     this.isMouseDown = false;
@@ -24,6 +25,7 @@ export default class Canvas {
     this.RE = new RenderingEngine({
       canvas: this,
       $state: this.$state,
+      type: this.type,
     });
   }
 
