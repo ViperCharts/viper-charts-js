@@ -40,7 +40,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
-      scaleType: "percent",
+      scaleType: "default",
     };
 
     this.setTimeframe(timeframe);

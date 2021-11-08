@@ -143,6 +143,8 @@ export default class ComputedData extends EventEmitter {
   generateInstructions() {
     // TODO queue this and debounce it
 
+    const isPercent = this.$chart.settings.scaleType === "percent";
+
     let max = -Infinity;
     let min = Infinity;
 
@@ -162,7 +164,7 @@ export default class ComputedData extends EventEmitter {
 
           // If percent, loop through all instructions at and loop through every value for each instruction
           // and compare it to starting value
-          if (this.$chart.settings.scaleType === "percent") {
+          if (isPercent) {
             const firstInstructions = set.data[Object.keys(set.data)[0]];
 
             if (firstInstructions) {
@@ -285,13 +287,14 @@ export default class ComputedData extends EventEmitter {
             ? "#000"
             : "#FFF";
 
-          const symbol = value >= 0 ? "+" : "-";
+          const symbol = isPercent ? (value >= 0 ? "+" : "-") : "";
+          const extra = isPercent ? "%" : "";
           yScaleInstructions[id] = {
             type: "text",
             x: dimensions.yScale.width / 2,
             y,
             color: textColor,
-            text: `${symbol}${value}%`,
+            text: `${symbol}${value}${extra}`,
           };
 
           const id2 = Utils.uniqueId();
