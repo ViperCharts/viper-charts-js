@@ -2,20 +2,6 @@ import EventEmitter from "../../events/event_emitter.ts";
 
 import Utils from "../../utils";
 
-class Request {
-  constructor($global, dataset, start, end) {
-    this.$global = $global;
-    this.dataset = dataset;
-    this.start = start;
-    this.end = end;
-  }
-
-  updateTimes(start, end) {
-    if (start < this.start) this.start = start;
-    if (end > this.end) this.end = end;
-  }
-}
-
 class Dataset extends EventEmitter {
   constructor($global, source, name, timeframe, data) {
     super();
@@ -69,12 +55,6 @@ class Dataset extends EventEmitter {
       // and be very laggy
       chart.computedData.generateInstructions();
     }
-
-    // Decrement requests in progress count and attempt to load another request if it exists'
-    const { count } = this.$global.data.requests;
-    this.$global.data.requests.count = Math.max(count - 1, 0);
-
-    this.$global.data.attemptToLoadNextRequest();
   }
 
   addSubscriber(chartId, renderingQueueId) {
@@ -118,18 +98,6 @@ export default class DataState extends EventEmitter {
     super();
 
     this.$global = $global;
-
-    /**
-     * queue: {
-     *   "chartId": {
-     *      1636425959598: "Queued",
-     *      1636425959599: "Loading",
-     *      1636425959598: "Errored-1636425959598"
-     *      1636425959600: "Loaded"
-     *    }
-     * }
-     */
-
     this.datasets = {};
     this.sources = {};
     this.requests = {
@@ -163,91 +131,111 @@ export default class DataState extends EventEmitter {
   }
 
   // TODO dispatch this to an event queue on seperate thread
-  requestHistoricalData({ chartId, start, end }) {
-    const { timeframe } = this.$global.charts[chartId];
+  requestHistoricalData({ dataset, start, end }) {
+    const id = dataset.getId();
 
-    if (!this.requests.queue[chartId]) {
-      this.requests.queue[chartId] = {};
+    if (!this.requests.queue[id]) {
+      this.requests.queue[id] = {};
     }
 
     const now = Date.now();
+    const { timeframe } = dataset;
     for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
       // If timestamp is in the future, all other timestamps are to be ignored
       if (timeframe > now) break;
 
-      if (!this.requests.queue[chartId][timestamp]) {
-        this.requests.queue[chartId][timestamp] = "Queued";
+      // If data at time is already fetched, ignore it
+      if (dataset.data[timestamp] === undefined) {
+        continue;
+      }
+
+      if (!this.requests.queue[id][timestamp]) {
+        this.requests.queue[id][timestamp] = "Queued";
       }
     }
 
     this.attemptToLoadNextRequest();
-
-    return dataset;
   }
 
   attemptToLoadNextRequest() {
     // If max requests for web browser in progress, return
     if (this.requests.count === 6) return;
 
-    const chartIds = Object.keys(this.requests.queue);
+    const ids = Object.keys(this.requests.queue);
 
     // If no queued requests, dont load
-    if (!chartIds.length) return;
+    if (!ids.length) return;
 
     // Loop through next n count of requests at a max of
     for (let i = this.requests.count; i < 6; i++) {
+      if (i === ids.length) break;
+
       this.requests.count++;
-      const chartId = chartIds[i];
-      const timestamps = this.requests.queue[chartId];
+      const id = ids[i];
+      const timestamps = Object.keys(this.requests.queue[id]).sort(
+        (a, b) => +b - +a
+      );
 
-      // Loop through all timestamps and verify
+      let start = -1;
+      let end = -1;
+      let itemCount = 0;
+      for (const timestamp of timestamps) {
+        // If found timestamp that is not needed to be fetched
+        if (this.requests.queue[id][timestamp] !== "Queued") {
+          if (end > -1) {
+            break;
+          }
+        }
 
-      // If no next item, queue is empty
-      // if (!this.requests.order[i]) break;
+        // Found item that is queued
+        if (end === -1) end = +timestamp;
+        itemCount++;
+        start = +timestamp;
+        this.requests.queue[id][timestamp] = "Loading";
+
+        if (itemCount === 100) break;
+      }
+
+      this.fireRequest(this.datasets[id], start, end);
     }
   }
 
-  fireRequest(chartId) {
-    // Get all
+  fireRequest(dataset, start, end) {
+    const id = dataset.getId();
 
-    // Make sure that some of the candles in this time spread from start to end
-    // have not yet been loaded
-    let isOkToFetch = false;
-    const { start, end } = this;
-    for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
-      // Null means it was fetched already, so if not null, fetch
-      if (data[timestamp] !== null) {
-        isOkToFetch = true;
-        break;
+    const callback = (updates) => {
+      const dataset = this.datasets[id];
+
+      if (!dataset) {
+        delete this.requests.queue[id];
+      } else {
+        for (const timestamp in Utils.getAllTimestampsIn(
+          start,
+          end,
+          dataset.timeframe
+        )) {
+          delete this.requests.queue[id][timestamp];
+        }
+
+        // If no more requests for dataset, delete dataset object
+        if (!Object.keys(this.requests.queue[id]).length) {
+          delete this.requests.queue[id];
+        }
+
+        dataset.updateDataset.bind(dataset)(start, end, updates);
       }
-    }
 
-    if (!isOkToFetch) {
-      return;
-    }
-
-    // Loop from end to start timeframe on timeframe * 100 interval to batch requests to max of 100 data points per
-    let i = (end - start) / (timeframe * 100);
-    const buildNextRequest = () => {
-      if (i <= 0) return;
-
-      let leftBound = i <= 1 ? start : end - timeframe * 100;
-
-      // Tell client to fire request
-      this.$global.api.onRequestHistoricalData({
-        source,
-        name,
-        timeframe,
-        start: leftBound,
-        end,
-        callback: ((updates) => {
-          this.dataset.updateDataset(leftBound, end, updates);
-          buildNextRequest();
-        }).bind(this.dataset),
-      });
-
-      i = i - 1;
+      this.requests.count = Math.max(this.requests.count - 1, 0);
+      this.attemptToLoadNextRequest();
     };
-    buildNextRequest();
+
+    this.$global.api.onRequestHistoricalData({
+      source: dataset.source,
+      name: dataset.name,
+      timeframe: dataset.timeframe,
+      start,
+      end,
+      callback,
+    });
   }
 }

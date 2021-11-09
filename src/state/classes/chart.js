@@ -121,7 +121,7 @@ export default class ChartState extends EventEmitter {
     );
 
     this.$global.data.requestHistoricalData({
-      chartId: this.id,
+      dataset,
       start: this.range[0],
       end: this.range[1],
     });
@@ -246,7 +246,6 @@ export default class ChartState extends EventEmitter {
             const callback = () => {
               delete debouncedFunctions[localId];
               this.$global.data.requestHistoricalData({
-                chartId: this.id,
                 dataset,
                 start: minTimestamp,
                 end: maxTimestamp,

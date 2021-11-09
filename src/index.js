@@ -48,6 +48,8 @@ import Utils from "./utils";
     callback,
   }) {
     if (source === "COINBASE") {
+      console.log(start, end);
+
       start = new Date(start).toISOString();
       end = new Date(end).toISOString();
 
