@@ -151,14 +151,10 @@ export default class ChartState extends EventEmitter {
     // Create new datasets based on old dataset values
     for (const oldDataset of Object.values(oldDatasets)) {
       // Create or fetch dataset for new timeframe
-      const dataset = this.$global.data.requestHistoricalData({
-        dataset: {
-          source: oldDataset.source,
-          name: oldDataset.name,
-          timeframe,
-        },
-        start: this.range[0],
-        end: this.range[1],
+      const dataset = this.$global.data.addOrGetDataset({
+        source: oldDataset.source,
+        name: oldDataset.name,
+        timeframe,
       });
 
       // Re-instantiate all subscribers
@@ -169,6 +165,12 @@ export default class ChartState extends EventEmitter {
       }
 
       this.datasets[dataset.getTimeframeAgnosticId()] = dataset;
+
+      this.$global.data.requestDataPoints({
+        dataset,
+        start: this.range[0],
+        end: this.range[1],
+      });
     }
 
     // Take all old datasets and re-subscribe based on active timeframe
