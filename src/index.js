@@ -39,44 +39,38 @@ import Utils from "./utils";
     onRequestHistoricalData,
   });
 
-  async function onRequestHistoricalData({
-    source,
-    name,
-    timeframe,
-    start,
-    end,
-    callback,
-  }) {
-    if (source === "COINBASE") {
-      console.log(start, end);
+  async function onRequestHistoricalData({ requests, callback }) {
+    const data = {};
 
-      start = new Date(start).toISOString();
-      end = new Date(end).toISOString();
+    for (let { id, source, name, timeframe, start, end } of requests) {
+      if (source === "COINBASE") {
+        start = new Date(start).toISOString();
+        end = new Date(end).toISOString();
 
-      const seconds = timeframe / 1000;
-      const res = await fetch(
-        `https://api.exchange.coinbase.com/products/${name}/candles?granularity=${seconds}&start=${start}&end=${end}`
-      );
+        const seconds = timeframe / 1000;
+        const res = await fetch(
+          `https://api.exchange.coinbase.com/products/${name}/candles?granularity=${seconds}&start=${start}&end=${end}`
+        );
 
-      const data = {};
+        if (res.status !== 200) {
+          return;
+        }
 
-      if (res.status !== 200) {
-        callback(data);
-        return;
+        data[id] = {};
+
+        const json = (await res.json()).reverse();
+        for (const item of json) {
+          data[id][item[0] * 1000] = {
+            low: item[1],
+            high: item[2],
+            open: item[3],
+            close: item[4],
+            volume: item[5],
+          };
+        }
       }
-
-      const json = (await res.json()).reverse();
-      for (const item of json) {
-        data[item[0] * 1000] = {
-          low: item[1],
-          high: item[2],
-          open: item[3],
-          close: item[4],
-          volume: item[5],
-        };
-      }
-
-      callback(data);
     }
+
+    callback(data);
   }
 })();

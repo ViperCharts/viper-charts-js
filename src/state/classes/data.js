@@ -26,14 +26,7 @@ class Dataset extends EventEmitter {
    * @param {object} dataset
    * @param {array} updates
    */
-  updateDataset(start, end, updates) {
-    // Check if new data item
-    const { timeframe } = this;
-    for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
-      const point = updates[timestamp];
-      if (!point) updates[timestamp] = null;
-    }
-
+  updateDataset(updates) {
     // Apply updates
     Object.assign(this.data, updates);
 
@@ -100,11 +93,9 @@ export default class DataState extends EventEmitter {
     this.$global = $global;
     this.datasets = {};
     this.sources = {};
-    this.requests = {
-      queue: {},
-      count: 0,
-    };
-    this.isAttemptingToLoadRequests = false;
+
+    this.allRequestedPoints = {};
+    this.requestInterval = setInterval(this.fireRequest.bind(this), 250);
   }
 
   init() {}
@@ -130,111 +121,98 @@ export default class DataState extends EventEmitter {
     return dataset;
   }
 
-  // TODO dispatch this to an event queue on seperate thread
-  requestHistoricalData({ dataset, start, end }) {
-    const id = dataset.getId();
-
-    if (!this.requests.queue[id]) {
-      this.requests.queue[id] = {};
-    }
-
-    const now = Date.now();
+  requestDataPoints({ dataset, start, end }) {
     const { timeframe } = dataset;
-    for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
-      // If timestamp is in the future, all other timestamps are to be ignored
-      if (timeframe > now) break;
-
-      // If data at time is already fetched, ignore it
-      if (dataset.data[timestamp] === undefined) {
-        continue;
-      }
-
-      if (!this.requests.queue[id][timestamp]) {
-        this.requests.queue[id][timestamp] = "Queued";
-      }
-    }
-
-    this.attemptToLoadNextRequest();
-  }
-
-  attemptToLoadNextRequest() {
-    // If max requests for web browser in progress, return
-    if (this.requests.count === 6) return;
-
-    const ids = Object.keys(this.requests.queue);
-
-    // If no queued requests, dont load
-    if (!ids.length) return;
-
-    // Loop through next n count of requests at a max of
-    for (let i = this.requests.count; i < 6; i++) {
-      if (i === ids.length) break;
-
-      this.requests.count++;
-      const id = ids[i];
-      const timestamps = Object.keys(this.requests.queue[id]).sort(
-        (a, b) => +b - +a
-      );
-
-      let start = -1;
-      let end = -1;
-      let itemCount = 0;
-      for (const timestamp of timestamps) {
-        // If found timestamp that is not needed to be fetched
-        if (this.requests.queue[id][timestamp] !== "Queued") {
-          if (end > -1) {
-            break;
-          }
-        }
-
-        // Found item that is queued
-        if (end === -1) end = +timestamp;
-        itemCount++;
-        start = +timestamp;
-        this.requests.queue[id][timestamp] = "Loading";
-
-        if (itemCount === 100) break;
-      }
-
-      this.fireRequest(this.datasets[id], start, end);
-    }
-  }
-
-  fireRequest(dataset, start, end) {
     const id = dataset.getId();
+    const now = Date.now();
 
-    const callback = (updates) => {
-      const dataset = this.datasets[id];
+    const requestedPoint = [Infinity, -Infinity];
 
-      if (!dataset) {
-        delete this.requests.queue[id];
-      } else {
-        for (const timestamp in Utils.getAllTimestampsIn(
-          start,
-          end,
-          dataset.timeframe
-        )) {
-          delete this.requests.queue[id][timestamp];
-        }
+    // Loop through each requested timestamp and check if any are not found
+    for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
+      // Check if greater than now
+      if (timestamp > now) break;
 
-        // If no more requests for dataset, delete dataset object
-        if (!Object.keys(this.requests.queue[id]).length) {
-          delete this.requests.queue[id];
-        }
+      // Check if in data state
+      if (dataset.data[timestamp] !== undefined) continue;
 
-        dataset.updateDataset.bind(dataset)(start, end, updates);
+      // Add to state
+      if (timestamp < requestedPoint[0]) {
+        requestedPoint[0] = timestamp;
       }
+      if (timestamp > requestedPoint[1]) {
+        requestedPoint[1] = timestamp;
+      }
+    }
 
-      this.requests.count = Math.max(this.requests.count - 1, 0);
-      this.attemptToLoadNextRequest();
+    if (requestedPoint[0] === Infinity || requestedPoint[1] === -Infinity) {
+      return;
+    }
+
+    this.allRequestedPoints[id] = requestedPoint;
+  }
+
+  fireRequest() {
+    const allRequestedPoints = JSON.parse(
+      JSON.stringify(this.allRequestedPoints)
+    );
+    this.allRequestedPoints = {};
+    const datasetIds = Object.keys(allRequestedPoints);
+
+    // Check if any requested times for any datasets
+    if (!datasetIds.length) return;
+
+    // Loop through all requested timestamps and mark their dataset data points as fetched
+    for (const id of datasetIds) {
+      const [start, end] = allRequestedPoints[id];
+      const dataset = this.datasets[id];
+      const { timeframe } = dataset;
+
+      // This is so data does not get requested again
+      for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
+        dataset.data[timestamp] = null;
+      }
+    }
+
+    // Build array with requested sources, names, timeframes, and start & end times
+    const requests = [];
+    for (const id of datasetIds) {
+      const [start, end] = allRequestedPoints[id];
+      const dataset = this.datasets[id];
+      const { source, name, timeframe } = dataset;
+
+      requests.push({
+        id,
+        source,
+        name,
+        timeframe,
+        start,
+        end,
+      });
+    }
+
+    const callback = (updates = {}) => {
+      const datasetIds = Object.keys(updates);
+
+      // Check if any updates
+      if (!datasetIds.length) return;
+
+      for (const id of datasetIds) {
+        const dataset = this.datasets[id];
+
+        // If dataset was deleted since request was fired
+        if (!dataset) {
+          delete this.requests.queue[id];
+          continue;
+        }
+
+        // Update data
+        dataset.updateDataset.bind(dataset)(updates[id]);
+      }
     };
 
     this.$global.api.onRequestHistoricalData({
-      source: dataset.source,
-      name: dataset.name,
-      timeframe: dataset.timeframe,
-      start,
-      end,
+      requests,
       callback,
     });
   }

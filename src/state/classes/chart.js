@@ -120,7 +120,7 @@ export default class ChartState extends EventEmitter {
       indicator
     );
 
-    this.$global.data.requestHistoricalData({
+    this.$global.data.requestDataPoints({
       dataset,
       start: this.range[0],
       end: this.range[1],
@@ -225,39 +225,11 @@ export default class ChartState extends EventEmitter {
         const { data } = dataset;
         const localId = dataset.getTimeframeAgnosticId();
 
-        // Loop through every time point of range and check if any data is not loaded,
-        let minTimestamp = Infinity;
-        let maxTimestamp = -Infinity;
-        for (const timestamp of Utils.getAllTimestampsIn(
-          start,
-          end,
-          this.timeframe
-        )) {
-          // If item is undefined, it means it was never fetched
-          if (data[timestamp] === undefined) {
-            if (timestamp < minTimestamp) minTimestamp = timestamp;
-            if (timestamp > maxTimestamp) maxTimestamp = timestamp;
-          }
-        }
-
-        // If a range of unloaded timestamps, request to fetch the data via a debounce
-        if (minTimestamp !== Infinity && maxTimestamp !== -Infinity) {
-          if (!debouncedFunctions[localId]) {
-            const callback = () => {
-              delete debouncedFunctions[localId];
-              this.$global.data.requestHistoricalData({
-                dataset,
-                start: minTimestamp,
-                end: maxTimestamp,
-              });
-            };
-
-            debouncedFunctions[localId] = _.debounce(callback, 250, {
-              maxWait: 100,
-            });
-          }
-          debouncedFunctions[localId]();
-        }
+        this.$global.data.requestDataPoints({
+          dataset,
+          start: this.range[0],
+          end: this.range[1],
+        });
 
         visibleData[localId] = { data: [] };
 
