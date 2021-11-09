@@ -23,6 +23,7 @@ import Utils from "./utils";
   const COINBASE = pairs.map((pair) => ({
     source: "COINBASE",
     name: pair.id,
+    maxItemsPerRequest: 300,
     timeframes: [
       Constants.MINUTE,
       Constants.MINUTE5,
@@ -40,8 +41,6 @@ import Utils from "./utils";
   });
 
   async function onRequestHistoricalData({ requests, callback }) {
-    const data = {};
-
     for (let { id, source, name, timeframe, start, end } of requests) {
       if (source === "COINBASE") {
         start = new Date(start).toISOString();
@@ -56,11 +55,11 @@ import Utils from "./utils";
           return;
         }
 
-        data[id] = {};
+        const data = {};
 
         const json = (await res.json()).reverse();
         for (const item of json) {
-          data[id][item[0] * 1000] = {
+          data[item[0] * 1000] = {
             low: item[1],
             high: item[2],
             open: item[3],
@@ -68,9 +67,9 @@ import Utils from "./utils";
             volume: item[5],
           };
         }
+
+        callback(id, data);
       }
     }
-
-    callback(data);
   }
 })();

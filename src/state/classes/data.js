@@ -177,43 +177,40 @@ export default class DataState extends EventEmitter {
     // Build array with requested sources, names, timeframes, and start & end times
     const requests = [];
     for (const id of datasetIds) {
-      const [start, end] = allRequestedPoints[id];
+      let [start, end] = allRequestedPoints[id];
       const dataset = this.datasets[id];
       const { source, name, timeframe } = dataset;
 
-      requests.push({
-        id,
-        source,
-        name,
-        timeframe,
-        start,
-        end,
-      });
+      // Loop from end to start timeframe on timeframe * 100 interval to batch requests to max of 100 data points per
+      for (let i = (end - start) / (timeframe * 100); i > 0; i--) {
+        const leftBound = i <= 1 ? start : end - timeframe * 100;
+
+        requests.push({
+          id,
+          source,
+          name,
+          timeframe,
+          start: leftBound,
+          end,
+        });
+
+        end -= timeframe * 100;
+      }
     }
 
-    const callback = (updates = {}) => {
-      const datasetIds = Object.keys(updates);
+    const callback = (id, updates = {}) => {
+      const dataset = this.datasets[id];
 
-      // Check if any updates
-      if (!datasetIds.length) return;
+      // If dataset was deleted since request was fired
+      if (!dataset) return;
 
-      for (const id of datasetIds) {
-        const dataset = this.datasets[id];
-
-        // If dataset was deleted since request was fired
-        if (!dataset) {
-          delete this.requests.queue[id];
-          continue;
-        }
-
-        // Update data
-        dataset.updateDataset.bind(dataset)(updates[id]);
-      }
+      // Update data
+      dataset.updateDataset.bind(dataset)(updates);
     };
 
     this.$global.api.onRequestHistoricalData({
       requests,
-      callback,
+      callback: callback.bind(this),
     });
   }
 }
