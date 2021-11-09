@@ -77,15 +77,12 @@ export default class ChartState extends EventEmitter {
     this.isInitialized = true;
   }
 
-  addIndicator(indicator, dataset) {
-    dataset.timeframe = this.timeframe;
-
-    // Create or fetch dataset
-    dataset = this.$global.data.requestHistoricalData({
-      dataset,
-      start: this.range[0],
-      end: this.range[1],
-      timeframe: dataset.timeframe,
+  addIndicator(indicator, { source, name }) {
+    // Get or create dataset if doesn't exist
+    const dataset = this.$global.data.addOrGetDataset({
+      source,
+      name,
+      timeframe: this.timeframe,
     });
 
     const { canvas } = this.subcharts.main;
@@ -111,15 +108,23 @@ export default class ChartState extends EventEmitter {
       datasetId: localId,
     };
 
+    // Subscribe to dataset updates
     dataset.addSubscriber(this.id, indicatorClass.renderingQueueId);
     this.datasets[localId] = dataset;
 
     this.indicators[indicatorClass.renderingQueueId] = indicator;
 
+    // Add indicator to UI state
     this.$global.ui.charts[this.id].addIndicator(
       indicatorClass.renderingQueueId,
       indicator
     );
+
+    this.$global.data.requestHistoricalData({
+      chartId: this.id,
+      start: this.range[0],
+      end: this.range[1],
+    });
 
     // If first new dataset, reset range according to data
     this.setInitialVisibleRange();
@@ -241,6 +246,7 @@ export default class ChartState extends EventEmitter {
             const callback = () => {
               delete debouncedFunctions[localId];
               this.$global.data.requestHistoricalData({
+                chartId: this.id,
                 dataset,
                 start: minTimestamp,
                 end: maxTimestamp,
