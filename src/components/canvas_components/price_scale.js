@@ -1,7 +1,6 @@
 import Canvas from "../canvas.js";
 import Background from "./background.js";
 import PriceSelected from "./price_selected.js";
-import PlottedLineValue from "./plotted_line_value";
 
 // TODO rename to PriceScale
 export default class TimeScale {
@@ -29,10 +28,6 @@ export default class TimeScale {
       $state: this.$state,
       canvas: this.canvas,
       color: "#080019",
-    });
-    new PlottedLineValue({
-      $state: this.$state,
-      canvas: this.canvas,
     });
     new PriceSelected({ $state: this.$state, canvas: this.canvas });
 
