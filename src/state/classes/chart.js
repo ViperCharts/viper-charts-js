@@ -11,10 +11,6 @@ import ComputedData from "./computed_data.js";
 
 import EventEmitter from "../../events/event_emitter.ts";
 
-import _ from "lodash";
-
-const debouncedFunctions = {};
-
 export default class ChartState extends EventEmitter {
   constructor({ $global, timeframe = Constants.HOUR }) {
     super();

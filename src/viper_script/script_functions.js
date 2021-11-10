@@ -50,8 +50,31 @@ export default {
     });
   },
 
+  // Get value from previous or future data point if exists
+  lookback({ dataset, time }, { lookback, source }) {
+    const { data, timeframe } = dataset;
+    const item = data[time - lookback * timeframe];
+    if (item === undefined || item === null) return undefined;
+    return item[source];
+  },
+
   plotText() {},
 
-  // TODO add more functions
-  sma({ renderingQueueId, chart, time, index }, source, length) {},
+  sma({ dataset, time }, { source, length }) {
+    let total = 0;
+    for (let i = 0; i < length; i++) {
+      total += this.lookback({ dataset, time }, { lookback: i, source });
+    }
+    return total / length;
+  },
+
+  defineGlobal({ globals }, { name, value }) {
+    if (!globals[name]) globals[name] = value;
+    return globals[name];
+  },
+
+  setGlobal({ globals }, { name, value }) {
+    globals[name] = value;
+    return value;
+  },
 };

@@ -37,6 +37,7 @@ export default class ComputedData extends EventEmitter {
 
   calculateOneSet(key) {
     const { indicator, visible } = this.queue.get(key);
+    const dataset = this.$chart.datasets[indicator.datasetId];
 
     // Delete old set
     delete this.sets[key];
@@ -46,14 +47,19 @@ export default class ComputedData extends EventEmitter {
 
     let iteratedTime = 0;
 
+    // Storage for global variables used across indicator times only defined once
+    const globals = {};
+
     const funcWraps = {};
     for (const funcName in ScriptFunctions) {
       funcWraps[funcName] = function () {
-        ScriptFunctions[funcName](
+        return ScriptFunctions[funcName](
           {
             renderingQueueId: key,
             chart: this.$chart,
             time: iteratedTime,
+            dataset,
+            globals,
           },
           ...arguments
         );
