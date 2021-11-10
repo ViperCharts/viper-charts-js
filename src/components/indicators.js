@@ -19,10 +19,12 @@ export const series = [
 
 import VolumeBar from "./canvas_components/primitives/volume_bar.js";
 import VolumeBySideBar from "./canvas_components/primitives/volume_by_side_bar.js";
+import MASlope from "./canvas_components/primitives/ma_slope";
 
 export const indicators = [
   new Indicator("Volume", [], VolumeBar),
   new Indicator("Volume By Side", [], VolumeBySideBar),
+  new Indicator("MA Slope", [], MASlope),
 ];
 
 export const map = (() => {

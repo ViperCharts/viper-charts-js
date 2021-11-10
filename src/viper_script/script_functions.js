@@ -1,5 +1,3 @@
-import GlobalState from "../state/global.js";
-
 export default {
   plot(
     { renderingQueueId, chart, time },
@@ -50,25 +48,44 @@ export default {
     });
   },
 
+  plotText() {},
+
   // Get value from previous or future data point if exists
-  lookback({ dataset, time }, { lookback, source }) {
+  getData({ dataset, time }, { lookback, source }) {
     const { data, timeframe } = dataset;
-    const item = data[time - lookback * timeframe];
-    if (item === undefined || item === null) return undefined;
+    const timestamp = time - lookback * timeframe;
+    const item = data[timestamp];
+    if (!item) return undefined;
     return item[source];
   },
 
-  plotText() {},
+  setVar({ renderingQueueId, chart, time }, { name, value }) {
+    const { computedState: state } = chart.computedData;
+    if (!state[renderingQueueId]) state[renderingQueueId] = {};
+    if (!state[renderingQueueId][time]) state[renderingQueueId][time] = {};
+    state[renderingQueueId][time][name] = value;
+  },
+
+  getVar({ renderingQueueId, chart, time, dataset }, { name, lookback }) {
+    const { timeframe } = dataset;
+    const timestamp = time - lookback * timeframe;
+    const { computedState: state } = chart.computedData;
+
+    if (!state[renderingQueueId]) return undefined;
+    const item = state[renderingQueueId][timestamp];
+    if (!item) return undefined;
+    return item[name];
+  },
 
   sma({ dataset, time }, { source, length }) {
     let total = 0;
     for (let i = 0; i < length; i++) {
-      total += this.lookback({ dataset, time }, { lookback: i, source });
+      total += this.getData({ dataset, time }, { lookback: i, source });
     }
     return total / length;
   },
 
-  defineGlobal({ globals }, { name, value }) {
+  declareGlobal({ globals }, { name, value }) {
     if (!globals[name]) globals[name] = value;
     return globals[name];
   },

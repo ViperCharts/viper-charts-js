@@ -20,6 +20,7 @@ export default class ComputedData extends EventEmitter {
 
     this.queue = new Map();
     this.sets = {};
+    this.computedState = {};
     this.max = -Infinity;
     this.min = Infinity;
     this.instructions = {
@@ -107,6 +108,8 @@ export default class ComputedData extends EventEmitter {
     const item = this.queue.get(id);
     item.visible = !item.visible;
     this.queue.set(id, item);
+    delete this.sets[id];
+    delete this.computedState[id];
   }
 
   removeFromQueue(id) {
@@ -119,6 +122,7 @@ export default class ComputedData extends EventEmitter {
     canvas.RE.removeFromRenderingOrder(id);
     this.queue.delete(id);
     delete this.sets[id];
+    delete this.computedState[id];
 
     return true;
   }
