@@ -54,6 +54,7 @@ export default class TimeScale {
     const change = -movementY * delta10P;
     range[2] += change;
     range[3] -= change;
-    this.$state.chart.setRange(range);
+    this.$state.chart.setRange(range, true);
+    this.$state.chart.computedData.generateInstructions();
   }
 }
