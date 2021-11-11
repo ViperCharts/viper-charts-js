@@ -8,15 +8,21 @@ export default class Chart extends EventEmitter {
   constructor(params = {}) {
     super();
 
-    const { layout = [], sources, onRequestHistoricalData = () => {} } = params;
+    const {
+      sources,
+      initialSettings = {},
+      onRequestHistoricalData = () => {},
+      onSaveViperSettings = () => {},
+    } = params;
 
     this.$global = GlobalState;
     this.$global.api = this;
     this.onRequestHistoricalData = onRequestHistoricalData;
+    this.onSaveViperSettings = onSaveViperSettings;
 
     this.$global.init();
     this.setAllDataSources(sources);
-    this.$global.layout.setInitialLayout(layout);
+    this.$global.settings.parseInitialSettings(initialSettings);
   }
 
   /**

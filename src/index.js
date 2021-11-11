@@ -1,19 +1,8 @@
 import "./style.css";
-import data from "./footprint.json";
 import Chart from "./viperchart";
 import Constants from "./constants";
 
-import Utils from "./utils";
-
-// const data = await res.json();
-//     for (let i = 0; i < data.candles.length; i++) {
-//       newData.push({
-//         ...data.candles[i],
-//         time: data.candles[i].timestamp * 60 * 1000,
-//         volumeProfile: data.volumeProfile[i] && data.volumeProfile[i].profile,
-//         volumeRatios: data.volumeRatios[i],
-//       });
-//     }
+let chart;
 
 (async () => {
   const pairs = await (
@@ -35,9 +24,11 @@ import Utils from "./utils";
   }));
 
   // Actual chart stuff
-  const chart = new Chart({
+  chart = new Chart({
     sources: { COINBASE },
+    initialSettings: JSON.parse(localStorage.getItem("settings") || "{}"),
     onRequestHistoricalData,
+    onSaveViperSettings,
   });
 
   async function onRequestHistoricalData({ requests, callback }) {
@@ -71,5 +62,37 @@ import Utils from "./utils";
         callback(id, data);
       }
     }
+  }
+
+  const settings = {
+    layout: [],
+    charts: {
+      chartId: {
+        timeframe: 60000,
+        range: {
+          start: 12312312,
+          end: 23123123,
+        },
+        indicators: [
+          {
+            id: "price-line",
+            dataset: {
+              source: "COINBASE",
+              name: "BTC-USD",
+            },
+          },
+        ],
+        settings: {
+          syncRange: false,
+          syncWithCrosshair: "",
+          lockedYScale: true,
+          scaleType: "percent",
+        },
+      },
+    },
+  };
+
+  function onSaveViperSettings(settings) {
+    localStorage.setItem("settings", JSON.stringify(settings));
   }
 })();

@@ -38,7 +38,6 @@ export default {
     addIndicator(searchResult) {
       const chart = GlobalState.charts[GlobalState.selectedChartId];
       const indicator = this.state.selectedIndicator;
-
       chart.addIndicator(indicator, searchResult);
     }
 

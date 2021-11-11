@@ -35,8 +35,8 @@ class GlobalState extends EventEmitter {
     this.events.init();
   }
 
-  createChart() {
-    const chart = new ChartState({ $global: this });
+  createChart(state = {}) {
+    const chart = new ChartState({ ...state, $global: this });
     this.charts[chart.id] = chart;
     this.ui.app.addChart(chart);
     this.setSelectedChartId(chart.id);

@@ -11,17 +11,23 @@ import ComputedData from "./computed_data.js";
 import EventEmitter from "../../events/event_emitter.ts";
 
 export default class ChartState extends EventEmitter {
-  constructor({ $global, timeframe = Constants.HOUR }) {
+  constructor({
+    $global,
+    id = Utils.uniqueId(),
+    range = [],
+    pixelsPerElement = 10,
+    timeframe = Constants.HOUR,
+    settings = {},
+  }) {
     super();
 
     this.$global = $global;
     this.isInitialized = false;
 
-    this.id = Utils.uniqueId();
+    this.id = id;
     this.timeframe = 0;
-    this.pixelsPerElement = 10;
     this.indicators = {};
-    this.range = [];
+    this.range = range;
     this.datasets = {};
     this.visibleData = {};
     this.computedData = new ComputedData({ $global, $chart: this });
@@ -36,8 +42,14 @@ export default class ChartState extends EventEmitter {
       syncWithCrosshair: "",
       lockedYScale: true,
       scaleType: "default",
+      ...settings,
     };
 
+    this.$global.settings.onChartAdd(this.id, {
+      settings: this.settings,
+    });
+
+    this.setPixelsPerElement(pixelsPerElement);
     this.setTimeframe(timeframe);
   }
 
@@ -70,9 +82,11 @@ export default class ChartState extends EventEmitter {
     this.subcharts.yScale.init();
 
     this.isInitialized = true;
+
+    this.fireEvent("init");
   }
 
-  addIndicator(indicator, { source, name }) {
+  addIndicator(indicator, { source, name, visible = true }) {
     // Get or create dataset if doesn't exist
     const dataset = this.$global.data.addOrGetDataset({
       source,
@@ -99,7 +113,7 @@ export default class ChartState extends EventEmitter {
     indicator = {
       id: indicator.id,
       name: indicator.name,
-      visible: true,
+      visible,
       datasetId: localId,
     };
 
@@ -120,6 +134,8 @@ export default class ChartState extends EventEmitter {
       start: this.range[0],
       end: this.range[1],
     });
+
+    this.$global.settings.onChartIndicatorsChange(this.id, this.indicators);
 
     // If first new dataset, reset range according to data
     this.setInitialVisibleRange();
@@ -180,6 +196,8 @@ export default class ChartState extends EventEmitter {
         }
       }
     }
+
+    this.$global.settings.onChartChangeRangeOrTimeframe(this.id, { timeframe });
   }
 
   toggleVisibility(id) {
@@ -205,6 +223,8 @@ export default class ChartState extends EventEmitter {
     }
 
     this.$global.ui.charts[this.id].removeIndicator(id);
+
+    this.$global.settings.onChartIndicatorsChange(this.id, this.indicators);
 
     this.setVisibleRange();
   }
@@ -284,13 +304,14 @@ export default class ChartState extends EventEmitter {
 
         // Update charts pixels per element
         const dimensions = this.$global.layout.chartDimensions;
+        if (!dimensions[chart.id]) continue;
         const { width: w1 } = dimensions[chart.id].main;
         const { width: w2 } = dimensions[this.id].main;
         const diff = w1 / w2;
 
         // Calculate pixels per element relative to chart layout. This is because
         // different charts can have different viewpoints
-        chart.pixelsPerElement = this.pixelsPerElement * diff;
+        chart.setPixelsPerElement(this.pixelsPerElement * diff);
         chart.setVisibleRange({ start, end }, movedId);
       }
     }
@@ -341,33 +362,37 @@ export default class ChartState extends EventEmitter {
   setInitialVisibleRange() {
     const { width } = this.$global.layout.chartDimensions[this.id].main;
 
-    // End timestamp based on last element
-    let endTimestamp;
-    if (!this.datasets.length) {
-      endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
+    if (!this.range.length) {
+      // End timestamp based on last element
+      let endTimestamp;
+      if (!this.datasets.length) {
+        endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
+      } else {
+        const id = `${this.datasets[0]}:${this.timeframe}`;
+        const { data } = this.$global.data.datasets[id];
+        endTimestamp = data[data.length - 1].time;
+      }
+
+      const end = endTimestamp + this.timeframe * 5;
+
+      // Calculate start timestamp using width and pixelsPerElement
+      const candlesInView = width / this.pixelsPerElement;
+      // Set start to candlesInView lookback
+      const start = end - candlesInView * this.timeframe;
+
+      this.setVisibleRange({ start, end });
     } else {
-      const id = `${this.datasets[0]}:${this.timeframe}`;
-      const { data } = this.$global.data.datasets[id];
-      endTimestamp = data[data.length - 1].time;
+      this.setVisibleRange();
     }
-
-    const end = endTimestamp + this.timeframe * 5;
-
-    // Calculate start timestamp using width and pixelsPerElement
-    const candlesInView = width / this.pixelsPerElement;
-    // Set start to candlesInView lookback
-    const start = end - candlesInView * this.timeframe;
-
-    this.setVisibleRange({ start, end });
   }
 
   resizeXRange(delta, width) {
     const ppe = this.pixelsPerElement;
 
     if (delta < 0) {
-      this.pixelsPerElement = Math.max(1, ppe - ppe / 5);
+      this.setPixelsPerElement(Math.max(1, ppe - ppe / 5));
     } else if (delta > 0) {
-      this.pixelsPerElement = Math.min(ppe + ppe / 5, 1000);
+      this.setPixelsPerElement(Math.min(ppe + ppe / 5, 1000));
     }
 
     // End timestamp based on last element
@@ -405,6 +430,17 @@ export default class ChartState extends EventEmitter {
         this.range[3] = max + ySpread5P;
       }
     }
+
+    this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
+      range: this.range,
+    });
+  }
+
+  setPixelsPerElement(pixelsPerElement) {
+    this.pixelsPerElement = pixelsPerElement;
+    this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
+      pixelsPerElement,
+    });
   }
 
   getTimestampByXCoord(x) {
@@ -448,6 +484,7 @@ export default class ChartState extends EventEmitter {
 
   updateSettings(updates) {
     Object.assign(this.settings, updates);
-    this.fireEvent("update-settings", updates);
+    this.fireEvent("update-settings", this.settings);
+    this.$global.settings.onChartChangeSettings(this.id, this.settings);
   }
 }

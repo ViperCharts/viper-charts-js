@@ -17,7 +17,7 @@ class App extends React.Component {
 
     this.state = {
       charts: {},
-      modal: "indicators",
+      modal: "",
     };
 
     this.appElement = React.createRef();

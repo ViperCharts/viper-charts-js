@@ -56,7 +56,7 @@ export default class LayoutState extends EventEmitter {
   }
 
   setInitialLayout(layout) {
-    // If no layout, create default layout with one chart on 15m timeframe
+    // If no layout, create default layout with one chart
     if (!layout.length) {
       const { id: chartId } = this.$global.createChart();
       layout = [
@@ -72,14 +72,13 @@ export default class LayoutState extends EventEmitter {
       ];
     }
 
-    // Loop through all charts and create charts based on data
-
     this.setLayout(layout);
   }
 
   setLayout(layout) {
     this.layout = layout;
     this.fireEvent("set-layout", this.layout);
+    this.$global.settings.onSetLayout(this.layout);
   }
 
   resize() {
