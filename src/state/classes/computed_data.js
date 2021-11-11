@@ -195,8 +195,8 @@ export default class ComputedData extends EventEmitter {
           else if (isNormalized) {
             const range = set.max - set.min;
 
-            values.series = values.series.map(
-              (val) => ((val - set.min) / range) * 100
+            values.series = values.series.map((val) =>
+              Utils.maxNumberAndDecimal(((val - set.min) / range) * 100, 4)
             );
           }
 
@@ -314,7 +314,8 @@ export default class ComputedData extends EventEmitter {
             x: dimensions.yScale.width / 2,
             y,
             color: textColor,
-            text: `${symbol}${value}${extra}`,
+            text: `${symbol}${Utils.maxNumberAndDecimal(value, 8)}${extra}`,
+            font: "bold 10px Arial",
           };
 
           const id2 = Utils.uniqueId();

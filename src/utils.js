@@ -8,6 +8,13 @@ export default {
     return Math.max(value, max);
   },
 
+  maxNumberAndDecimal(value, maxLength) {
+    let [num, dec] = value.toString().split(".");
+    maxLength -= num.length;
+    if (maxLength > 0 && dec) num += `.${dec.slice(0, maxLength)}`;
+    return +num;
+  },
+
   randomHexColor() {
     return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
   },

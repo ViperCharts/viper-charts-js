@@ -64,9 +64,11 @@ export default class Canvas {
   drawText(color, [x, y], text, options) {
     options = {
       textAlign: "center",
+      font: "10px Arial",
       ...options,
     };
     this.ctx.textAlign = options.textAlign;
+    this.ctx.font = options.font;
     this.ctx.fillStyle = color;
     this.ctx.fillText(text, x, y);
   }
