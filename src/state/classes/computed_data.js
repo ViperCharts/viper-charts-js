@@ -154,6 +154,7 @@ export default class ComputedData extends EventEmitter {
     // TODO queue this and debounce it
 
     const isPercent = this.$chart.settings.scaleType === "percent";
+    const isNormalized = this.$chart.settings.scaleType === "normalized";
 
     let max = -Infinity;
     let min = Infinity;
@@ -188,6 +189,15 @@ export default class ComputedData extends EventEmitter {
                 );
               });
             }
+          }
+
+          // If a normalized chart, every value is compared relatively to its own max and min (visible range);
+          else if (isNormalized) {
+            const range = set.max - set.min;
+
+            values.series = values.series.map(
+              (val) => ((val - set.min) / range) * 100
+            );
           }
 
           const { series } = values;
