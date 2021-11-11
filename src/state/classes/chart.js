@@ -6,7 +6,6 @@ import Main from "../../components/canvas_components/main.js";
 import TimeScale from "../../components/canvas_components/time_scale.js";
 import PriceScale from "../../components/canvas_components/price_scale.js";
 
-import StorageManager from "../../managers/storage.js";
 import ComputedData from "./computed_data.js";
 
 import EventEmitter from "../../events/event_emitter.ts";
@@ -36,7 +35,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
-      scaleType: "normalized",
+      scaleType: "default",
     };
 
     this.setTimeframe(timeframe);

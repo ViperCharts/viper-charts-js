@@ -1,31 +1,43 @@
 export default {
   plot(
-    { renderingQueueId, chart, time },
+    { renderingQueueId, chart, time, dataset },
     { value, title, color = "#FFF", linewidth, ylabel = false }
   ) {
-    chart.computedData.addSetItem(renderingQueueId, time, "line", {
-      series: [value],
-      title,
-      colors: { color },
-      linewidth,
-      ylabel,
-    });
+    chart.computedData.addSetItem(
+      renderingQueueId,
+      time,
+      "line",
+      dataset.timeframe,
+      {
+        series: [value],
+        title,
+        colors: { color },
+        linewidth,
+        ylabel,
+      }
+    );
   },
 
   plotBox(
-    { renderingQueueId, chart, time },
+    { renderingQueueId, chart, time, dataset },
     { top, bottom, width, title, color = "#FFF" }
   ) {
-    chart.computedData.addSetItem(renderingQueueId, time, "box", {
-      series: [top, bottom, width],
-      title,
-      colors: { color },
-      ylabel,
-    });
+    chart.computedData.addSetItem(
+      renderingQueueId,
+      time,
+      "box",
+      dataset.timeframe,
+      {
+        series: [top, bottom, width],
+        title,
+        colors: { color },
+        ylabel,
+      }
+    );
   },
 
   plotCandle(
-    { renderingQueueId, chart, time },
+    { renderingQueueId, chart, time, dataset },
     {
       open,
       high,
@@ -37,15 +49,21 @@ export default {
       ylabel = false,
     }
   ) {
-    chart.computedData.addSetItem(renderingQueueId, time, "candle", {
-      series: [open, high, low, close],
-      title,
-      colors: {
-        color,
-        wickcolor,
-      },
-      ylabel,
-    });
+    chart.computedData.addSetItem(
+      renderingQueueId,
+      time,
+      "candle",
+      dataset.timeframe,
+      {
+        series: [open, high, low, close],
+        title,
+        colors: {
+          color,
+          wickcolor,
+        },
+        ylabel,
+      }
+    );
   },
 
   plotText() {},

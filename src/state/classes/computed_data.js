@@ -4,10 +4,11 @@ import Utils from "../../utils";
 import ScriptFunctions from "../../viper_script/script_functions";
 
 class ComputedSet {
-  constructor() {
+  constructor(timeframe) {
     this.data = {};
     this.max = 0;
     this.min = Infinity;
+    this.timeframe = timeframe;
   }
 }
 
@@ -40,7 +41,7 @@ export default class ComputedData extends EventEmitter {
     const { indicator, visible } = this.queue.get(key);
     const dataset = this.$chart.datasets[indicator.datasetId];
 
-    // Delete old set
+    // Delete old set TODO CHANGE THIS IT HURTS PERFORMANCE
     delete this.sets[key];
 
     // If indicator is set to invisible, dont calculate data
@@ -73,12 +74,29 @@ export default class ComputedData extends EventEmitter {
 
     // Run the indicator function for this candle and get all results
     for (const point of visibleData.data) {
+      if (this.sets[key] && this.sets[key].data[point.time] !== undefined)
+        continue;
+
       iteratedTime = point.time;
 
       indicator.drawFunc.bind(indicator)({
         ...point,
         ...funcWraps,
       });
+    }
+  }
+
+  requestSetPoints({ id, start, end }) {
+    const set = this.sets[id];
+
+    if (!set) return;
+
+    const { timeframe } = set;
+    // Check all set items to see if they have been calculated
+    for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
+      if (set.data[timestamp] === undefined) {
+        this.calculateOneSetTime(id, timestamp);
+      }
     }
   }
 
@@ -127,9 +145,9 @@ export default class ComputedData extends EventEmitter {
     return true;
   }
 
-  addSetItem(id, time, type, values) {
+  addSetItem(id, time, type, timeframe, values) {
     if (!this.sets[id]) {
-      this.sets[id] = new ComputedSet();
+      this.sets[id] = new ComputedSet(timeframe);
     }
 
     const set = this.sets[id];
@@ -167,8 +185,13 @@ export default class ComputedData extends EventEmitter {
       dataDictionaryCopy[id] = JSON.parse(JSON.stringify(set.data));
       const data = dataDictionaryCopy[id];
 
-      for (const time in data) {
+      const [start, end] = this.$chart.range;
+      const { timeframe } = this.$chart;
+
+      for (const time of Utils.getAllTimestampsIn(start, end, timeframe)) {
         const item = data[time];
+
+        if (!item) continue;
 
         for (let i = 0; i < item.length; i++) {
           const { values } = item[i];
