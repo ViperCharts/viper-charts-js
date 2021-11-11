@@ -431,7 +431,8 @@ export default class ChartState extends EventEmitter {
     const yFromMin = price - min;
     const perc = yFromMin / yInView;
     const h = this.$global.layout.chartDimensions[this.id].main.height;
-    return -Math.floor(perc * h - h);
+    const y = -Math.floor(perc * h - h);
+    return Math.min(Math.max(y, -1), h);
   }
 
   /**
