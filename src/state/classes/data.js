@@ -175,7 +175,7 @@ export default class DataState extends EventEmitter {
     }
 
     // Build array with requested sources, names, timeframes, and start & end times
-    const requests = [];
+    let requests = [];
     for (const id of datasetIds) {
       let [start, end] = allRequestedPoints[id];
       const dataset = this.datasets[id];
@@ -197,6 +197,9 @@ export default class DataState extends EventEmitter {
         end -= timeframe * 100;
       }
     }
+
+    // Sort by latest timestamps
+    requests = requests.sort((a, b) => b.end - a.end);
 
     const callback = (id, updates = {}) => {
       const dataset = this.datasets[id];
