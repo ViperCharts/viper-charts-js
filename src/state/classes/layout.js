@@ -86,6 +86,30 @@ export default class LayoutState extends EventEmitter {
     this.$global.settings.onSetLayout(this.layout);
   }
 
+  removeChart(chartId) {
+    // Loop through all layout boxes till finding the chartId
+    const loop = (parent, child) => {
+      if (child.chartId === chartId) {
+        return { parent, child };
+      }
+      if (child.children) {
+        for (const grandchild of child.children) {
+          const result = loop(child, grandchild);
+          if (result) return result;
+        }
+      }
+    };
+
+    const { layout } = this;
+    const { parent, child } = loop(layout, layout[0]);
+
+    const i = parent.children.indexOf(child);
+    parent.chartId = parent.children[Number(!i)].chartId;
+    parent.children = [];
+
+    this.setLayout(layout);
+  }
+
   resize() {
     // Get the height and width of charts grid container
     const { current } = this.$global.ui.app.chartsElement;
