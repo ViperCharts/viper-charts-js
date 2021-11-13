@@ -14,6 +14,7 @@ export default class Grid extends React.Component {
 
     this.state = {
       boxes: [],
+      layout: [],
 
       showAddChartHooks: false,
       breakpointResizingBox: undefined,
@@ -22,15 +23,20 @@ export default class Grid extends React.Component {
     this.grid = React.createRef();
     this.boxRefs = {};
 
-    GlobalState.layout.addEventListener(
-      "set-layout",
-      this.onSetLayout.bind(this)
-    );
+    this.setLayoutListener = this.onSetLayout.bind(this);
+    GlobalState.layout.addEventListener("set-layout", this.setLayoutListener);
 
-    GlobalState.events.addEventListener(
-      "mouseup",
-      () => (this.breakpointResizingBox = undefined)
+    this.mouseUpListener = (() =>
+      (this.breakpointResizingBox = undefined)).bind(this);
+    GlobalState.events.addEventListener("mouseup", this.mouseUpListener);
+  }
+
+  componentWillUnmount() {
+    GlobalState.layout.removeEventListener(
+      "set-layout",
+      this.setLayoutListener
     );
+    GlobalState.events.removeEventListener("mouseup", this.mouseUpListener);
   }
 
   onSetLayout(layout) {

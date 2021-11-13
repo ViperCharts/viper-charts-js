@@ -51,8 +51,13 @@ export default class LayoutState extends EventEmitter {
   }
 
   init() {
-    window.addEventListener("resize", this.resize.bind(this));
-    setTimeout(this.resize.bind(this));
+    this.resizeListener = this.resize.bind(this);
+    window.addEventListener("resize", this.resizeListener);
+    setTimeout(this.resizeListener);
+  }
+
+  destroy() {
+    window.removeEventListener("resize", this.resizeListener);
   }
 
   setInitialLayout(layout) {

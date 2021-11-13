@@ -8,9 +8,18 @@ export default class EventsState extends EventEmitter {
   }
 
   init() {
-    window.addEventListener("mousedown", this.onMouseDown.bind(this));
-    window.addEventListener("mouseup", this.onMouseUp.bind(this));
-    window.addEventListener("mousemove", this.onMouseMove.bind(this));
+    this.mouseDownListener = this.onMouseDown.bind(this);
+    window.addEventListener("mousedown", this.mouseDownListener);
+    this.mouseUpListener = this.onMouseUp.bind(this);
+    window.addEventListener("mouseup", this.mouseUpListener);
+    this.mouseMoveListener = this.onMouseMove.bind(this);
+    window.addEventListener("mousemove", this.mouseMoveListener);
+  }
+
+  destroy() {
+    window.removeEventListener("mousedown", this.mouseDownListener);
+    window.removeEventListener("mouseup", this.mouseUpListener);
+    window.removeEventListener("mousemove", this.mouseMoveListener);
   }
 
   onMouseDown(e) {

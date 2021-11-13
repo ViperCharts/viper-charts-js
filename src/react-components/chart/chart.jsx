@@ -26,17 +26,18 @@ export default class Chart extends React.Component {
     };
 
     this.chartContainer = new React.createRef();
-    this.setSelectedChartListener = GlobalState.addEventListener(
-      "set-selected-chart-id",
-      (id) => {
-        if (this.state.id !== id) {
-          if (this.state.isFocused) {
-            this.setState({ isFocused: false });
-          }
-          return;
+    this.setSelectedChartListener = ((id) => {
+      if (this.state.id !== id) {
+        if (this.state.isFocused) {
+          this.setState({ isFocused: false });
         }
-        this.setState({ isFocused: true });
+        return;
       }
+      this.setState({ isFocused: true });
+    }).bind(this);
+    GlobalState.addEventListener(
+      "set-selected-chart-id",
+      this.setSelectedChartListener
     );
   }
 

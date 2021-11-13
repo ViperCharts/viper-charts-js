@@ -25,22 +25,40 @@ export default class Main {
     new LastPriceLine({ $state: this.$state, canvas: this.canvas });
     new Crosshair({ $state: this.$state, canvas: this.canvas });
 
+    this.onResizeChart = (({ main }) => {
+      this.canvas.setWidth(main.width);
+      this.canvas.setHeight(main.height);
+      this.$state.chart.setVisibleRange();
+    }).bind(this);
     this.$state.global.layout.addEventListener(
       `resize-${this.$state.chart.id}`,
-      ({ main }) => {
-        this.canvas.setWidth(main.width);
-        this.canvas.setHeight(main.height);
-        this.$state.chart.setVisibleRange();
-      }
+      this.onResizeChart
     );
 
+    this.onWindowMouseMoveListener = this.onWindowMouseMove.bind(this);
     this.$state.global.events.addEventListener(
       "mousemove",
-      this.onWindowMouseMove.bind(this)
+      this.onWindowMouseMoveListener
     );
   }
 
+  destroy() {
+    this.$state.global.layout.removeEventListener(
+      `resize-${this.$state.chart.id}`,
+      this.onResizeChart
+    );
+    this.$state.global.events.removeEventListener(
+      "mousemove",
+      this.onWindowMouseMoveListener
+    );
+    this.removeCanvasListeners(this.canvas.canvas);
+  }
+
   setCanvasElement(canvas) {
+    if (this.canvas && this.canvas.canvas) {
+      this.removeCanvasListeners(this.canvas.canvas);
+    }
+
     if (!this.canvas) {
       this.canvas = new Canvas({
         $state: this.$state,
@@ -53,24 +71,29 @@ export default class Main {
       });
     }
 
-    this.scrollListener = canvas.addEventListener(
-      "wheel",
-      this.onScroll.bind(this)
-    );
-    this.mousemoveListener = canvas.addEventListener(
-      "mousemove",
-      this.onMouseMove.bind(this)
-    );
-    this.mouseleaveListener = canvas.addEventListener(
-      "mouseleave",
-      () => (this.$state.global.crosshair.visible = false)
-    );
-    canvas.addEventListener(
-      "mouseenter",
-      () => (this.$state.global.crosshair.visible = true)
-    );
+    this.scrollListener = this.onScroll.bind(this);
+    canvas.addEventListener("wheel", this.scrollListener);
+
+    this.mousemoveListener = this.onMouseMove.bind(this);
+    canvas.addEventListener("mousemove", this.mousemoveListener);
+
+    this.mouseLeaveListener = (() =>
+      (this.$state.global.crosshair.visible = false)).bind(this);
+    canvas.addEventListener("mouseleave", this.mouseleaveListener);
+
+    this.mouseEnterListener = (() =>
+      (this.$state.global.crosshair.visible = true)).bind(this);
+    canvas.addEventListener("mouseenter", this.mouseEnterListener);
 
     this.canvas.setCanvasElement(canvas);
+  }
+
+  removeCanvasListeners(canvas) {
+    if (!canvas);
+    canvas.removeEventListener("wheel", this.scrollListener);
+    canvas.removeEventListener("mousemove", this.mousemoveListener);
+    canvas.removeEventListener("mouseleave", this.mouseleaveListener);
+    canvas.removeEventListener("mouseenter", this.mouseEnterListener);
   }
 
   /**

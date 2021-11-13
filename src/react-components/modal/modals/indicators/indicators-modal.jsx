@@ -21,14 +21,25 @@ export default {
         searchResults: [],
       };
 
-      GlobalState.data.addEventListener("set-all-data-sources", (all) => {
+      this.setAllDataSourcesListener = ((all) => {
         this.setState({ sources: all });
         this.updateSearchResults(this.state.search);
-      });
+      }).bind(this);
+      GlobalState.data.addEventListener(
+        "set-all-data-sources",
+        this.setAllDataSourcesListener
+      );
     }
 
     componentDidMount() {
       this.updateSearchResults();
+    }
+
+    componentWillUnmount() {
+      GlobalState.data.removeEventListener(
+        "set-all-data-sources",
+        this.setAllDataSourcesListener
+      );
     }
 
     /**

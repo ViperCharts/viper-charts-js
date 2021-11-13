@@ -31,16 +31,29 @@ export default class TimeScale {
     });
     new PriceSelected({ $state: this.$state, canvas: this.canvas });
 
+    this.resizeChartLayoutListener = (({ yScale }) => {
+      this.canvas.setHeight(yScale.height);
+    }).bind(this);
     this.$state.global.layout.addEventListener(
       `resize-${this.$state.chart.id}`,
-      ({ yScale }) => {
-        this.canvas.setHeight(yScale.height);
-      }
+      this.resizeChartLayoutListener
     );
 
+    this.mouseMoveListener = this.onWindowMouseMove.bind(this);
     this.$state.global.events.addEventListener(
       "mousemove",
-      this.onWindowMouseMove.bind(this)
+      this.mouseMoveListener
+    );
+  }
+
+  destroy() {
+    this.$state.global.events.removeEventListener(
+      "mousemove",
+      this.mouseMoveListener
+    );
+    this.$state.global.layout.removeEventListener(
+      `resize-${this.$state.chart.id}`,
+      this.resizeChartLayoutListener
     );
   }
 

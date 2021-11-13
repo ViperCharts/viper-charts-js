@@ -29,6 +29,14 @@ export default class Canvas {
     });
   }
 
+  destroy() {
+    this.canvas.removeEventListener("mousedown", this.onCanvasMouseDown);
+    this.$state.global.events.removeEventListener(
+      "mouseup",
+      this.onEventMouseUp
+    );
+  }
+
   setCanvasElement(canvas) {
     this.ctx = canvas.getContext("2d");
 
@@ -38,10 +46,11 @@ export default class Canvas {
     canvas.height = canvas.clientHeight;
     this.height = canvas.clientHeight;
 
-    canvas.addEventListener("mousedown", () => (this.isMouseDown = true));
-    this.$state.global.events.addEventListener("mouseup", () => {
-      this.isMouseDown = false;
-    });
+    this.onCanvasMouseDown = (() => (this.isMouseDown = true)).bind(this);
+    canvas.addEventListener("mousedown", this.onCanvasMouseDown);
+
+    this.onEventMouseUp = (() => (this.isMouseDown = false)).bind(this);
+    this.$state.global.events.addEventListener("mouseup", this.onEventMouseUp);
 
     this.canvas = canvas;
   }

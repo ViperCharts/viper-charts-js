@@ -13,11 +13,19 @@ export default class ChartSettings extends React.Component {
       settings: this.chart.settings,
     };
 
-    this.chart.addEventListener("update-settings", () => this.forceUpdate());
+    this.updateSettingsListener = (() => this.forceUpdate()).bind(this);
+    this.chart.addEventListener("update-settings", this.updateSettingsListener);
   }
 
   updateChartSetting(setting, value) {
     this.chart.updateSettings({ [setting]: value });
+  }
+
+  componentWillUnmount() {
+    this.chart.removeEventListener(
+      "update-settings",
+      this.updateSettingsListener
+    );
   }
 
   render() {

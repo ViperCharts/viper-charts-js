@@ -24,6 +24,8 @@ class GlobalState extends EventEmitter {
     this.layout = new LayoutState({ $global: this });
     this.data = new DataState({ $global: this });
     this.events = new EventsState({ $global: this });
+
+    window.deleteSelectedChart = this.deleteSelectedChart.bind(this);
   }
 
   init() {
@@ -41,6 +43,15 @@ class GlobalState extends EventEmitter {
     this.ui.app.addChart(chart);
     this.setSelectedChartId(chart.id);
     return this.charts[chart.id];
+  }
+
+  deleteSelectedChart() {
+    const chartIds = Object.keys(this.charts);
+    if (chartIds.length === 1) return;
+    const id = this.selectedChartId;
+    const chart = this.charts[id];
+    chart.destroy();
+    this.setSelectedChartId(chartIds[0]);
   }
 
   setSelectedChartId(id) {

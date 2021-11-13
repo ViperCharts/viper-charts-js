@@ -2,9 +2,7 @@ import Utils from "../utils";
 
 export default class EventEmitter {
   _events: {
-    [key: string]: {
-      [key: string]: Function;
-    };
+    [key: string]: [Function];
   };
 
   constructor() {
@@ -14,20 +12,22 @@ export default class EventEmitter {
   addEventListener(eventName: string, callback: Function) {
     const id = Utils.uniqueId();
     if (this._events[eventName] !== undefined) {
-      this._events[eventName][id] = callback;
+      this._events[eventName].push(callback);
     } else {
-      this._events[eventName] = { [id]: callback };
+      this._events[eventName] = [callback];
     }
     return id;
   }
 
-  removeEventListener(eventName: string, id: string) {
-    const listener = this._events[eventName][id];
-    if (!listener) {
-      console.error(`Listener id (${id}) not found on ${eventName}`);
+  removeEventListener(eventName: string, callback: Function) {
+    const listener = this._events[eventName];
+    if (!listener) return;
+    const i = listener.indexOf(callback);
+    if (i === -1) {
+      console.log("Error!!! " + eventName);
       return;
     }
-    delete this._events[eventName][id];
+    listener.splice(i, 1);
   }
 
   fireEvent(eventName: string, ...args: any[]) {

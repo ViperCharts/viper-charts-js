@@ -28,30 +28,39 @@ export default class TopBar extends React.Component {
       selectedChartTimeframeChange: null,
     };
 
-    GlobalState.addEventListener("set-selected-chart-id", (id) => {
+    this.onSetSelectedChartId = ((id) => {
       this.setSelectedChart(GlobalState.charts[id]);
-    });
+    }).bind(this);
+    GlobalState.addEventListener(
+      "set-selected-chart-id",
+      this.onSetSelectedChartId
+    );
   }
 
   componentDidMount() {
     this.buildTimeframeLabels();
   }
 
+  componentWillUnmount() {
+    GlobalState.removeEventListener(
+      "set-selected-chart-id",
+      this.onSetSelectedChartId
+    );
+  }
+
   setSelectedChart(selectedChart) {
+    const onSetTimeframe = this.onSetTimeframe.bind(this);
+
     // Remove old listener of previously set chart if a chart is set
     if (this.state.selectedChart) {
       this.state.selectedChart.removeEventListener(
         "set-timeframe",
-        this._listeners.selectedChartTimeframeChange
+        onSetTimeframe
       );
     }
 
     // Add event listener to new chart
-    this._listeners.selectedChartTimeframeChange =
-      selectedChart.addEventListener(
-        "set-timeframe",
-        this.onSetTimeframe.bind(this)
-      );
+    selectedChart.addEventListener("set-timeframe", onSetTimeframe);
 
     // Run the callback initially so we can capture the timeframe
     // This is because the timeframe is set in chart state initially

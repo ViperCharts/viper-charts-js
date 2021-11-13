@@ -56,9 +56,13 @@ export default class ChartState extends EventEmitter {
   init() {
     if (this.isInitialized) return;
 
-    this.$global.layout.addEventListener(`resize-${this.id}`, ({ main }) => {
+    this.onResizeListener = (({ main }) => {
       this.resizeXRange(0, main.width);
-    });
+    }).bind(this);
+    this.$global.layout.addEventListener(
+      `resize-${this.id}`,
+      this.onResizeListener
+    );
 
     const $state = {
       chart: this,
@@ -84,6 +88,27 @@ export default class ChartState extends EventEmitter {
     this.isInitialized = true;
 
     this.fireEvent("init");
+  }
+
+  destroy() {
+    this.$global.removeEventListener(
+      `resize-${this.id}`,
+      this.onResizeListener
+    );
+
+    // Delete subcharts
+    this.subcharts.main.destroy();
+    this.subcharts.yScale.destroy();
+    this.subcharts.xScale.destroy();
+
+    // Delete all indicators
+    Object.keys(this.indicators).map(this.removeIndicator.bind(this));
+
+    // TODO Delete from layout
+    this.$global.layout.removeChart(this.id);
+
+    // Delete from global state
+    delete this.$global.charts[this.id];
   }
 
   addIndicator(indicator, { source, name, visible = true }) {
