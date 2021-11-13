@@ -104,8 +104,9 @@ export default class LayoutState extends EventEmitter {
     const { parent, child } = loop(layout, layout[0]);
 
     const i = parent.children.indexOf(child);
-    parent.chartId = parent.children[Number(!i)].chartId;
-    parent.children = [];
+    const childStaying = parent.children[Number(!i)];
+    parent.chartId = childStaying.chartId;
+    parent.children = childStaying.children;
 
     this.setLayout(layout);
   }

@@ -46,12 +46,11 @@ class GlobalState extends EventEmitter {
   }
 
   deleteSelectedChart() {
-    const chartIds = Object.keys(this.charts);
-    if (chartIds.length === 1) return;
+    if (Object.keys(this.charts).length === 1) return;
     const id = this.selectedChartId;
     const chart = this.charts[id];
     chart.destroy();
-    this.setSelectedChartId(chartIds[0]);
+    this.setSelectedChartId(Object.keys(this.charts)[0]);
   }
 
   setSelectedChartId(id) {

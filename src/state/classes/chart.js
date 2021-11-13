@@ -104,8 +104,11 @@ export default class ChartState extends EventEmitter {
     // Delete all indicators
     Object.keys(this.indicators).map(this.removeIndicator.bind(this));
 
-    // TODO Delete from layout
+    // Delete from layout
     this.$global.layout.removeChart(this.id);
+
+    // Delete from viper settings store
+    this.$global.settings.onChartDelete(this.id);
 
     // Delete from global state
     delete this.$global.charts[this.id];
