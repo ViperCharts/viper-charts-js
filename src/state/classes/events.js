@@ -14,12 +14,15 @@ export default class EventsState extends EventEmitter {
     window.addEventListener("mouseup", this.mouseUpListener);
     this.mouseMoveListener = this.onMouseMove.bind(this);
     window.addEventListener("mousemove", this.mouseMoveListener);
+    this.keyUpListener = this.onKeyUp.bind(this);
+    window.addEventListener("keyup", this.keyUpListener);
   }
 
   destroy() {
     window.removeEventListener("mousedown", this.mouseDownListener);
     window.removeEventListener("mouseup", this.mouseUpListener);
     window.removeEventListener("mousemove", this.mouseMoveListener);
+    window.removeEventListener("keyup", this.keyUpListener);
   }
 
   onMouseDown(e) {
@@ -32,5 +35,12 @@ export default class EventsState extends EventEmitter {
 
   onMouseMove(e) {
     this.fireEvent("mousemove", e);
+  }
+
+  onKeyUp(e) {
+    const { code } = e;
+    if (code === "Delete") this.$global.deleteSelectedChart();
+
+    this.fireEvent("keyup", e);
   }
 }
