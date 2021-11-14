@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import EventEmitter from "../../events/event_emitter";
 
 import Modal from "../../react-components/modal/modal";
+import ContextMenus from "../../react-components/context_menus/context_menus";
 import Chart from "../../react-components/chart/chart";
 import TopBar from "../../react-components/top-bar/top-bar";
 import Grid from "../../react-components/grid/grid";
@@ -18,10 +19,16 @@ class App extends React.Component {
     this.state = {
       charts: {},
       modal: "",
+      contextmenu: {
+        id: "",
+        pos: [0, 0],
+        data: {},
+      },
     };
 
     this.appElement = React.createRef();
     this.chartsElement = React.createRef();
+    this.contextMenusElement = React.createRef();
   }
 
   addChart(chart) {
@@ -34,13 +41,41 @@ class App extends React.Component {
     this.setState(() => (this.state.modal = modal));
   }
 
+  setContextMenu(id, pos, data) {
+    this.setState(() => {
+      this.state.contextmenu = { id, pos: [0, 0], data };
+    });
+    this.forceUpdate(() => {
+      const { clientWidth: elWidth, clientHeight: elHeight } =
+        this.contextMenusElement.current;
+      const { clientWidth: appWidth, clientHeight: appHeight } =
+        this.appElement.current;
+
+      pos[0] = Math.min(pos[0], appWidth - elWidth);
+      pos[1] = Math.min(pos[1], appHeight - elHeight);
+
+      this.setState(() => {
+        this.state.contextmenu.pos = pos;
+      });
+      this.forceUpdate();
+    });
+  }
+
+  closeContextMenu() {
+    this.setState(() => {
+      this.state.contextmenu = { id: "", pos: [] };
+    });
+    this.forceUpdate();
+  }
+
   render() {
-    const { modal } = this.state;
+    const { modal, contextmenu } = this.state;
 
     return (
       <div
         ref={this.appElement}
         style={{
+          position: "relative",
           display: "flex",
           flexDirection: "column",
           width: "100%",
@@ -53,6 +88,23 @@ class App extends React.Component {
         />
 
         {modal.length ? <Modal id={modal} /> : null}
+        {contextmenu.id.length ? (
+          <div
+            style={{
+              position: "absolute",
+              top: contextmenu.pos[1],
+              left: contextmenu.pos[0],
+              zIndex: 1000,
+            }}
+            ref={this.contextMenusElement}
+          >
+            <ContextMenus
+              id={contextmenu.id}
+              pos={contextmenu.pos}
+              data={contextmenu.data}
+            />
+          </div>
+        ) : null}
 
         <TopBar />
         <div ref={this.chartsElement} style={{ width: "100%", height: "100%" }}>

@@ -41,7 +41,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
-      scaleType: "default",
+      scaleType: "normalized",
       ...settings,
     };
 
@@ -508,6 +508,11 @@ export default class ChartState extends EventEmitter {
     this.subcharts.main.setCanvasElement(main.current);
     this.subcharts.xScale.canvas.setCanvasElement(xScale.current);
     this.subcharts.yScale.canvas.setCanvasElement(yScale.current);
+  }
+
+  setScaleType(type) {
+    this.updateSettings({ scaleType: type });
+    this.setInitialVisibleRange();
   }
 
   updateSettings(updates) {

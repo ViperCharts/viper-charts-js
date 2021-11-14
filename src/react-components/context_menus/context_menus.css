@@ -1,0 +1,23 @@
+.context-menu {
+  background: #2e2e2e;
+  color: rgb(216, 215, 215);
+
+  border-radius: 4px;
+}
+
+.context-menu button {
+  display: flex;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  font-weight: bold;
+  color: rgb(216, 215, 215);
+  width: 100%;
+  margin: 0;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.context-menu button:hover {
+  background: rgb(71, 71, 71);
+}

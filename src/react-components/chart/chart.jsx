@@ -121,12 +121,24 @@ export default class Chart extends React.Component {
           </div>
         </div>
         <div className="chart-chart">
-          <canvas className="chart-main" ref={this.subcharts.main}></canvas>
-          <canvas className="chart-x-axis" ref={this.subcharts.xScale}></canvas>
+          <canvas
+            className="chart-main"
+            ref={this.subcharts.main}
+            context_menu_id="main"
+            context_menu_data={JSON.stringify({ chartId: this.state.id })}
+          ></canvas>
+          <canvas
+            className="chart-x-axis"
+            ref={this.subcharts.xScale}
+            context_menu_id="xScale"
+            context_menu_data={JSON.stringify({ chartId: this.state.id })}
+          ></canvas>
           <canvas
             onDoubleClick={() => this.onDoubleClick("yScale")}
             className="chart-y-axis"
             ref={this.subcharts.yScale}
+            context_menu_id="yScale"
+            context_menu_data={JSON.stringify({ chartId: this.state.id })}
           ></canvas>
         </div>
       </div>
