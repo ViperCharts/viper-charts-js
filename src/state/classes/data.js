@@ -35,7 +35,7 @@ class Dataset extends EventEmitter {
       const chart = this.$global.charts[chartId];
 
       // Load the visible data for this chart range
-      chart.setVisibleRange();
+      chart.setVisibleRangeDebounce();
 
       // Calculate all indicator data for subscribers to dataset
       const indicatorIdArray = this.subscribers[chartId];

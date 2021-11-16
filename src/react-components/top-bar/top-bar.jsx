@@ -41,6 +41,8 @@ export default class TopBar extends React.Component {
       "set-is-grid-edit-mode",
       this.onSetIsGridEditMode
     );
+
+    this.setTimeframeListener = null;
   }
 
   componentDidMount() {
@@ -59,18 +61,18 @@ export default class TopBar extends React.Component {
   }
 
   setSelectedChart(selectedChart) {
-    const onSetTimeframe = this.onSetTimeframe.bind(this);
-
     // Remove old listener of previously set chart if a chart is set
-    if (this.state.selectedChart) {
+    if (this.state.selectedChart && this.onSetTimeframe) {
       this.state.selectedChart.removeEventListener(
         "set-timeframe",
-        onSetTimeframe
+        this.setTimeframeListener
       );
     }
 
+    this.setTimeframeListener = this.onSetTimeframe.bind(this);
+
     // Add event listener to new chart
-    selectedChart.addEventListener("set-timeframe", onSetTimeframe);
+    selectedChart.addEventListener("set-timeframe", this.setTimeframeListener);
 
     // Run the callback initially so we can capture the timeframe
     // This is because the timeframe is set in chart state initially

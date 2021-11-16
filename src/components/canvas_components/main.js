@@ -28,7 +28,7 @@ export default class Main {
     this.onResizeChart = (({ main }) => {
       this.canvas.setWidth(main.width);
       this.canvas.setHeight(main.height);
-      this.$state.chart.setVisibleRange();
+      this.$state.chart.setVisibleRangeDebounce();
     }).bind(this);
     this.$state.global.layout.addEventListener(
       `resize-${this.$state.chart.id}`,
@@ -117,7 +117,7 @@ export default class Main {
       start += change;
       end += change;
 
-      this.$state.chart.setVisibleRange({ start, end });
+      this.$state.chart.setVisibleRangeDebounce({ start, end });
     }
 
     // If vertical scroll
@@ -159,6 +159,6 @@ export default class Main {
       this.$state.chart.range[3] += movement;
     }
 
-    this.$state.chart.setVisibleRange({ start, end });
+    this.$state.chart.setVisibleRangeDebounce({ start, end });
   }
 }

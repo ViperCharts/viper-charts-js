@@ -26,6 +26,12 @@ export default class Grid extends React.Component {
     this.setLayoutListener = this.onSetLayout.bind(this);
     GlobalState.layout.addEventListener("set-layout", this.setLayoutListener);
 
+    this.onSetIsGridEditMode = (() => this.forceUpdate()).bind(this);
+    GlobalState.ui.addEventListener(
+      "set-is-grid-edit-mode",
+      this.onSetIsGridEditMode
+    );
+
     this.mouseUpListener = (() =>
       (this.breakpointResizingBox = undefined)).bind(this);
     GlobalState.events.addEventListener("mouseup", this.mouseUpListener);
@@ -37,6 +43,10 @@ export default class Grid extends React.Component {
       this.setLayoutListener
     );
     GlobalState.events.removeEventListener("mouseup", this.mouseUpListener);
+    GlobalState.ui.removeEventListener(
+      "set-is-grid-edit-mode",
+      this.onSetIsGridEditMode
+    );
   }
 
   onSetLayout(layout) {

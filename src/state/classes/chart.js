@@ -10,6 +10,8 @@ import ComputedData from "./computed_data.js";
 
 import EventEmitter from "../../events/event_emitter.ts";
 
+import _ from "lodash";
+
 export default class ChartState extends EventEmitter {
   constructor({
     $global,
@@ -48,6 +50,14 @@ export default class ChartState extends EventEmitter {
     this.$global.settings.onChartAdd(this.id, {
       settings: this.settings,
     });
+
+    this.setVisibleRangeDebounce = _.debounce(
+      (...args) => {
+        this.setVisibleRange.bind(this)(...args);
+      },
+      100,
+      { maxWait: 100 }
+    );
 
     this.setPixelsPerElement(pixelsPerElement);
     this.setTimeframe(timeframe);
