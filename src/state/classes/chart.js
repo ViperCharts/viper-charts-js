@@ -51,13 +51,7 @@ export default class ChartState extends EventEmitter {
       settings: this.settings,
     });
 
-    this.setVisibleRangeDebounce = _.debounce(
-      (...args) => {
-        this.setVisibleRange.bind(this)(...args);
-      },
-      100,
-      { maxWait: 100 }
-    );
+    this.setVisibleRangeDebounce = null;
 
     this.setPixelsPerElement(pixelsPerElement);
     this.setTimeframe(timeframe);
@@ -268,93 +262,104 @@ export default class ChartState extends EventEmitter {
   }
 
   setVisibleRange(newRange = {}, movedId = this.id) {
+    // Set visible range
     const { start = this.range[0], end = this.range[1] } = newRange;
     const visibleData = {};
 
-    const { range } = this;
+    this.range[0] = start;
+    this.range[1] = end;
 
-    const datasets = Object.values(this.datasets);
-    if (datasets.length > 0) {
-      // Loop through each dataset and find the max value
-      for (const dataset of datasets) {
-        const { data } = dataset;
-        const localId = dataset.getTimeframeAgnosticId();
+    // If already waiting for visibleRange calculation to run, ignore
+    if (this.setVisibleRangeDebounce) return;
 
-        this.$global.data.requestDataPoints({
-          dataset,
-          start: this.range[0],
-          end: this.range[1],
-        });
+    this.setVisibleRangeDebounce = _.debounce(
+      () => {
+        const datasets = Object.values(this.datasets);
+        if (datasets.length > 0) {
+          // Loop through each dataset and find the max value
+          for (const dataset of datasets) {
+            const { data } = dataset;
+            const localId = dataset.getTimeframeAgnosticId();
 
-        visibleData[localId] = { data: [] };
-
-        // Loop through all subscribed indicators to verify at least one is visible
-        let isOneVisible = false;
-        for (const renderingQueueId of dataset.subscribers[this.id]) {
-          const indicator = this.indicators[renderingQueueId];
-          if (indicator.visible) {
-            isOneVisible = true;
-            break;
-          }
-        }
-
-        // If no subscribed indicators are visible, skip this dataset from calculation
-        if (!isOneVisible) {
-          continue;
-        }
-
-        const visibleDataItem = visibleData[localId];
-
-        for (const timestamp of Utils.getAllTimestampsIn(
-          start,
-          end,
-          this.timeframe
-        )) {
-          const candle = data[timestamp];
-
-          // Check if candle has not been loaded or if its loaded, but no data was available at time
-          if (candle !== undefined && candle !== null) {
-            visibleDataItem.data.push({
-              time: timestamp,
-              ...candle,
+            this.$global.data.requestDataPoints({
+              dataset,
+              start: this.range[0],
+              end: this.range[1],
             });
+
+            visibleData[localId] = { data: [] };
+
+            // Loop through all subscribed indicators to verify at least one is visible
+            let isOneVisible = false;
+            for (const renderingQueueId of dataset.subscribers[this.id]) {
+              const indicator = this.indicators[renderingQueueId];
+              if (indicator.visible) {
+                isOneVisible = true;
+                break;
+              }
+            }
+
+            // If no subscribed indicators are visible, skip this dataset from calculation
+            if (!isOneVisible) {
+              continue;
+            }
+
+            const visibleDataItem = visibleData[localId];
+
+            for (const timestamp of Utils.getAllTimestampsIn(
+              start,
+              end,
+              this.timeframe
+            )) {
+              const candle = data[timestamp];
+
+              // Check if candle has not been loaded or if its loaded, but no data was available at time
+              if (candle !== undefined && candle !== null) {
+                visibleDataItem.data.push({
+                  time: timestamp,
+                  ...candle,
+                });
+              }
+            }
+          }
+
+          this.visibleData = visibleData;
+        }
+
+        // Re-calculate all set visible data
+        this.computedData.calculateAllSets();
+
+        // If this chart is in synced mode and other charts are also in sync mode,
+        // set their scales to ours
+        if (this.settings.syncRange && movedId === this.id) {
+          for (const chartId in this.$global.charts) {
+            // Skip calling setVisibleRange on chart if self
+            if (chartId === this.id) continue;
+            const chart = this.$global.charts[chartId];
+            if (!chart.settings.syncRange) continue;
+
+            // Update charts pixels per element
+            const dimensions = this.$global.layout.chartDimensions;
+            if (!dimensions[chart.id]) continue;
+            const { width: w1 } = dimensions[chart.id].main;
+            const { width: w2 } = dimensions[this.id].main;
+            const diff = w1 / w2;
+
+            // Calculate pixels per element relative to chart layout. This is because
+            // different charts can have different viewpoints
+            chart.setPixelsPerElement(this.pixelsPerElement * diff);
+            chart.setVisibleRange({ start, end }, movedId);
           }
         }
-      }
 
-      this.visibleData = visibleData;
-    }
+        this.buildXAndYVisibleScales();
 
-    range[0] = start;
-    range[1] = end;
-
-    // Re-calculate all set visible data
-    this.computedData.calculateAllSets();
-
-    // If this chart is in synced mode and other charts are also in sync mode,
-    // set their scales to ours
-    if (this.settings.syncRange && movedId === this.id) {
-      for (const chartId in this.$global.charts) {
-        // Skip calling setVisibleRange on chart if self
-        if (chartId === this.id) continue;
-        const chart = this.$global.charts[chartId];
-        if (!chart.settings.syncRange) continue;
-
-        // Update charts pixels per element
-        const dimensions = this.$global.layout.chartDimensions;
-        if (!dimensions[chart.id]) continue;
-        const { width: w1 } = dimensions[chart.id].main;
-        const { width: w2 } = dimensions[this.id].main;
-        const diff = w1 / w2;
-
-        // Calculate pixels per element relative to chart layout. This is because
-        // different charts can have different viewpoints
-        chart.setPixelsPerElement(this.pixelsPerElement * diff);
-        chart.setVisibleRange({ start, end }, movedId);
-      }
-    }
-
-    this.buildXAndYVisibleScales();
+        this.setVisibleRangeDebounce = null;
+      },
+      16,
+      { maxWait: 16 }
+    );
+    this.setVisibleRangeDebounce();
   }
 
   buildXAndYVisibleScales() {

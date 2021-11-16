@@ -169,8 +169,6 @@ export default class ComputedData extends EventEmitter {
   }
 
   generateInstructions() {
-    // TODO queue this and debounce it
-
     const isPercent = this.$chart.settings.scaleType === "percent";
     const isNormalized = this.$chart.settings.scaleType === "normalized";
 
