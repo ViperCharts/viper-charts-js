@@ -143,19 +143,15 @@ export default class UIState extends EventEmitter {
     this.app = undefined;
     this.charts = {};
 
-    this.state = {
-      isGridEditMode: false,
-    };
+    this.isGridEditMode = false;
   }
 
   init() {
     this.app = ReactDOM.render(<App />, document.getElementById("app"));
   }
 
-  setState(updates) {
-    for (const key in updates) {
-      this.state[key] = updates[key];
-    }
-    this.app.forceUpdate();
+  setIsGridEditMode(value) {
+    this.isGridEditMode = value;
+    this.fireEvent("set-is-grid-edit-mode", value);
   }
 }

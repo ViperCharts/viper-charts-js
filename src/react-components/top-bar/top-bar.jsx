@@ -22,10 +22,8 @@ export default class TopBar extends React.Component {
         Constants.DAY,
       ],
       timeframeLabels: {},
-    };
 
-    this._listeners = {
-      selectedChartTimeframeChange: null,
+      isGridEditMode: GlobalState.ui.isGridEditMode,
     };
 
     this.onSetSelectedChartId = ((id) => {
@@ -34,6 +32,14 @@ export default class TopBar extends React.Component {
     GlobalState.addEventListener(
       "set-selected-chart-id",
       this.onSetSelectedChartId
+    );
+
+    this.onSetIsGridEditMode = ((isGridEditMode) => {
+      this.setState({ isGridEditMode });
+    }).bind(this);
+    GlobalState.ui.addEventListener(
+      "set-is-grid-edit-mode",
+      this.onSetIsGridEditMode
     );
   }
 
@@ -45,6 +51,10 @@ export default class TopBar extends React.Component {
     GlobalState.removeEventListener(
       "set-selected-chart-id",
       this.onSetSelectedChartId
+    );
+    GlobalState.ui.removeEventListener(
+      "set-is-grid-edit-mode",
+      this.onSetIsGridEditMode
     );
   }
 
@@ -116,8 +126,12 @@ export default class TopBar extends React.Component {
     this.state.selectedChart.setTimeframe(timeframe);
   }
 
+  setIsGridEditMode() {
+    GlobalState.ui.setIsGridEditMode(!this.state.isGridEditMode);
+  }
+
   render() {
-    const { isGridEditMode } = GlobalState.ui.state;
+    const { isGridEditMode } = this.state;
 
     return (
       <div className="top-bar">
@@ -128,9 +142,7 @@ export default class TopBar extends React.Component {
         {this.renderTimeframes()}
         <div className="top-bar-seperator"></div>
         <button
-          onClick={() =>
-            GlobalState.ui.setState({ isGridEditMode: !isGridEditMode })
-          }
+          onClick={this.setIsGridEditMode.bind(this)}
           className="top-bar-item"
         >
           <i className="gg-display-grid"></i>
