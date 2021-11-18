@@ -1,9 +1,9 @@
 {
   "name": "@viper-charts/viper-charts",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "lockfileVersion": 1,
   "hasInstallScript": true,
-  "main": "./viperchart.js",
+  "main": "./src/viperchart.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

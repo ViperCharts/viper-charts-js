@@ -38,6 +38,30 @@
   position: absolute;
   top: 0;
   left: 0;
+  pointer-events: all;
+  overflow-y: hidden;
+  max-height: 50%;
+  scrollbar-width: 0.25rem;
+  scrollbar-color: #ffffff66 transparent;
+}
+
+.top-left:hover {
+  overflow-y: scroll;
+}
+
+/* Chrome, Edge, and Safari */
+.top-left::-webkit-scrollbar {
+  width: 0.25rem;
+}
+
+.top-left::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.top-left::-webkit-scrollbar-thumb {
+  background-color: #ffffff66;
+  border-radius: 10px;
+  border: 3px solid transparent;
 }
 
 .top-right {

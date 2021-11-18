@@ -9,9 +9,6 @@ import Chart from "../../react-components/chart/chart";
 import TopBar from "../../react-components/top-bar/top-bar";
 import Grid from "../../react-components/grid/grid";
 
-import "../../../node_modules/react-grid-layout/css/styles.css";
-import "../../../node_modules/react-resizable/css/styles.css";
-
 class App extends React.Component {
   constructor(props) {
     super(props);
