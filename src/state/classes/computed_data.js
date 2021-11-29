@@ -318,7 +318,6 @@ export default class ComputedData extends EventEmitter {
         const { type, values } = item;
         if (values.ylabel === true) {
           const value = values.series[{ line: 0, candle: 3 }[type]];
-          const id = Utils.uniqueId();
 
           const dimensions =
             this.$global.layout.chartDimensions[this.$chart.id];
@@ -330,6 +329,8 @@ export default class ComputedData extends EventEmitter {
 
           const symbol = isPercent ? (value >= 0 ? "+" : "-") : "";
           const extra = isPercent ? "%" : "";
+
+          const id = Utils.uniqueId();
           yScaleInstructions[id] = {
             type: "text",
             x: dimensions.yScale.width / 2,
@@ -349,27 +350,8 @@ export default class ComputedData extends EventEmitter {
             color: values.colors.color,
           };
 
-          // instructions[id] = {
-          //   type: "text",
-          //   x: dimensions.main.width - 25,
-          //   y,
-          //   color: textColor,
-          //   text: `${id}`,
-          // };
-
-          // instructions[id2] = {
-          //   type: "box",
-          //   x: dimensions.main.width - 40,
-          //   y: y - 13,
-          //   w: 40,
-          //   h: 20,
-          //   color: values.colors.color,
-          // };
-
           this.$chart.subcharts.yScale.canvas.RE.addToRenderingOrder(id, 1);
           this.$chart.subcharts.yScale.canvas.RE.addToRenderingOrder(id2, 1);
-          // this.$chart.subcharts.main.canvas.RE.addToRenderingOrder(id);
-          // this.$chart.subcharts.main.canvas.RE.addToRenderingOrder(id2);
         }
       }
     }

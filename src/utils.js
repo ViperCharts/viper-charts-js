@@ -9,7 +9,6 @@ export default {
   },
 
   maxNumberAndDecimal(value, maxLength) {
-    console.log(value);
     let [num, dec] = value.toString().split(".");
     maxLength -= num.length;
     if (maxLength > 0 && dec) num += `.${dec.slice(0, maxLength)}`;
