@@ -97,16 +97,18 @@ export default {
             />
           </div>
           <div className="datasets">
-            {this.state.searchResults.map((result) => (
-              <button
-                onClick={() => this.addIndicator(result)}
-                className="dataset"
-                key={`${result.source}:${result.name}`}
-              >
-                <small className="dataset-source">{result.source}</small>
-                <h3 className="dataset-name">{result.name}</h3>
-              </button>
-            ))}
+            {this.state.selectedIndicator.id
+              ? this.state.searchResults.map((result) => (
+                  <button
+                    onClick={() => this.addIndicator(result)}
+                    className="dataset"
+                    key={`${result.source}:${result.name}`}
+                  >
+                    <small className="dataset-source">{result.source}</small>
+                    <h3 className="dataset-name">{result.name}</h3>
+                  </button>
+                ))
+              : null}
           </div>
         </div>
       );

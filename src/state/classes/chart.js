@@ -391,28 +391,24 @@ export default class ChartState extends EventEmitter {
   setInitialVisibleRange() {
     const { width } = this.$global.layout.chartDimensions[this.id].main;
 
-    if (!this.range.length) {
-      // End timestamp based on last element
-      let endTimestamp;
-      if (!this.datasets.length) {
-        endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
-      } else {
-        const id = `${this.datasets[0]}:${this.timeframe}`;
-        const { data } = this.$global.data.datasets[id];
-        endTimestamp = data[data.length - 1].time;
-      }
-
-      const end = endTimestamp + this.timeframe * 5;
-
-      // Calculate start timestamp using width and pixelsPerElement
-      const candlesInView = width / this.pixelsPerElement;
-      // Set start to candlesInView lookback
-      const start = end - candlesInView * this.timeframe;
-
-      this.setVisibleRange({ start, end });
+    // End timestamp based on last element
+    let endTimestamp;
+    if (!this.datasets.length) {
+      endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
     } else {
-      this.setVisibleRange();
+      const id = `${this.datasets[0]}:${this.timeframe}`;
+      const { data } = this.$global.data.datasets[id];
+      endTimestamp = data[data.length - 1].time;
     }
+
+    const end = endTimestamp + this.timeframe * 5;
+
+    // Calculate start timestamp using width and pixelsPerElement
+    const candlesInView = width / this.pixelsPerElement;
+    // Set start to candlesInView lookback
+    const start = end - candlesInView * this.timeframe;
+
+    this.setVisibleRange({ start, end });
   }
 
   resizeXRange(delta, width) {
