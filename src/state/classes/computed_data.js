@@ -6,7 +6,7 @@ import ScriptFunctions from "../../viper_script/script_functions";
 class ComputedSet {
   constructor(timeframe) {
     this.data = {};
-    this.max = 0;
+    this.max = -Infinity;
     this.min = Infinity;
     this.timeframe = timeframe;
   }
@@ -189,7 +189,7 @@ export default class ComputedData extends EventEmitter {
       for (const time of Utils.getAllTimestampsIn(start, end, timeframe)) {
         const item = data[time];
 
-        if (!item) continue;
+        if (!item || item.type === "volume") continue;
 
         for (let i = 0; i < item.length; i++) {
           const { values } = item[i];
@@ -248,6 +248,7 @@ export default class ComputedData extends EventEmitter {
       const data = dataDictionaryCopy[id];
 
       instructions[id] = {};
+      const set = this.sets[id];
 
       for (const time in data) {
         const item = JSON.parse(JSON.stringify(data[time]));
@@ -307,6 +308,25 @@ export default class ComputedData extends EventEmitter {
               x2: x,
               y2: y3,
               color: values.colors.wickcolor,
+            });
+          } else if (type === "volume") {
+            const volume = series[0];
+            const w = chart.pixelsPerElement * 0.9;
+
+            const { height } =
+              this.$global.layout.chartDimensions[this.$chart.id].main;
+            const maxHeight = 0.2 * height;
+            const volumePerc = volume / set.max;
+            const h = Math.floor(volumePerc * maxHeight);
+
+            instructions[id][time].push({
+              type: "box",
+              x: x - w / 2,
+              y: height - h,
+              w: w,
+              h,
+              color: values.colors.color,
+              ylabel: false,
             });
           }
         }
