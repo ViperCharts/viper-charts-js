@@ -53,7 +53,8 @@ export default class EventsState extends EventEmitter {
   onKeyUp(e) {
     const { code } = e;
 
-    if (code === "Delete" || code === "Backspace") {
+    // if (code === "Delete" || code === "Backspace") {
+    if (code === "Delete") {
       this.$global.deleteSelectedChart();
     }
 
