@@ -9,10 +9,7 @@ export default {
   },
 
   maxNumberAndDecimal(value, maxLength) {
-    let [num, dec] = value.toString().split(".");
-    maxLength -= num.length;
-    if (maxLength > 0 && dec) num += `.${dec.slice(0, maxLength)}`;
-    return +num;
+    return parseFloat(parseFloat(value).toFixed(maxLength));
   },
 
   randomHexColor() {
