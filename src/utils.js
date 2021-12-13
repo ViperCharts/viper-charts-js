@@ -8,10 +8,6 @@ export default {
     return Math.max(value, max);
   },
 
-  maxNumberAndDecimal(value, maxLength) {
-    return parseFloat(parseFloat(value).toFixed(maxLength));
-  },
-
   randomHexColor() {
     return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
   },

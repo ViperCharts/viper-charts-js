@@ -217,7 +217,7 @@ export default class ComputedData extends EventEmitter {
             const range = set.max - set.min;
 
             values.series = values.series.map((val) =>
-              Utils.maxNumberAndDecimal(((val - set.min) / range) * 100, 4)
+              Utils.toFixed(((val - set.min) / range) * 100, 4)
             );
           }
 
@@ -336,7 +336,7 @@ export default class ComputedData extends EventEmitter {
             x: dimensions.yScale.width / 2,
             y,
             color: textColor,
-            text: `${symbol}${Utils.maxNumberAndDecimal(value, 8)}${extra}`,
+            text: `${symbol}${Utils.toFixed(value, 8)}${extra}`,
             font: "bold 10px Arial",
           };
 
