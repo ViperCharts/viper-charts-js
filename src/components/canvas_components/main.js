@@ -35,6 +35,14 @@ export default class Main {
       this.onResizeChart
     );
 
+    this.onResizeYScale = (({ main }) => {
+      this.canvas.setWidth(main.width);
+    }).bind(this);
+    this.$state.global.layout.addEventListener(
+      `resize-y-scale-${this.$state.chart.id}`,
+      this.onResizeYScale
+    );
+
     this.onWindowMouseMoveListener = this.onWindowMouseMove.bind(this);
     this.$state.global.events.addEventListener(
       "mousemove",
@@ -46,6 +54,10 @@ export default class Main {
     this.$state.global.layout.removeEventListener(
       `resize-${this.$state.chart.id}`,
       this.onResizeChart
+    );
+    this.$state.global.layout.removeEventListener(
+      `resize-y-scale-${this.$state.chart.id}`,
+      this.onResizeYScale
     );
     this.$state.global.events.removeEventListener(
       "mousemove",

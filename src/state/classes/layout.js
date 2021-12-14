@@ -40,7 +40,7 @@ class ChartDimension {
     this.yScale.width = width;
     this.xScale.width = this.width - width;
     this.main.width = this.width - width;
-    this.$global.layout.fireEvent(`resize-${this.id}`, this);
+    this.$global.layout.fireEvent(`resize-y-scale-${this.id}`, this);
   }
 }
 

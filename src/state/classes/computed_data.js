@@ -388,17 +388,16 @@ export default class ComputedData extends EventEmitter {
       }
     }
 
+    const chartDimensions = this.$global.layout.chartDimensions[this.$chart.id];
+    const width = maxWidth + 12;
+
     // Check if max text width is different than yscale layout width
-    if (
-      this.$global.layout.chartDimensions[this.$chart.id].yScale.width !==
-      maxWidth + 6
-    ) {
-      this.$global.layout.chartDimensions[this.$chart.id].setYScaleWidth(
-        maxWidth + 6
-      );
+    if (chartDimensions.yScale.width !== width) {
+      chartDimensions.setYScaleWidth(width);
     }
 
     this.instructions.main = instructions;
+    console.log(instructions);
 
     // Reset yScale
     for (const id in this.instructions.yScale) {

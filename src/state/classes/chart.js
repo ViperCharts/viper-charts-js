@@ -447,12 +447,11 @@ export default class ChartState extends EventEmitter {
 
     // If price / y scale is locked, set min and max y values
     if (this.settings.lockedYScale) {
-      const ySpread5P = (max - min) * 0.05;
       if (min !== this.range[2]) {
-        this.range[2] = min - ySpread5P;
+        this.range[2] = min - min * 0.05;
       }
       if (max !== this.range[3]) {
-        this.range[3] = max + ySpread5P;
+        this.range[3] = max + max * 0.05;
       }
     }
 
