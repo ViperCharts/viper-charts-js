@@ -9,24 +9,12 @@ const settings = {
 };
 
 class ChartDimension {
-  constructor(id, width, height) {
+  constructor($global, id, width, height) {
+    this.$global = $global;
     this.id = id;
     this.width;
     this.height;
     this.main = {};
-    this.xScale = {};
-    this.yScale = {};
-
-    this.setDimensions(width, height);
-  }
-
-  setDimensions(width, height) {
-    this.width = width;
-    this.height = height;
-    this.main = {
-      width: width - settings.yScaleWidth,
-      height: height - settings.xScaleHeight,
-    };
     this.xScale = {
       width: width - settings.yScaleWidth,
       height: settings.xScaleHeight,
@@ -35,6 +23,23 @@ class ChartDimension {
       width: settings.yScaleWidth,
       height: height - settings.xScaleHeight,
     };
+
+    this.setDimensions(width, height);
+  }
+
+  setDimensions(width, height) {
+    this.width = width;
+    this.height = height;
+    this.main = {
+      width: width - this.yScale.width,
+      height: height - this.xScale.height,
+    };
+  }
+
+  setYScaleWidth(width) {
+    this.yScale.width = width;
+    this.main.width = this.width - width;
+    this.$global.layout.fireEvent(`resize-${this.id}`, this);
   }
 }
 
@@ -136,6 +141,11 @@ export default class LayoutState extends EventEmitter {
   }
 
   addChart(id, width, height) {
-    this.chartDimensions[id] = new ChartDimension(id, width, height);
+    this.chartDimensions[id] = new ChartDimension(
+      this.$global,
+      id,
+      width,
+      height
+    );
   }
 }

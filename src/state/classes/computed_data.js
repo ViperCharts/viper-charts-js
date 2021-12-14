@@ -3,12 +3,23 @@ import Utils from "../../utils";
 
 import ScriptFunctions from "../../viper_script/script_functions";
 
+const maxDecimalPlaces = 8;
+
 class ComputedSet {
-  constructor(timeframe) {
+  constructor({ $state, timeframe }) {
+    this.$state = $state;
+
     this.data = {};
     this.max = 0;
     this.min = Infinity;
     this.timeframe = timeframe;
+    this.decimalPlaces = 0;
+  }
+
+  setDecimalPlaces(decimalPlaces) {
+    this.decimalPlaces = decimalPlaces;
+    // Fire event to resize y axis to appropriate width based on max decimal places
+    this.$state.computedData.calculateMaxDecimalPlaces();
   }
 }
 
@@ -24,6 +35,7 @@ export default class ComputedData extends EventEmitter {
     this.computedState = {};
     this.max = -Infinity;
     this.min = Infinity;
+    this.decimalPlaces = 0;
     this.instructions = {
       main: {},
       yScale: {},
@@ -147,7 +159,7 @@ export default class ComputedData extends EventEmitter {
 
   addSetItem(id, time, type, timeframe, values) {
     if (!this.sets[id]) {
-      this.sets[id] = new ComputedSet(timeframe);
+      this.sets[id] = new ComputedSet({ $state: this.$chart, timeframe });
     }
 
     const set = this.sets[id];
@@ -157,11 +169,24 @@ export default class ComputedData extends EventEmitter {
     // Update max & min if applicable
     const { series } = values;
     for (const val of series) {
+      // Update min
       if (val < set.min) {
         set.min = val;
       }
+
+      // Update max
       if (val > set.max) {
         set.max = val;
+      }
+
+      // If potential for more decimal places, check
+      if (set.decimalPlaces < maxDecimalPlaces) {
+        const decimalPlaces = Utils.getDecimalPlaces(val, maxDecimalPlaces);
+
+        // If decimal places for number is larger, set max decimal palces
+        if (decimalPlaces > set.decimalPlaces) {
+          set.setDecimalPlaces(decimalPlaces);
+        }
       }
     }
 
@@ -248,6 +273,7 @@ export default class ComputedData extends EventEmitter {
       const data = dataDictionaryCopy[id];
 
       instructions[id] = {};
+      const set = this.sets[id];
 
       for (const time in data) {
         const item = JSON.parse(JSON.stringify(data[time]));
@@ -330,13 +356,18 @@ export default class ComputedData extends EventEmitter {
           const symbol = isPercent ? (value >= 0 ? "+" : "-") : "";
           const extra = isPercent ? "%" : "";
 
+          const val =
+            this.$chart.settings.scaleType === "default"
+              ? parseFloat(value).toFixed(set.decimalPlaces)
+              : value;
+
           const id = Utils.uniqueId();
           yScaleInstructions[id] = {
             type: "text",
             x: dimensions.yScale.width / 2,
             y,
             color: textColor,
-            text: `${symbol}${Utils.toFixed(value, 8)}${extra}`,
+            text: `${symbol}${val}${extra}`,
             font: "bold 10px Arial",
           };
 
@@ -363,5 +394,28 @@ export default class ComputedData extends EventEmitter {
       this.$chart.subcharts.yScale.canvas.RE.removeFromRenderingOrder(id);
     }
     this.instructions.yScale = yScaleInstructions;
+  }
+
+  calculateMaxDecimalPlaces() {
+    const oldDecimalPlaces = this.decimalPlaces;
+
+    // Loop through all sets and check max decimal places.
+    for (const { decimalPlaces } of Object.values(this.sets)) {
+      if (decimalPlaces > this.decimalPlaces) {
+        this.decimalPlaces = decimalPlaces;
+
+        // If max decimal places reached, no need to continue
+        if (this.decimalPlaces === maxDecimalPlaces) {
+          break;
+        }
+      }
+    }
+
+    // If decimal places value changed, update y scale width
+    if (this.decimalPlaces !== oldDecimalPlaces) {
+      const chartDimensions =
+        this.$global.layout.chartDimensions[this.$chart.id];
+      chartDimensions.setYScaleWidth(this.decimalPlaces * 10);
+    }
   }
 }

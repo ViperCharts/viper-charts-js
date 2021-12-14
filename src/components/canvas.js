@@ -145,6 +145,7 @@ export default class Canvas {
   }
 
   setWidth(width) {
+    console.log(width);
     this.width = width;
     this.canvas.width = width;
     if (this.RE) this.RE.draw();
