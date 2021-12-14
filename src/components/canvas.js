@@ -145,15 +145,16 @@ export default class Canvas {
   }
 
   setWidth(width) {
-    console.log(width);
     this.width = width;
     this.canvas.width = width;
+    this.canvas.style.width = `${width}px`;
     if (this.RE) this.RE.draw();
   }
 
   setHeight(height) {
     this.height = height;
     this.canvas.height = height;
+    this.canvas.style.height = `${height}px`;
     if (this.RE) this.RE.draw();
   }
 

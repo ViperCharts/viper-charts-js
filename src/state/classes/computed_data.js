@@ -15,12 +15,6 @@ class ComputedSet {
     this.timeframe = timeframe;
     this.decimalPlaces = 0;
   }
-
-  setDecimalPlaces(decimalPlaces) {
-    this.decimalPlaces = decimalPlaces;
-    // Fire event to resize y axis to appropriate width based on max decimal places
-    this.$state.computedData.calculateMaxDecimalPlaces();
-  }
 }
 
 export default class ComputedData extends EventEmitter {
@@ -35,7 +29,6 @@ export default class ComputedData extends EventEmitter {
     this.computedState = {};
     this.max = -Infinity;
     this.min = Infinity;
-    this.decimalPlaces = 0;
     this.instructions = {
       main: {},
       yScale: {},
@@ -185,7 +178,7 @@ export default class ComputedData extends EventEmitter {
 
         // If decimal places for number is larger, set max decimal palces
         if (decimalPlaces > set.decimalPlaces) {
-          set.setDecimalPlaces(decimalPlaces);
+          set.decimalPlaces = decimalPlaces;
         }
       }
     }
@@ -267,6 +260,7 @@ export default class ComputedData extends EventEmitter {
     chart.setRange({ min, max }, true);
     const instructions = {};
     const yScaleInstructions = {};
+    let maxWidth = 0;
 
     // Calculate actual instructions
     for (const id in dataDictionaryCopy) {
@@ -338,8 +332,9 @@ export default class ComputedData extends EventEmitter {
         }
       }
 
-      // Get last time item and check if each item at time has ylabel set to true
       const times = Object.keys(data);
+
+      // Get last time item and check if each item at time has ylabel set to true
       for (const item of data[times[times.length - 1]]) {
         const { type, values } = item;
         if (values.ylabel === true) {
@@ -361,13 +356,19 @@ export default class ComputedData extends EventEmitter {
               ? parseFloat(value).toFixed(set.decimalPlaces)
               : value;
 
+          const text = `${symbol}${val}${extra}`;
+          const { ctx } = this.$chart.subcharts.yScale.canvas;
+          const textWidth = Math.ceil(ctx.measureText(text).width);
+
+          if (textWidth > maxWidth) maxWidth = textWidth;
+
           const id = Utils.uniqueId();
           yScaleInstructions[id] = {
             type: "text",
             x: dimensions.yScale.width / 2,
             y,
             color: textColor,
-            text: `${symbol}${val}${extra}`,
+            text,
             font: "bold 10px Arial",
           };
 
@@ -387,6 +388,16 @@ export default class ComputedData extends EventEmitter {
       }
     }
 
+    // Check if max text width is different than yscale layout width
+    if (
+      this.$global.layout.chartDimensions[this.$chart.id].yScale.width !==
+      maxWidth + 6
+    ) {
+      this.$global.layout.chartDimensions[this.$chart.id].setYScaleWidth(
+        maxWidth + 6
+      );
+    }
+
     this.instructions.main = instructions;
 
     // Reset yScale
@@ -394,28 +405,5 @@ export default class ComputedData extends EventEmitter {
       this.$chart.subcharts.yScale.canvas.RE.removeFromRenderingOrder(id);
     }
     this.instructions.yScale = yScaleInstructions;
-  }
-
-  calculateMaxDecimalPlaces() {
-    const oldDecimalPlaces = this.decimalPlaces;
-
-    // Loop through all sets and check max decimal places.
-    for (const { decimalPlaces } of Object.values(this.sets)) {
-      if (decimalPlaces > this.decimalPlaces) {
-        this.decimalPlaces = decimalPlaces;
-
-        // If max decimal places reached, no need to continue
-        if (this.decimalPlaces === maxDecimalPlaces) {
-          break;
-        }
-      }
-    }
-
-    // If decimal places value changed, update y scale width
-    if (this.decimalPlaces !== oldDecimalPlaces) {
-      const chartDimensions =
-        this.$global.layout.chartDimensions[this.$chart.id];
-      chartDimensions.setYScaleWidth(this.decimalPlaces * 10);
-    }
   }
 }

@@ -43,7 +43,7 @@ export default class ChartState extends EventEmitter {
       syncRange: false,
       syncWithCrosshair: "",
       lockedYScale: true,
-      scaleType: "normalized",
+      scaleType: "default",
       ...settings,
     };
 
