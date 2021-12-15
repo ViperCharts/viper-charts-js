@@ -15,6 +15,11 @@ class ComputedSet {
     this.timeframe = timeframe;
     this.decimalPlaces = 0;
   }
+
+  setDecimalPlaces(decimalPlaces) {
+    this.decimalPlaces = decimalPlaces;
+    this.$state.computedData.calculateMaxDecimalPlaces();
+  }
 }
 
 export default class ComputedData extends EventEmitter {
@@ -29,6 +34,7 @@ export default class ComputedData extends EventEmitter {
     this.computedState = {};
     this.max = -Infinity;
     this.min = Infinity;
+    this.maxDecimalPlaces = 0;
     this.instructions = {
       main: {},
       yScale: {},
@@ -178,7 +184,7 @@ export default class ComputedData extends EventEmitter {
 
         // If decimal places for number is larger, set max decimal palces
         if (decimalPlaces > set.decimalPlaces) {
-          set.decimalPlaces = decimalPlaces;
+          set.setDecimalPlaces(decimalPlaces);
         }
       }
     }
@@ -403,5 +409,15 @@ export default class ComputedData extends EventEmitter {
       this.$chart.subcharts.yScale.canvas.RE.removeFromRenderingOrder(id);
     }
     this.instructions.yScale = yScaleInstructions;
+  }
+
+  calculateMaxDecimalPlaces() {
+    let maxDecimalPlaces = 0;
+    for (const { decimalPlaces } of Object.values(this.sets)) {
+      if (decimalPlaces > maxDecimalPlaces) {
+        maxDecimalPlaces = decimalPlaces;
+      }
+    }
+    this.maxDecimalPlaces = maxDecimalPlaces;
   }
 }
