@@ -392,12 +392,11 @@ export default class ComputedData extends EventEmitter {
     const width = maxWidth + 12;
 
     // Check if max text width is different than yscale layout width
-    if (chartDimensions.yScale.width !== width) {
+    if (chartDimensions.yScale.width !== width && width > 50) {
       chartDimensions.setYScaleWidth(width);
     }
 
     this.instructions.main = instructions;
-    console.log(instructions);
 
     // Reset yScale
     for (const id in this.instructions.yScale) {
