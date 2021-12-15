@@ -34,6 +34,8 @@ class ChartDimension {
       width: width - this.yScale.width,
       height: height - this.xScale.height,
     };
+    this.xScale.width = width - this.yScale.width;
+    this.yScale.height = height - this.xScale.height;
   }
 
   setYScaleWidth(width) {
