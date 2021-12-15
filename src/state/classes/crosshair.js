@@ -1,4 +1,5 @@
 import EventEmitter from "../../events/event_emitter.ts";
+import Utils from "../../utils";
 
 export default class CrosshairState extends EventEmitter {
   constructor({ $global }) {
@@ -49,12 +50,13 @@ export default class CrosshairState extends EventEmitter {
     const price = chart.range[2] + rangeOffset;
 
     this.timestamp = timestamp;
-    this.price = Math.round(price);
+    this.price = Utils.toFixed(price, chart.computedData.maxDecimalPlaces);
 
     // Loop through all charts and get x and y pos using timestamp and price
     for (const chartId in this.$global.charts) {
       chart = this.$global.charts[chartId];
       if (!chart.isInitialized) continue;
+
       this.crosshairs[chart.id] = {
         x: chart.getXCoordByTimestamp(this.timestamp),
         y: chart.getYCoordByPrice(this.price),

@@ -31,6 +31,21 @@ export default {
     return +parseFloat(value).toFixed(decimalPlaces);
   },
 
+  getDecimalPlaces(value, max = Infinity) {
+    if (isNaN(value)) return 0;
+    let text = value.toString();
+    // verify if number 0.000005 is represented as "5e-6"
+    if (text.indexOf("e-") > -1) {
+      let [_, trail] = text.split("e-");
+      return Math.min(parseInt(trail, 10), max);
+    }
+    // count decimals for number in representation like "0.123456"
+    if (Math.floor(value) !== value) {
+      return Math.min(value.toString().split(".")[1].length || 0, max);
+    }
+    return 0;
+  },
+
   isColorLight(color) {
     // Variables for red, green, blue values
     let r, g, b, hsp;

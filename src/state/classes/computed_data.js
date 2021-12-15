@@ -3,12 +3,22 @@ import Utils from "../../utils";
 
 import ScriptFunctions from "../../viper_script/script_functions";
 
+const maxDecimalPlaces = 8;
+
 class ComputedSet {
-  constructor(timeframe) {
+  constructor({ $state, timeframe }) {
+    this.$state = $state;
+
     this.data = {};
     this.max = 0;
     this.min = Infinity;
     this.timeframe = timeframe;
+    this.decimalPlaces = 0;
+  }
+
+  setDecimalPlaces(decimalPlaces) {
+    this.decimalPlaces = decimalPlaces;
+    this.$state.computedData.calculateMaxDecimalPlaces();
   }
 }
 
@@ -24,6 +34,7 @@ export default class ComputedData extends EventEmitter {
     this.computedState = {};
     this.max = -Infinity;
     this.min = Infinity;
+    this.maxDecimalPlaces = 0;
     this.instructions = {
       main: {},
       yScale: {},
@@ -147,7 +158,7 @@ export default class ComputedData extends EventEmitter {
 
   addSetItem(id, time, type, timeframe, values) {
     if (!this.sets[id]) {
-      this.sets[id] = new ComputedSet(timeframe);
+      this.sets[id] = new ComputedSet({ $state: this.$chart, timeframe });
     }
 
     const set = this.sets[id];
@@ -157,11 +168,24 @@ export default class ComputedData extends EventEmitter {
     // Update max & min if applicable
     const { series } = values;
     for (const val of series) {
+      // Update min
       if (val < set.min) {
         set.min = val;
       }
+
+      // Update max
       if (val > set.max) {
         set.max = val;
+      }
+
+      // If potential for more decimal places, check
+      if (set.decimalPlaces < maxDecimalPlaces) {
+        const decimalPlaces = Utils.getDecimalPlaces(val, maxDecimalPlaces);
+
+        // If decimal places for number is larger, set max decimal places
+        if (decimalPlaces > set.decimalPlaces) {
+          set.setDecimalPlaces(decimalPlaces);
+        }
       }
     }
 
@@ -242,12 +266,14 @@ export default class ComputedData extends EventEmitter {
     chart.setRange({ min, max }, true);
     const instructions = {};
     const yScaleInstructions = {};
+    let maxWidth = 0;
 
     // Calculate actual instructions
     for (const id in dataDictionaryCopy) {
       const data = dataDictionaryCopy[id];
 
       instructions[id] = {};
+      const set = this.sets[id];
 
       for (const time in data) {
         const item = JSON.parse(JSON.stringify(data[time]));
@@ -312,8 +338,9 @@ export default class ComputedData extends EventEmitter {
         }
       }
 
-      // Get last time item and check if each item at time has ylabel set to true
       const times = Object.keys(data);
+
+      // Get last time item and check if each item at time has ylabel set to true
       for (const item of data[times[times.length - 1]]) {
         const { type, values } = item;
         if (values.ylabel === true) {
@@ -330,13 +357,24 @@ export default class ComputedData extends EventEmitter {
           const symbol = isPercent ? (value >= 0 ? "+" : "-") : "";
           const extra = isPercent ? "%" : "";
 
+          const val =
+            this.$chart.settings.scaleType === "default"
+              ? parseFloat(value).toFixed(set.decimalPlaces)
+              : value;
+
+          const text = `${symbol}${val}${extra}`;
+          const { ctx } = this.$chart.subcharts.yScale.canvas;
+          const textWidth = Math.ceil(ctx.measureText(text).width);
+
+          if (textWidth > maxWidth) maxWidth = textWidth;
+
           const id = Utils.uniqueId();
           yScaleInstructions[id] = {
             type: "text",
             x: dimensions.yScale.width / 2,
             y,
             color: textColor,
-            text: `${symbol}${Utils.toFixed(value, 8)}${extra}`,
+            text,
             font: "bold 10px Arial",
           };
 
@@ -356,6 +394,14 @@ export default class ComputedData extends EventEmitter {
       }
     }
 
+    const chartDimensions = this.$global.layout.chartDimensions[this.$chart.id];
+    const width = maxWidth + 12;
+
+    // Check if max text width is different than yscale layout width
+    if (chartDimensions.yScale.width !== width && width > 50) {
+      chartDimensions.setYScaleWidth(width);
+    }
+
     this.instructions.main = instructions;
 
     // Reset yScale
@@ -363,5 +409,15 @@ export default class ComputedData extends EventEmitter {
       this.$chart.subcharts.yScale.canvas.RE.removeFromRenderingOrder(id);
     }
     this.instructions.yScale = yScaleInstructions;
+  }
+
+  calculateMaxDecimalPlaces() {
+    let maxDecimalPlaces = 0;
+    for (const { decimalPlaces } of Object.values(this.sets)) {
+      if (decimalPlaces > maxDecimalPlaces) {
+        maxDecimalPlaces = decimalPlaces;
+      }
+    }
+    this.maxDecimalPlaces = maxDecimalPlaces;
   }
 }

@@ -13,7 +13,10 @@ export default class TimeSelected extends Overlay {
 
     if (!this.$state.global.crosshair.visible) return;
 
-    this.canvas.drawBox("#424242", [0, y - 10, 50, 20]);
-    this.canvas.drawText("#fff", [25, y + 3], p);
+    const { width } =
+      this.$state.global.layout.chartDimensions[this.$state.chart.id].yScale;
+
+    this.canvas.drawBox("#424242", [0, y - 10, width, 20]);
+    this.canvas.drawText("#fff", [width / 2, y + 3], p);
   }
 }

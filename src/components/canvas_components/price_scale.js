@@ -33,10 +33,20 @@ export default class TimeScale {
 
     this.resizeChartLayoutListener = (({ yScale }) => {
       this.canvas.setHeight(yScale.height);
+      this.canvas.setWidth(yScale.width);
     }).bind(this);
     this.$state.global.layout.addEventListener(
       `resize-${this.$state.chart.id}`,
       this.resizeChartLayoutListener
+    );
+
+    this.onResizeYScale = (({ yScale }) => {
+      this.canvas.setHeight(yScale.height);
+      this.canvas.setWidth(yScale.width);
+    }).bind(this);
+    this.$state.global.layout.addEventListener(
+      `resize-y-scale-${this.$state.chart.id}`,
+      this.onResizeYScale
     );
 
     this.mouseMoveListener = this.onWindowMouseMove.bind(this);
@@ -54,6 +64,10 @@ export default class TimeScale {
     this.$state.global.layout.removeEventListener(
       `resize-${this.$state.chart.id}`,
       this.resizeChartLayoutListener
+    );
+    this.$state.global.layout.removeEventListener(
+      `resize-y-scale-${this.$state.chart.id}`,
+      this.onResizeYScale
     );
   }
 
