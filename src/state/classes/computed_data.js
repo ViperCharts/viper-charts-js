@@ -182,7 +182,7 @@ export default class ComputedData extends EventEmitter {
       if (set.decimalPlaces < maxDecimalPlaces) {
         const decimalPlaces = Utils.getDecimalPlaces(val, maxDecimalPlaces);
 
-        // If decimal places for number is larger, set max decimal palces
+        // If decimal places for number is larger, set max decimal places
         if (decimalPlaces > set.decimalPlaces) {
           set.setDecimalPlaces(decimalPlaces);
         }
