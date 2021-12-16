@@ -47,6 +47,11 @@ export default class ChartState extends EventEmitter {
       ...settings,
     };
 
+    this.throttledCalculateVisibleData = _.throttle(
+      this.calculateVisibleData.bind(this),
+      100
+    );
+
     this.$global.settings.onChartAdd(this.id, {
       settings: this.settings,
     });
@@ -262,11 +267,82 @@ export default class ChartState extends EventEmitter {
   setVisibleRange(newRange = {}, movedId = this.id) {
     // Set visible range
     const { start = this.range[0], end = this.range[1] } = newRange;
+
+    this.setRange({ start, end });
+
+    // If this chart is in synced mode and other charts are also in sync mode,
+    // set their scales to ours
+    if (this.settings.syncRange && movedId === this.id) {
+      for (const chartId in this.$global.charts) {
+        // Skip calling setVisibleRange on chart if self
+        if (chartId === this.id) continue;
+        const chart = this.$global.charts[chartId];
+        if (!chart.settings.syncRange) continue;
+
+        // Update charts pixels per element
+        const dimensions = this.$global.layout.chartDimensions;
+        if (!dimensions[chart.id]) continue;
+        const { width: w1 } = dimensions[chart.id].main;
+        const { width: w2 } = dimensions[this.id].main;
+        const diff = w1 / w2;
+
+        // Calculate pixels per element relative to chart layout. This is because
+        // different charts can have different viewpoints
+        chart.setPixelsPerElement(this.pixelsPerElement * diff);
+        chart.setVisibleRange({ start, end }, movedId);
+      }
+    }
+
+    // Build the visible x and y scales
+    this.buildXAndYVisibleScales();
+
+    // Call throttled recalc
+    this.throttledCalculateVisibleData();
+  }
+
+  buildXAndYVisibleScales() {
+    const visibleScales = { x: [], y: [] };
+    let xTimeStep = 0;
+    let yPriceStep = 0;
+
+    const minPixels = 100;
+
+    for (let i = Constants.TIMESCALES.indexOf(this.timeframe); i >= 0; i--) {
+      // Check if this timeframe fits between max and min pixel boundaries
+      const pixelsPerScale =
+        this.pixelsPerElement * (Constants.TIMESCALES[i] / this.timeframe);
+
+      if (pixelsPerScale >= minPixels) {
+        xTimeStep = Constants.TIMESCALES[i];
+        break;
+      }
+    }
+
+    const yRange = this.range[3] - this.range[2];
+    const exponent = yRange.toExponential().split("e")[1];
+    yPriceStep = Math.pow(10, exponent);
+
+    // Build timestamps that are on interval
+    const start = this.range[0] - (this.range[0] % xTimeStep);
+    for (let i = start; i < this.range[1]; i += xTimeStep) {
+      visibleScales.x.push(i);
+    }
+
+    // TODO build y axis range
+    const min = this.range[2] - (this.range[2] % yPriceStep);
+    for (let i = min; i < this.range[3]; i += yPriceStep) {
+      visibleScales.y.push(i);
+    }
+
+    this.visibleScales = visibleScales;
+  }
+
+  calculateVisibleData() {
     const visibleData = {};
 
-    this.range[0] = start;
-    this.range[1] = end;
+    const [start, end] = this.range;
 
+    // Get all visible data in viewport
     const datasets = Object.values(this.datasets);
     if (datasets.length > 0) {
       // Loop through each dataset and find the max value
@@ -321,68 +397,6 @@ export default class ChartState extends EventEmitter {
 
     // Re-calculate all set visible data
     this.computedData.calculateAllSets();
-
-    // If this chart is in synced mode and other charts are also in sync mode,
-    // set their scales to ours
-    if (this.settings.syncRange && movedId === this.id) {
-      for (const chartId in this.$global.charts) {
-        // Skip calling setVisibleRange on chart if self
-        if (chartId === this.id) continue;
-        const chart = this.$global.charts[chartId];
-        if (!chart.settings.syncRange) continue;
-
-        // Update charts pixels per element
-        const dimensions = this.$global.layout.chartDimensions;
-        if (!dimensions[chart.id]) continue;
-        const { width: w1 } = dimensions[chart.id].main;
-        const { width: w2 } = dimensions[this.id].main;
-        const diff = w1 / w2;
-
-        // Calculate pixels per element relative to chart layout. This is because
-        // different charts can have different viewpoints
-        chart.setPixelsPerElement(this.pixelsPerElement * diff);
-        chart.setVisibleRange({ start, end }, movedId);
-      }
-    }
-
-    this.buildXAndYVisibleScales();
-  }
-
-  buildXAndYVisibleScales() {
-    const visibleScales = { x: [], y: [] };
-    let xTimeStep = 0;
-    let yPriceStep = 0;
-
-    const minPixels = 100;
-
-    for (let i = Constants.TIMESCALES.indexOf(this.timeframe); i >= 0; i--) {
-      // Check if this timeframe fits between max and min pixel boundaries
-      const pixelsPerScale =
-        this.pixelsPerElement * (Constants.TIMESCALES[i] / this.timeframe);
-
-      if (pixelsPerScale >= minPixels) {
-        xTimeStep = Constants.TIMESCALES[i];
-        break;
-      }
-    }
-
-    const yRange = this.range[3] - this.range[2];
-    const exponent = yRange.toExponential().split("e")[1];
-    yPriceStep = Math.pow(10, exponent);
-
-    // Build timestamps that are on interval
-    const start = this.range[0] - (this.range[0] % xTimeStep);
-    for (let i = start; i < this.range[1]; i += xTimeStep) {
-      visibleScales.x.push(i);
-    }
-
-    // TODO build y axis range
-    const min = this.range[2] - (this.range[2] % yPriceStep);
-    for (let i = min; i < this.range[3]; i += yPriceStep) {
-      visibleScales.y.push(i);
-    }
-
-    this.visibleScales = visibleScales;
   }
 
   /**
