@@ -58,57 +58,19 @@ export default class ComputedData extends EventEmitter {
     // If indicator is set to invisible, dont calculate data
     if (!visible) return;
 
-    let iteratedTime = 0;
-
-    // Storage for global variables used across indicator times only defined once
-    const globals = {};
-
-    const funcWraps = {};
-    for (const funcName in ScriptFunctions) {
-      funcWraps[funcName] = function () {
-        return ScriptFunctions[funcName](
-          {
-            renderingQueueId: key,
-            chart: this.$chart,
-            time: iteratedTime,
-            dataset,
-            globals,
-          },
-          ...arguments
-        );
-      }.bind(this);
-    }
-
     // Loop through each visible item of dataset indicator is subscribed to
     const visibleData = this.$chart.visibleData[indicator.datasetId];
     if (!visibleData || !visibleData.data) return;
 
-    // Run the indicator function for this candle and get all results
-    for (const point of visibleData.data) {
-      if (this.sets[key] && this.sets[key].data[point.time] !== undefined)
-        continue;
-
-      iteratedTime = point.time;
-
-      indicator.drawFunc.bind(indicator)({
-        ...point,
-        ...funcWraps,
-      });
-    }
-  }
-
-  requestSetPoints({ id, start, end }) {
-    const set = this.sets[id];
-
-    if (!set) return;
-
-    const { timeframe } = set;
-    // Check all set items to see if they have been calculated
-    for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
-      if (set.data[timestamp] === undefined) {
-        this.calculateOneSetTime(id, timestamp);
-      }
-    }
+    const res = await this.$global.workers.dispatch({
+      method: "calculateOneSet",
+      params: {
+        indicatorName: indicator.constructor.name,
+        visibleData,
+        datasetData: dataset.data,
+        timeframe: dataset.timeframe,
+      },
+    });
   }
 
   addToQueue(indicator, index) {

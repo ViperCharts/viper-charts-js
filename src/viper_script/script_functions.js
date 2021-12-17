@@ -1,43 +1,31 @@
 export default {
   plot(
-    { renderingQueueId, chart, time, dataset },
+    { renderingQueueId, chart, time, timeframe },
     { value, title, color = "#FFF", linewidth, ylabel = false }
   ) {
-    chart.computedData.addSetItem(
-      renderingQueueId,
-      time,
-      "line",
-      dataset.timeframe,
-      {
-        series: [value],
-        title,
-        colors: { color },
-        linewidth,
-        ylabel,
-      }
-    );
+    chart.computedData.addSetItem(renderingQueueId, time, "line", timeframe, {
+      series: [value],
+      title,
+      colors: { color },
+      linewidth,
+      ylabel,
+    });
   },
 
   plotBox(
-    { renderingQueueId, chart, time, dataset },
+    { renderingQueueId, chart, time, timeframe },
     { top, bottom, width, title, color = "#FFF" }
   ) {
-    chart.computedData.addSetItem(
-      renderingQueueId,
-      time,
-      "box",
-      dataset.timeframe,
-      {
-        series: [top, bottom, width],
-        title,
-        colors: { color },
-        ylabel,
-      }
-    );
+    chart.computedData.addSetItem(renderingQueueId, time, "box", timeframe, {
+      series: [top, bottom, width],
+      title,
+      colors: { color },
+      ylabel,
+    });
   },
 
   plotCandle(
-    { renderingQueueId, chart, time, dataset },
+    { renderingQueueId, chart, time, timeframe },
     {
       open,
       high,
@@ -49,43 +37,34 @@ export default {
       ylabel = false,
     }
   ) {
-    chart.computedData.addSetItem(
-      renderingQueueId,
-      time,
-      "candle",
-      dataset.timeframe,
-      {
-        series: [open, high, low, close],
-        title,
-        colors: {
-          color,
-          wickcolor,
-        },
-        ylabel,
-      }
-    );
+    chart.computedData.addSetItem(renderingQueueId, time, "candle", timeframe, {
+      series: [open, high, low, close],
+      title,
+      colors: {
+        color,
+        wickcolor,
+      },
+      ylabel,
+    });
   },
 
   plotText() {},
 
   // Get value from previous or future data point if exists
-  getData({ dataset, time }, { lookback, source }) {
-    const { data, timeframe } = dataset;
+  getData({ timeframe, data, time }, { lookback, source }) {
     const timestamp = time - lookback * timeframe;
     const item = data[timestamp];
     if (!item) return undefined;
     return item[source];
   },
 
-  setVar({ renderingQueueId, chart, time }, { name, value }) {
-    const { computedState: state } = chart.computedData;
+  setVar({ renderingQueueId, chart, time, computedState }, { name, value }) {
     if (!state[renderingQueueId]) state[renderingQueueId] = {};
     if (!state[renderingQueueId][time]) state[renderingQueueId][time] = {};
     state[renderingQueueId][time][name] = value;
   },
 
-  getVar({ renderingQueueId, chart, time, dataset }, { name, lookback }) {
-    const { timeframe } = dataset;
+  getVar({ renderingQueueId, chart, time, timeframe }, { name, lookback }) {
     const timestamp = time - lookback * timeframe;
     const { computedState: state } = chart.computedData;
 
@@ -95,10 +74,10 @@ export default {
     return item[name];
   },
 
-  sma({ dataset, time }, { source, length }) {
+  sma({ timeframe, data, time }, { source, length }) {
     let total = 0;
     for (let i = 0; i < length; i++) {
-      total += this.getData({ dataset, time }, { lookback: i, source });
+      total += this.getData({ timeframe, data, time }, { lookback: i, source });
     }
     return total / length;
   },

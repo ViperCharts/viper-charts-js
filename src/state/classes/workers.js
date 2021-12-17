@@ -68,19 +68,22 @@ export default class WorkerState extends EventEmitter {
     }
   }
 
-  dispatch({ method, params, callback }) {
-    const id = utils.uniqueId();
+  dispatch({ method, params }) {
+    return new Promise((resolve) => {
+      const id = utils.uniqueId();
 
-    Object.keys(params).forEach((p) => console.log(p, typeof params[p]));
+      Object.keys(params).forEach((p) => console.log(p, typeof params[p]));
 
-    this.queue[id] = {
-      queueId: id,
-      method,
-      params,
-      callback,
-      running: false,
-    };
-    this.attemptToRunOnFreeWorker();
+      this.queue[id] = {
+        queueId: id,
+        method,
+        params,
+        resolve,
+        running: false,
+      };
+
+      this.attemptToRunOnFreeWorker();
+    });
   }
 
   onWorkerMessage(e) {
@@ -92,7 +95,7 @@ export default class WorkerState extends EventEmitter {
       case "finished":
         const queued = this.queue[queueId];
         if (!queued) return;
-        queued.callback(res);
+        queued.resolve(res);
         delete this.queue[queueId];
         this.workers[id].inUse = false;
         this.attemptToRunOnFreeWorker();
