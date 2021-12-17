@@ -7,6 +7,7 @@ import UIState from "./classes/ui";
 import DataState from "./classes/data";
 import EventsState from "./classes/events";
 import SettingsState from "./classes/settings";
+import WorkerState from "./classes/workers";
 
 class GlobalState extends EventEmitter {
   constructor() {
@@ -24,6 +25,7 @@ class GlobalState extends EventEmitter {
     this.layout = new LayoutState({ $global: this });
     this.data = new DataState({ $global: this });
     this.events = new EventsState({ $global: this });
+    this.workers = new WorkerState({ $global: this });
 
     window.deleteSelectedChart = this.deleteSelectedChart.bind(this);
   }
@@ -35,6 +37,7 @@ class GlobalState extends EventEmitter {
     this.layout.init();
     this.data.init();
     this.events.init();
+    this.workers.init();
   }
 
   createChart(state = {}) {
