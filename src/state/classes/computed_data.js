@@ -151,73 +151,26 @@ export default class ComputedData extends EventEmitter {
   //   this.sets[id] = set;
   // }
 
-  generateInstructions() {
-    const isPercent = this.$chart.settings.scaleType === "percent";
-    const isNormalized = this.$chart.settings.scaleType === "normalized";
+  async generateInstructions() {
+    const { scaleType } = this.$chart.settings;
 
-    let max = -Infinity;
-    let min = Infinity;
+    const setCopy = {};
 
-    const dataDictionaryCopy = {};
-
-    // Loop through all sets and set values and calculate min and max plotted values
+    // Loop through each set and dispatch instructions fetch
     for (const id in this.sets) {
       const set = this.sets[id];
-      dataDictionaryCopy[id] = JSON.parse(JSON.stringify(set.data));
-      const data = dataDictionaryCopy[id];
-
-      const [start, end] = this.$chart.range;
-      const { timeframe } = this.$chart;
-
-      for (const time of Utils.getAllTimestampsIn(start, end, timeframe)) {
-        const item = data[time];
-
-        if (!item) continue;
-
-        for (let i = 0; i < item.length; i++) {
-          const { values } = item[i];
-
-          // If percent, loop through all instructions at and loop through every value for each instruction
-          // and compare it to starting value
-          if (isPercent) {
-            const firstInstructions = set.data[Object.keys(set.data)[0]];
-
-            if (firstInstructions) {
-              const { series: firstSeries } = firstInstructions[i].values;
-
-              // TODO fix this so we dont compare EVERY value to start candle
-              values.series = values.series.map((val, j) => {
-                return Utils.toFixed(
-                  ((val - firstSeries[j]) / firstSeries[j]) * 100,
-                  2
-                );
-              });
-            }
-          }
-
-          // If a normalized chart, every value is compared relatively to its own max and min (visible range);
-          else if (isNormalized) {
-            const range = set.max - set.min;
-
-            values.series = values.series.map((val) =>
-              Utils.toFixed(((val - set.min) / range) * 100, 4)
-            );
-          }
-
-          const { series } = values;
-
-          // Compute max plotted visible data
-          for (const value of series) {
-            if (value > max) {
-              max = value;
-            }
-            if (value < min) {
-              min = value;
-            }
-          }
-        }
-      }
+      setCopy[id] = {
+        data: set.data,
+        max: set.max,
+        min: set.min,
+        decimalPlaces: set.decimalPlaces,
+      };
     }
+
+    const res = await this.$global.workers.dispatch({
+      method: "generateInstructions",
+      params: {},
+    });
 
     this.max = max;
     this.min = min;
@@ -239,7 +192,7 @@ export default class ComputedData extends EventEmitter {
 
         instructions[id][time] = [];
 
-        const x = chart.getXCoordByTimestamp(time);
+        const x = Utils.getXCoordByTimestamp(time);
 
         // Loop through all instructions for this time
         for (let i = 0; i < item.length; i++) {
@@ -250,14 +203,14 @@ export default class ComputedData extends EventEmitter {
             instructions[id][time].push({
               type: "line",
               x,
-              y: chart.getYCoordByPrice(series[0]),
+              y: Utils.getYCoordByPrice(series[0]),
               color: values.colors.color,
               linewidth: values.linewidth,
               ylabel: values.ylabel,
             });
           } else if (type === "box") {
-            const y1 = chart.getYCoordByPrice(series[0]);
-            const y2 = chart.getYCoordByPrice(series[1]);
+            const y1 = Utils.getYCoordByPrice(series[0]);
+            const y2 = Utils.getYCoordByPrice(series[1]);
             const w = chart.pixelsPerElement * series[3];
 
             instructions[id][time].push({
@@ -269,10 +222,10 @@ export default class ComputedData extends EventEmitter {
               color: values.colors.color,
             });
           } else if (type === "candle") {
-            const y1 = chart.getYCoordByPrice(series[0]);
-            const y2 = chart.getYCoordByPrice(series[1]);
-            const y3 = chart.getYCoordByPrice(series[2]);
-            const y4 = chart.getYCoordByPrice(series[3]);
+            const y1 = Utils.getYCoordByPrice(series[0]);
+            const y2 = Utils.getYCoordByPrice(series[1]);
+            const y3 = Utils.getYCoordByPrice(series[2]);
+            const y4 = Utils.getYCoordByPrice(series[3]);
             const w = chart.pixelsPerElement * 0.9;
 
             instructions[id][time].push({

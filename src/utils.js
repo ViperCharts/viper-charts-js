@@ -20,6 +20,51 @@ export default {
       .map((_, i) => start + timeframe * i);
   },
 
+  /**
+   * Get a timestamp at x coord for given width and visible range
+   * @param {number} start
+   * @param {number} end
+   * @param {number} width
+   * @param {number} xCoord
+   */
+  getTimestampByXCoord(start, end, width, xCoord) {
+    const msInView = end - start;
+    const perc = xCoord / width;
+    const time = perc * msInView;
+    return start + time;
+  },
+
+  /**
+   * Get an x coord for a given width and visible range
+   * @param {number} start
+   * @param {number} end
+   * @param {number} width
+   * @param {number} timestamp
+   * @returns
+   */
+  getXCoordByTimestamp(start, end, width, timestamp) {
+    const msInView = end - start;
+    const msFromStart = timestamp - start;
+    const perc = msFromStart / msInView;
+    return Math.floor(perc * width);
+  },
+
+  /**
+   * Get a y coord for a given height and visible range
+   * @param {number} min
+   * @param {number} max
+   * @param {number} height
+   * @param {number} price
+   * @returns
+   */
+  getYCoordByPrice(min, max, height, price) {
+    const yInView = max - min;
+    const yFromMin = price - min;
+    const perc = yFromMin / yInView;
+    const y = -Math.floor(perc * height * height);
+    return Math.min(Math.max(y, -1), height);
+  },
+
   wipeObject(object) {
     for (const key in object) {
       delete object[key];

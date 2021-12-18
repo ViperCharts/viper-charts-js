@@ -482,30 +482,30 @@ export default class ChartState extends EventEmitter {
   }
 
   getTimestampByXCoord(x) {
-    const [start, end] = this.range;
-    const msInView = end - start;
-    const perc = x / this.$global.layout.chartDimensions[this.id].main.width;
-    const time = perc * msInView;
-    return start + time;
+    return Utils.getTimestampByXCoord(
+      this.range[0],
+      this.range[1],
+      this.$global.layout.chartDimensions[this.id].main.width,
+      x
+    );
   }
 
   getXCoordByTimestamp(timestamp) {
-    const [start, end] = this.range;
-    const msInView = end - start;
-    const msFromStart = timestamp - start;
-    const perc = msFromStart / msInView;
-    const w = this.$global.layout.chartDimensions[this.id].main.width;
-    return Math.floor(perc * w);
+    return Utils.getXCoordByTimestamp(
+      this.range[0],
+      this.range[1],
+      this.$global.layout.chartDimensions[this.id].main.width,
+      timestamp
+    );
   }
 
   getYCoordByPrice(price) {
-    const [, , min, max] = this.range;
-    const yInView = max - min;
-    const yFromMin = price - min;
-    const perc = yFromMin / yInView;
-    const h = this.$global.layout.chartDimensions[this.id].main.height;
-    const y = -Math.floor(perc * h - h);
-    return Math.min(Math.max(y, -1), h);
+    return Utils.getYCoordByPrice(
+      this.range[2],
+      this.range[3],
+      this.$global.layout.chartDimensions[this.id].main.height,
+      price
+    );
   }
 
   /**
