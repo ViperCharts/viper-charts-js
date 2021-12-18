@@ -49,9 +49,7 @@ export default {
     };
 
     // Load the indicator file if it exists
-    const indi = indicators.map.get(
-      indicatorName.replaceAll(" ", "-").toLowerCase()
-    );
+    const indi = indicators.map.get(indicatorName);
 
     if (!indi) {
       return {

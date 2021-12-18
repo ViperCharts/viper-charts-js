@@ -65,10 +65,13 @@ export default class ComputedData extends EventEmitter {
     const visibleData = this.$chart.visibleData[indicator.datasetId];
     if (!visibleData || !visibleData.data) return;
 
+    // Get the indicator name
+    const { id: indicatorName } = this.$chart.indicators[key];
+
     const res = await this.$global.workers.dispatch({
       method: "calculateOneSet",
       params: {
-        indicatorName: indicator.constructor.name,
+        indicatorName,
         visibleData,
         datasetData: dataset.data,
         timeframe: dataset.timeframe,
@@ -77,6 +80,8 @@ export default class ComputedData extends EventEmitter {
     });
 
     const { data, max, min, decimalPlaces } = res.data.set;
+
+    console.log(res.data.set);
 
     this.sets[key] = new ComputedSet({
       $state: this.$chart,
@@ -293,6 +298,8 @@ export default class ComputedData extends EventEmitter {
       }
 
       const times = Object.keys(data);
+
+      if (!data[times[times.length - 1]]) continue;
 
       // Get last time item and check if each item at time has ylabel set to true
       for (const item of data[times[times.length - 1]]) {

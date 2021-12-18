@@ -1,7 +1,7 @@
 import Layer from "./layer.js";
 
 export default class Indicator extends Layer {
-  constructor({ $state, datasetId, consumers }) {
+  constructor({ id, $state, datasetId, consumers }) {
     super();
 
     this.$state = $state;
