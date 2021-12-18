@@ -3,15 +3,19 @@ import Utils from "../../utils";
 
 import ScriptFunctions from "../../viper_script/script_functions";
 
-const maxDecimalPlaces = 8;
-
 class ComputedSet {
-  constructor({ $state, timeframe }) {
+  constructor({
+    $state,
+    timeframe,
+    data = {},
+    max = -Infinity,
+    min = Infinity,
+  }) {
     this.$state = $state;
 
-    this.data = {};
-    this.max = 0;
-    this.min = Infinity;
+    this.data = data;
+    this.max = max;
+    this.min = min;
     this.timeframe = timeframe;
     this.decimalPlaces = 0;
   }
@@ -48,12 +52,11 @@ export default class ComputedData extends EventEmitter {
     this.generateInstructions();
   }
 
-  calculateOneSet(key) {
+  async calculateOneSet(key) {
     const { indicator, visible } = this.queue.get(key);
     const dataset = this.$chart.datasets[indicator.datasetId];
 
     // Delete old set TODO CHANGE THIS IT HURTS PERFORMANCE
-    delete this.sets[key];
 
     // If indicator is set to invisible, dont calculate data
     if (!visible) return;
@@ -69,8 +72,21 @@ export default class ComputedData extends EventEmitter {
         visibleData,
         datasetData: dataset.data,
         timeframe: dataset.timeframe,
+        computedState: this.computedState[key] || {},
       },
     });
+
+    const { data, max, min, decimalPlaces } = res.data.set;
+
+    this.sets[key] = new ComputedSet({
+      $state: this.$chart,
+      timeframe: dataset.timeframe,
+      data,
+      max,
+      min,
+    });
+
+    this.sets[key].setDecimalPlaces(decimalPlaces);
   }
 
   addToQueue(indicator, index) {
@@ -118,41 +134,17 @@ export default class ComputedData extends EventEmitter {
     return true;
   }
 
-  addSetItem(id, time, type, timeframe, values) {
-    if (!this.sets[id]) {
-      this.sets[id] = new ComputedSet({ $state: this.$chart, timeframe });
-    }
+  // addSetItem(id, time, type, timeframe, values) {
+  //   if (!this.sets[id]) {
+  //     this.sets[id] = new ComputedSet({ $state: this.$chart, timeframe });
+  //   }
 
-    const set = this.sets[id];
-    if (!set.data[time]) set.data[time] = [{ type, values }];
-    else set.data[time].push({ type, values });
+  //   const set = this.sets[id];
+  //   if (!set.data[time]) set.data[time] = [{ type, values }];
+  //   else set.data[time].push({ type, values });
 
-    // Update max & min if applicable
-    const { series } = values;
-    for (const val of series) {
-      // Update min
-      if (val < set.min) {
-        set.min = val;
-      }
-
-      // Update max
-      if (val > set.max) {
-        set.max = val;
-      }
-
-      // If potential for more decimal places, check
-      if (set.decimalPlaces < maxDecimalPlaces) {
-        const decimalPlaces = Utils.getDecimalPlaces(val, maxDecimalPlaces);
-
-        // If decimal places for number is larger, set max decimal places
-        if (decimalPlaces > set.decimalPlaces) {
-          set.setDecimalPlaces(decimalPlaces);
-        }
-      }
-    }
-
-    this.sets[id] = set;
-  }
+  //   this.sets[id] = set;
+  // }
 
   generateInstructions() {
     const isPercent = this.$chart.settings.scaleType === "percent";

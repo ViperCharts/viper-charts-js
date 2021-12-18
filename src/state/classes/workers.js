@@ -60,7 +60,6 @@ export default class WorkerState extends EventEmitter {
       queueItem.running = true;
 
       const { method, params } = queueItem;
-      console.log(params.sets);
       worker.worker.postMessage({
         type: "method",
         data: { queueId, method, params },
@@ -71,8 +70,6 @@ export default class WorkerState extends EventEmitter {
   dispatch({ method, params }) {
     return new Promise((resolve) => {
       const id = utils.uniqueId();
-
-      Object.keys(params).forEach((p) => console.log(p, typeof params[p]));
 
       this.queue[id] = {
         queueId: id,
@@ -88,8 +85,6 @@ export default class WorkerState extends EventEmitter {
 
   onWorkerMessage(e) {
     const { type, id, queueId, res } = e.data;
-
-    console.log(e.data);
 
     switch (type) {
       case "finished":

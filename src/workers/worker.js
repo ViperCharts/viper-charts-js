@@ -12,8 +12,9 @@ self.addEventListener("message", (e) => {
     case "method":
       // Run appropriate method
       const { queueId, method, params } = data;
-      console.log(method, params);
+      const res = Methods[method](params);
       postMessage({ type: "finished", id, queueId, res });
+
       break;
     default:
       console.error(`No implementation for type: ${type}`);

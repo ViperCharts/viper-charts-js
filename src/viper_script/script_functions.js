@@ -1,9 +1,9 @@
 export default {
   plot(
-    { renderingQueueId, chart, time, timeframe },
+    { addSetItem, time },
     { value, title, color = "#FFF", linewidth, ylabel = false }
   ) {
-    chart.computedData.addSetItem(renderingQueueId, time, "line", timeframe, {
+    addSetItem(time, "line", {
       series: [value],
       title,
       colors: { color },
@@ -12,11 +12,8 @@ export default {
     });
   },
 
-  plotBox(
-    { renderingQueueId, chart, time, timeframe },
-    { top, bottom, width, title, color = "#FFF" }
-  ) {
-    chart.computedData.addSetItem(renderingQueueId, time, "box", timeframe, {
+  plotBox({ addSetItem, time }, { top, bottom, width, title, color = "#FFF" }) {
+    addSetItem(time, "box", {
       series: [top, bottom, width],
       title,
       colors: { color },
@@ -25,7 +22,7 @@ export default {
   },
 
   plotCandle(
-    { renderingQueueId, chart, time, timeframe },
+    { addSetItem, time },
     {
       open,
       high,
@@ -37,7 +34,7 @@ export default {
       ylabel = false,
     }
   ) {
-    chart.computedData.addSetItem(renderingQueueId, time, "candle", timeframe, {
+    addSetItem(time, "candle", {
       series: [open, high, low, close],
       title,
       colors: {
@@ -58,18 +55,15 @@ export default {
     return item[source];
   },
 
-  setVar({ renderingQueueId, chart, time, computedState }, { name, value }) {
-    if (!state[renderingQueueId]) state[renderingQueueId] = {};
-    if (!state[renderingQueueId][time]) state[renderingQueueId][time] = {};
-    state[renderingQueueId][time][name] = value;
+  setVar({ time, computedState }, { name, value }) {
+    if (!computedState[time]) computedState[time] = {};
+    computedState[time][name] = value;
   },
 
-  getVar({ renderingQueueId, chart, time, timeframe }, { name, lookback }) {
+  getVar({ time, timeframe, computedState }, { name, lookback }) {
     const timestamp = time - lookback * timeframe;
-    const { computedState: state } = chart.computedData;
 
-    if (!state[renderingQueueId]) return undefined;
-    const item = state[renderingQueueId][timestamp];
+    const item = computedState[timestamp];
     if (!item) return undefined;
     return item[name];
   },
