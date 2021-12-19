@@ -10,7 +10,7 @@ class ComputedSet {
     this.$state = $state;
 
     this.data = {};
-    this.max = 0;
+    this.max = -Infinity;
     this.min = Infinity;
     this.timeframe = timeframe;
     this.decimalPlaces = 0;
@@ -218,6 +218,8 @@ export default class ComputedData extends EventEmitter {
         for (let i = 0; i < item.length; i++) {
           const { values } = item[i];
 
+          if (item[i].type === "volume") continue;
+
           // If percent, loop through all instructions at and loop through every value for each instruction
           // and compare it to starting value
           if (isPercent) {
@@ -333,6 +335,25 @@ export default class ComputedData extends EventEmitter {
               x2: x,
               y2: y3,
               color: values.colors.wickcolor,
+            });
+          } else if (type === "volume") {
+            const volume = series[0];
+            const w = chart.pixelsPerElement * 0.9;
+
+            const { height } =
+              this.$global.layout.chartDimensions[this.$chart.id].main;
+            const maxHeight = 0.2 * height;
+            const volumePerc = volume / set.max;
+            const h = Math.floor(volumePerc * maxHeight);
+
+            instructions[id][time].push({
+              type: "box",
+              x: x - w / 2,
+              y: height - h,
+              w: w,
+              h,
+              color: values.colors.color,
+              ylabel: false,
             });
           }
         }
