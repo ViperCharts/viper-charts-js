@@ -5,7 +5,7 @@ import Constants from "./constants";
 let chart;
 
 (async () => {
-  const res = await fetch("http://demo-api.vipercharts.com/sources");
+  const res = await fetch("https://demo-api.vipercharts.com/sources");
   if (!res.ok) {
     alert("An error occurred when fetching available markets.");
     return;
@@ -24,7 +24,7 @@ let chart;
   async function onRequestHistoricalData({ requests, callback }) {
     for (let { id, source, name, timeframe, start, end } of requests) {
       const res = await fetch(
-        `http://demo-api.vipercharts.com/candles?source=${source}&name=${name}&timeframe=${timeframe}&start=${start}&end=${end}`
+        `https://demo-api.vipercharts.com/candles?source=${source}&name=${name}&timeframe=${timeframe}&start=${start}&end=${end}`
       );
 
       if (!res.ok) {
