@@ -189,10 +189,12 @@ export default class ComputedData extends EventEmitter {
       for (const time of Utils.getAllTimestampsIn(start, end, timeframe)) {
         const item = data[time];
 
-        if (!item || item.type === "volume") continue;
+        if (!item) continue;
 
         for (let i = 0; i < item.length; i++) {
           const { values } = item[i];
+
+          if (item[i].type === "volume") continue;
 
           // If percent, loop through all instructions at and loop through every value for each instruction
           // and compare it to starting value

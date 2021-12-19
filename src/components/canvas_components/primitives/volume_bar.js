@@ -20,12 +20,5 @@ export default class VolumeBar extends Indicator {
     const color = isUp ? this.upColor : this.downColor;
 
     plotVolume({ volume, color });
-    plot({
-      value: close,
-      title: "Price line",
-      color: color,
-      linewidth: 2,
-      ylabel: true,
-    });
   }
 }
