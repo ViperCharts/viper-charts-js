@@ -93,7 +93,14 @@ export default {
     return { ok: true, data: { set } };
   },
 
-  generateInstructions({ scaleType, sets, start, end, timeframe }) {
+  generateInstructions({
+    scaleType,
+    sets,
+    visibleRange,
+    timeframe,
+    chartDimensions,
+    pixelsPerElement,
+  }) {
     const isPercent = scaleType === "percent";
     const isNormalized = scaleType === "normalized";
 
@@ -101,8 +108,9 @@ export default {
     let min = Infinity;
 
     const dataDictionaryCopy = {};
+    const vr = visibleRange;
 
-    const times = Utils.getAllTimestampsIn(start, end, timeframe);
+    const times = Utils.getAllTimestampsIn(vr.start, vr.end, timeframe);
 
     for (const id in sets) {
       const set = sets[id];
@@ -158,5 +166,155 @@ export default {
         }
       }
     }
+
+    const { main, yScale } = chartDimensions;
+
+    const instructions = {};
+    const yScaleInstructions = {};
+    let maxWidth = 0;
+
+    console.log(vr, main.height);
+
+    const getXCoordByTimestamp = (ts) =>
+      Utils.getXCoordByTimestamp(vr.start, vr.end, main.width, ts);
+    const getYCoordByPrice = (p) =>
+      Utils.getYCoordByPrice(vr.min, vr.max, main.height, p);
+
+    // Calculate actual instructions
+    for (const id in dataDictionaryCopy) {
+      const data = dataDictionaryCopy[id];
+
+      instructions[id] = {};
+      const set = sets[id];
+
+      for (const time in data) {
+        const item = JSON.parse(JSON.stringify(data[time]));
+
+        instructions[id][time] = [];
+
+        const x = getXCoordByTimestamp(time);
+
+        // Loop through all instructions for this time
+        for (let i = 0; i < item.length; i++) {
+          const { type, values } = item[i];
+          const { series } = values;
+
+          if (type === "line") {
+            instructions[id][time].push({
+              type: "line",
+              x,
+              y: getYCoordByPrice(series[0]),
+              color: values.colors.color,
+              linewidth: values.linewidth,
+              ylabel: values.ylabel,
+            });
+          } else if (type === "box") {
+            const y1 = getYCoordByPrice(series[0]);
+            const y2 = getYCoordByPrice(series[1]);
+            const w = pixelsPerElement * series[3];
+
+            instructions[id][time].push({
+              type: "box",
+              x: x - w / 2,
+              y: y1,
+              w: w,
+              h: Math.abs(y2) - Math.abs(y1),
+              color: values.colors.color,
+            });
+          } else if (type === "candle") {
+            const y1 = getYCoordByPrice(series[0]);
+            const y2 = getYCoordByPrice(series[1]);
+            const y3 = getYCoordByPrice(series[2]);
+            const y4 = getYCoordByPrice(series[3]);
+            const w = pixelsPerElement * 0.9;
+
+            instructions[id][time].push({
+              type: "box",
+              x: x - w / 2,
+              y: y1,
+              w: w,
+              h: Math.abs(y4) - Math.abs(y1),
+              color: values.colors.color,
+              ylabel: values.ylabel,
+            });
+
+            instructions[id][time].push({
+              type: "single-line",
+              x,
+              y: y2,
+              x2: x,
+              y2: y3,
+              color: values.colors.wickcolor,
+            });
+          }
+        }
+      }
+
+      const times = Object.keys(data);
+
+      if (!data[times[times.length - 1]]) continue;
+
+      // Get last time item and check if each item at time has ylabel set to true
+      for (const item of data[times[times.length - 1]]) {
+        const { type, values } = item;
+        if (values.ylabel === true) {
+          const value = values.series[{ line: 0, candle: 3 }[type]];
+
+          const y = getYCoordByPrice(value);
+          let textColor = Utils.isColorLight(values.colors.color)
+            ? "#000"
+            : "#FFF";
+
+          const symbol = isPercent ? (value >= 0 ? "+" : "-") : "";
+          const extra = isPercent ? "%" : "";
+
+          const val =
+            scaleType === "default"
+              ? parseFloat(value).toFixed(set.decimalPlaces)
+              : value;
+
+          const text = `${symbol}${val}${extra}`;
+          // const { ctx } = this.$chart.subcharts.yScale.canvas;
+          // const textWidth = Math.ceil(ctx.measureText(text).width);
+          const textWidth = text.length * 3;
+
+          if (textWidth > maxWidth) maxWidth = textWidth;
+
+          const id = Utils.uniqueId();
+          yScaleInstructions[id] = {
+            type: "text",
+            x: yScale.width / 2,
+            y,
+            color: textColor,
+            text,
+            font: "bold 10px Arial",
+          };
+
+          const id2 = Utils.uniqueId();
+          yScaleInstructions[id2] = {
+            type: "box",
+            x: 0,
+            y: y - 13,
+            w: yScale.width,
+            h: 20,
+            color: values.colors.color,
+          };
+
+          // this.$chart.subcharts.yScale.canvas.RE.addToRenderingOrder(id, 1);
+          // this.$chart.subcharts.yScale.canvas.RE.addToRenderingOrder(id2, 1);
+        }
+      }
+    }
+
+    return {
+      ok: true,
+      data: {
+        min,
+        max,
+        maxWidth,
+        instructions,
+        yScaleInstructions,
+      },
+    };
   },
 };

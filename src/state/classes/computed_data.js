@@ -81,8 +81,6 @@ export default class ComputedData extends EventEmitter {
 
     const { data, max, min, decimalPlaces } = res.data.set;
 
-    console.log(res.data.set);
-
     this.sets[key] = new ComputedSet({
       $state: this.$chart,
       timeframe: dataset.timeframe,
@@ -154,12 +152,12 @@ export default class ComputedData extends EventEmitter {
   async generateInstructions() {
     const { scaleType } = this.$chart.settings;
 
-    const setCopy = {};
+    const sets = {};
 
     // Loop through each set and dispatch instructions fetch
     for (const id in this.sets) {
       const set = this.sets[id];
-      setCopy[id] = {
+      sets[id] = {
         data: set.data,
         max: set.max,
         min: set.min,
@@ -167,148 +165,37 @@ export default class ComputedData extends EventEmitter {
       };
     }
 
+    const chartDimensions = this.$global.layout.chartDimensions[this.$chart.id];
+
     const res = await this.$global.workers.dispatch({
       method: "generateInstructions",
-      params: {},
+      params: {
+        scaleType,
+        sets,
+        timeframe: this.$chart.timeframe,
+        chartDimensions: {
+          main: chartDimensions.main,
+          yScale: chartDimensions.yScale,
+          xScale: chartDimensions.xScale,
+        },
+        pixelsPerElement: this.$chart.pixelsPerElement,
+        visibleRange: {
+          start: this.$chart.range[0],
+          end: this.$chart.range[1],
+          min: this.$chart.range[2],
+          max: this.$chart.range[3],
+        },
+      },
     });
+
+    const { min, max, maxWidth, instructions, yScaleInstructions } = res.data;
+
+    console.log(instructions);
 
     this.max = max;
     this.min = min;
-    const chart = this.$chart;
-    chart.setRange({ min, max }, true);
-    const instructions = {};
-    const yScaleInstructions = {};
-    let maxWidth = 0;
+    this.$chart.setRange({ min, max }, true);
 
-    // Calculate actual instructions
-    for (const id in dataDictionaryCopy) {
-      const data = dataDictionaryCopy[id];
-
-      instructions[id] = {};
-      const set = this.sets[id];
-
-      for (const time in data) {
-        const item = JSON.parse(JSON.stringify(data[time]));
-
-        instructions[id][time] = [];
-
-        const x = Utils.getXCoordByTimestamp(time);
-
-        // Loop through all instructions for this time
-        for (let i = 0; i < item.length; i++) {
-          const { type, values } = item[i];
-          const { series } = values;
-
-          if (type === "line") {
-            instructions[id][time].push({
-              type: "line",
-              x,
-              y: Utils.getYCoordByPrice(series[0]),
-              color: values.colors.color,
-              linewidth: values.linewidth,
-              ylabel: values.ylabel,
-            });
-          } else if (type === "box") {
-            const y1 = Utils.getYCoordByPrice(series[0]);
-            const y2 = Utils.getYCoordByPrice(series[1]);
-            const w = chart.pixelsPerElement * series[3];
-
-            instructions[id][time].push({
-              type: "box",
-              x: x - w / 2,
-              y: y1,
-              w: w,
-              h: Math.abs(y2) - Math.abs(y1),
-              color: values.colors.color,
-            });
-          } else if (type === "candle") {
-            const y1 = Utils.getYCoordByPrice(series[0]);
-            const y2 = Utils.getYCoordByPrice(series[1]);
-            const y3 = Utils.getYCoordByPrice(series[2]);
-            const y4 = Utils.getYCoordByPrice(series[3]);
-            const w = chart.pixelsPerElement * 0.9;
-
-            instructions[id][time].push({
-              type: "box",
-              x: x - w / 2,
-              y: y1,
-              w: w,
-              h: Math.abs(y4) - Math.abs(y1),
-              color: values.colors.color,
-              ylabel: values.ylabel,
-            });
-
-            instructions[id][time].push({
-              type: "single-line",
-              x,
-              y: y2,
-              x2: x,
-              y2: y3,
-              color: values.colors.wickcolor,
-            });
-          }
-        }
-      }
-
-      const times = Object.keys(data);
-
-      if (!data[times[times.length - 1]]) continue;
-
-      // Get last time item and check if each item at time has ylabel set to true
-      for (const item of data[times[times.length - 1]]) {
-        const { type, values } = item;
-        if (values.ylabel === true) {
-          const value = values.series[{ line: 0, candle: 3 }[type]];
-
-          const dimensions =
-            this.$global.layout.chartDimensions[this.$chart.id];
-
-          const y = chart.getYCoordByPrice(value);
-          let textColor = Utils.isColorLight(values.colors.color)
-            ? "#000"
-            : "#FFF";
-
-          const symbol = isPercent ? (value >= 0 ? "+" : "-") : "";
-          const extra = isPercent ? "%" : "";
-
-          const val =
-            this.$chart.settings.scaleType === "default"
-              ? parseFloat(value).toFixed(set.decimalPlaces)
-              : value;
-
-          const text = `${symbol}${val}${extra}`;
-          const { ctx } = this.$chart.subcharts.yScale.canvas;
-          const textWidth = Math.ceil(ctx.measureText(text).width);
-
-          if (textWidth > maxWidth) maxWidth = textWidth;
-
-          const id = Utils.uniqueId();
-          yScaleInstructions[id] = {
-            type: "text",
-            x: dimensions.yScale.width / 2,
-            y,
-            color: textColor,
-            text,
-            font: "bold 10px Arial",
-          };
-
-          const id2 = Utils.uniqueId();
-          yScaleInstructions[id2] = {
-            type: "box",
-            x: 0,
-            y: y - 13,
-            w: dimensions.yScale.width,
-            h: 20,
-            color: values.colors.color,
-          };
-
-          this.$chart.subcharts.yScale.canvas.RE.addToRenderingOrder(id, 1);
-          this.$chart.subcharts.yScale.canvas.RE.addToRenderingOrder(id2, 1);
-        }
-      }
-    }
-
-    const chartDimensions = this.$global.layout.chartDimensions[this.$chart.id];
     const width = maxWidth + 12;
 
     // Check if max text width is different than yscale layout width
@@ -319,9 +206,9 @@ export default class ComputedData extends EventEmitter {
     this.instructions.main = instructions;
 
     // Reset yScale
-    for (const id in this.instructions.yScale) {
-      this.$chart.subcharts.yScale.canvas.RE.removeFromRenderingOrder(id);
-    }
+    // for (const id in this.instructions.yScale) {
+    //   this.$chart.subcharts.yScale.canvas.RE.removeFromRenderingOrder(id);
+    // }
     this.instructions.yScale = yScaleInstructions;
   }
 
