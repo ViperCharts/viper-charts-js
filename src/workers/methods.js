@@ -59,7 +59,6 @@ export default {
       };
     }
 
-    console.log(color);
     const indicator = new indi.class({ color });
 
     // Storage for global variables used across indicator times only defined once
