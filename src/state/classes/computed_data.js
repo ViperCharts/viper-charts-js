@@ -138,18 +138,6 @@ export default class ComputedData extends EventEmitter {
     return true;
   }
 
-  // addSetItem(id, time, type, timeframe, values) {
-  //   if (!this.sets[id]) {
-  //     this.sets[id] = new ComputedSet({ $state: this.$chart, timeframe });
-  //   }
-
-  //   const set = this.sets[id];
-  //   if (!set.data[time]) set.data[time] = [{ type, values }];
-  //   else set.data[time].push({ type, values });
-
-  //   this.sets[id] = set;
-  // }
-
   async generateInstructions() {
     const { scaleType } = this.$chart.settings;
 
