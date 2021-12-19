@@ -10,6 +10,7 @@ export default class WorkerState extends EventEmitter {
     this.workersSupported = false;
     this.workers = {};
     this.queue = {};
+    this.inProgress = {};
   }
 
   init() {
@@ -45,9 +46,7 @@ export default class WorkerState extends EventEmitter {
       if (!this.workers[id].inUse) return id;
     });
 
-    const queueIds = Object.keys(this.queue).filter((id) => {
-      if (!this.queue[id].running) return id;
-    });
+    const queueIds = Object.keys(this.queue);
 
     // Loop through each free worker id and apply queue item to it
     for (let i = 0; i < freeWorkerIds.length && i < queueIds.length; i++) {
@@ -56,8 +55,9 @@ export default class WorkerState extends EventEmitter {
       const workerId = freeWorkerIds[i];
       const worker = this.workers[workerId];
 
+      delete this.queue[queueId];
       worker.inUse = true;
-      queueItem.running = true;
+      this.inProgress[queueId] = queueItem;
 
       const { method, params } = queueItem;
       worker.worker.postMessage({
@@ -67,16 +67,15 @@ export default class WorkerState extends EventEmitter {
     }
   }
 
-  dispatch({ method, params }) {
+  dispatch({ id, method, params }) {
     return new Promise((resolve) => {
-      const id = utils.uniqueId();
+      if (!id) id = utils.uniqueId();
 
       this.queue[id] = {
         queueId: id,
         method,
         params,
         resolve,
-        running: false,
       };
 
       this.attemptToRunOnFreeWorker();
@@ -88,10 +87,10 @@ export default class WorkerState extends EventEmitter {
 
     switch (type) {
       case "finished":
-        const queued = this.queue[queueId];
+        const queued = this.inProgress[queueId];
         if (!queued) return;
         queued.resolve(res);
-        delete this.queue[queueId];
+        delete this.inProgress[queueId];
         this.workers[id].inUse = false;
         this.attemptToRunOnFreeWorker();
         break;

@@ -69,6 +69,7 @@ export default class ComputedData extends EventEmitter {
     const { id: indicatorName } = this.$chart.indicators[key];
 
     const res = await this.$global.workers.dispatch({
+      id: `calculate-set-${key}`,
       method: "calculateOneSet",
       params: {
         indicatorName,
@@ -168,6 +169,7 @@ export default class ComputedData extends EventEmitter {
     const chartDimensions = this.$global.layout.chartDimensions[this.$chart.id];
 
     const res = await this.$global.workers.dispatch({
+      id: `generate-instructions-${this.$chart.id}`,
       method: "generateInstructions",
       params: {
         scaleType,
@@ -189,8 +191,6 @@ export default class ComputedData extends EventEmitter {
     });
 
     const { min, max, maxWidth, instructions, yScaleInstructions } = res.data;
-
-    console.log(instructions);
 
     this.max = max;
     this.min = min;

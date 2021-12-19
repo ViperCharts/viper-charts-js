@@ -173,8 +173,6 @@ export default {
     const yScaleInstructions = {};
     let maxWidth = 0;
 
-    console.log(vr, main.height);
-
     const getXCoordByTimestamp = (ts) =>
       Utils.getXCoordByTimestamp(vr.start, vr.end, main.width, ts);
     const getYCoordByPrice = (p) =>
