@@ -17,6 +17,7 @@
     "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-grid-layout": "^1.3.0",
     "typescript": "^4.4.3",
     "vite-plugin-react-css-modules": "^1.0.0"
   },

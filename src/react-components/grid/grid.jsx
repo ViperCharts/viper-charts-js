@@ -6,6 +6,9 @@ import Chart from "../../react-components/chart/chart";
 
 import Utils from "../../utils";
 
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
+
 import "./grid.css";
 
 export default class Grid extends React.Component {
