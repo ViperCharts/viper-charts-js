@@ -13,7 +13,7 @@ import Footprint from "./canvas_components/primitives/footprint.js";
 
 export const series = [
   new Indicator("Candlestick", [], Candlestick),
-  new Indicator("Footprint", [], Footprint),
+  // new Indicator("Footprint", [], Footprint),
   new Indicator("Price Line", [], PriceLine),
 ];
 
@@ -23,7 +23,7 @@ import MASlope from "./canvas_components/primitives/ma_slope";
 
 export const indicators = [
   new Indicator("Volume", [], VolumeBar),
-  new Indicator("Volume By Side", [], VolumeBySideBar),
+  // new Indicator("Volume By Side", [], VolumeBySideBar),
   new Indicator("MA Slope", [], MASlope),
 ];
 

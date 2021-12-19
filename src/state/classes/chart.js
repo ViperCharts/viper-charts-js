@@ -137,11 +137,13 @@ export default class ChartState extends EventEmitter {
     };
 
     const localId = dataset.getTimeframeAgnosticId();
+    const color = Utils.randomHexColor();
 
     // Create an instance of the indicator class
     const indicatorClass = new indicator.class({
       $state,
       canvas,
+      color,
       datasetId: localId,
     });
 

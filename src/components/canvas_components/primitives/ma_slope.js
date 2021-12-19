@@ -1,13 +1,11 @@
 import Indicator from "../indicator.js";
 
-import Utils from "../../../utils";
-
 export default class MASlope extends Indicator {
-  constructor({ $state, datasetId }) {
+  constructor({ $state, datasetId, color }) {
     super({ $state, datasetId, consumers: ["close"] });
 
     this.$state = $state;
-    this.color = Utils.randomHexColor();
+    this.color = color;
 
     this.init(this.draw.bind(this));
   }

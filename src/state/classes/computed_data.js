@@ -67,6 +67,7 @@ export default class ComputedData extends EventEmitter {
 
     // Get the indicator name
     const { id: indicatorName } = this.$chart.indicators[key];
+    console.log(indicator);
 
     const res = await this.$global.workers.dispatch({
       id: `calculate-set-${key}`,
@@ -77,6 +78,7 @@ export default class ComputedData extends EventEmitter {
         datasetData: dataset.data,
         timeframe: dataset.timeframe,
         computedState: this.computedState[key] || {},
+        color: indicator.color,
       },
     });
 
