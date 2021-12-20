@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import EventEmitter from "../../events/event_emitter";
+import EventEmitter from "../../events/event_emitter.ts";
 
 import Modal from "../../react-components/modal/modal";
 import ContextMenus from "../../react-components/context_menus/context_menus";

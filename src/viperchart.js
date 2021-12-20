@@ -1,10 +1,8 @@
 import GlobalState from "./state/global.js";
 
-import EventEmitter from "./events/event_emitter";
+import EventEmitter from "./events/event_emitter.ts";
 
-import Constants from "./constants.js";
-
-export default class Chart extends EventEmitter {
+export class Chart extends EventEmitter {
   constructor(params = {}) {
     super();
 
@@ -58,3 +56,7 @@ export default class Chart extends EventEmitter {
     this.global.data.datasets[id].updateData(data);
   }
 }
+
+export * as Constants from "./constants";
+
+export default Chart;
