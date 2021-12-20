@@ -16,6 +16,7 @@ export default class ChartState extends EventEmitter {
   constructor({
     $global,
     id = Utils.uniqueId(),
+    name = "",
     range = {},
     pixelsPerElement = 10,
     timeframe = Constants.HOUR,
@@ -27,6 +28,7 @@ export default class ChartState extends EventEmitter {
     this.isInitialized = false;
 
     this.id = id;
+    this.name = name;
     this.timeframe = 0;
     this.indicators = {};
     this.range = range;

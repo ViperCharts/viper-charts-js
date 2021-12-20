@@ -3,8 +3,9 @@ import GlobalState from "./state/global.js";
 import EventEmitter from "./events/event_emitter.ts";
 
 import Constants from "./constants";
+import Indicators from "./components/indicators.js";
 
-class Chart extends EventEmitter {
+class Viper extends EventEmitter {
   constructor(params = {}) {
     super();
 
@@ -23,6 +24,20 @@ class Chart extends EventEmitter {
     this.$global.init();
     this.setAllDataSources(sources);
     this.$global.settings.parseInitialSettings(initialSettings);
+  }
+
+  createChart(state) {
+    return this.$global.createChart(state);
+  }
+
+  /**
+   * Get a chart by name
+   * @param {string} name Chart name
+   */
+  getChartByName(name = "") {
+    for (const chart of Object.values(this.$global.charts)) {
+      if (chart.name === name) return chart;
+    }
   }
 
   /**
@@ -60,6 +75,7 @@ class Chart extends EventEmitter {
 }
 
 export default {
-  Chart,
+  Viper,
   Constants,
+  Indicators,
 };

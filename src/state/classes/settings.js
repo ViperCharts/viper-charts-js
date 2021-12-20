@@ -11,6 +11,10 @@ export default class SettingsState extends EventEmitter {
     this.settings = {
       layout: [],
       charts: {},
+      global: {
+        maxCharts: Infinity,
+        gridEnabled: true,
+      },
     };
   }
 
@@ -57,7 +61,12 @@ export default class SettingsState extends EventEmitter {
   onChartAdd(id, state = {}) {
     state = {
       timeframe: 0,
-      range: [0, 0],
+      range: {
+        start: 0,
+        end: 0,
+        min: 0,
+        max: 0,
+      },
       pixelsPerElement: 0,
       indicators: [],
       settings: {},

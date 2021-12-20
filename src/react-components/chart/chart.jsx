@@ -12,9 +12,12 @@ export default class Chart extends React.Component {
     super(props);
     GlobalState.ui.charts[this.props.id] = this;
 
+    this.chart = GlobalState.charts[this.props.id];
+
     this.state = {
       id: this.props.id,
-      indicators: GlobalState.charts[this.props.id].indicators,
+      name: this.chart.name,
+      indicators: this.chart.indicators,
 
       isFocused: GlobalState.selectedChartId === this.props.id,
     };
@@ -113,6 +116,7 @@ export default class Chart extends React.Component {
         <div className="overlay-padding">
           <div className="overlay">
             <div className="top-left">
+              <div className="chart-name">{this.state.name}</div>
               <div className="indicator-list">{this.renderIndicators()}</div>
             </div>
             <div className="top-right">
