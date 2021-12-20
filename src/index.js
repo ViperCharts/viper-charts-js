@@ -1,5 +1,5 @@
 import "./style.css";
-import { Chart } from "./viperchart";
+import ViperChart from "./viperchart";
 
 let chart;
 
@@ -13,7 +13,7 @@ let chart;
   const sources = await res.json();
 
   // Actual chart stuff
-  chart = new Chart({
+  chart = new ViperChart.Chart({
     sources,
     initialSettings: JSON.parse(localStorage.getItem("settings") || "{}"),
     onRequestHistoricalData,

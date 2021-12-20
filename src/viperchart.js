@@ -2,7 +2,9 @@ import GlobalState from "./state/global.js";
 
 import EventEmitter from "./events/event_emitter.ts";
 
-export class Chart extends EventEmitter {
+import Constants from "./constants";
+
+class Chart extends EventEmitter {
   constructor(params = {}) {
     super();
 
@@ -57,6 +59,7 @@ export class Chart extends EventEmitter {
   }
 }
 
-export * as Constants from "./constants";
-
-export default Chart;
+export default {
+  Chart,
+  Constants,
+};
