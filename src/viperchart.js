@@ -26,8 +26,11 @@ class Viper extends EventEmitter {
     this.$global.settings.parseInitialSettings(initialSettings);
   }
 
-  createChart(state) {
-    return this.$global.createChart(state);
+  /**
+   * Get currently selected chart
+   */
+  getSelectedChart() {
+    return this.$global.charts[this.$global.selectedChartId];
   }
 
   /**

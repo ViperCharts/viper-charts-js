@@ -28,7 +28,6 @@ export default class ChartState extends EventEmitter {
     this.isInitialized = false;
 
     this.id = id;
-    this.name = name;
     this.timeframe = 0;
     this.indicators = {};
     this.range = range;
@@ -55,6 +54,7 @@ export default class ChartState extends EventEmitter {
 
     this.setPixelsPerElement(pixelsPerElement);
     this.setTimeframe(timeframe);
+    this.setName(name);
   }
 
   init() {
@@ -116,6 +116,27 @@ export default class ChartState extends EventEmitter {
 
     // Delete from global state
     delete this.$global.charts[this.id];
+  }
+
+  /**
+   * Set chart name
+   * @param {string} name New chart name
+   */
+  setName(name = "") {
+    // Check if a chart already exists with that name
+    for (const chart of Object.values(this.$global.charts)) {
+      if (chart.name === name) {
+        return { error: "A chart with that name already exists." };
+      }
+    }
+
+    this.name = name;
+
+    // Update name in Viper settings state
+    this.$global.settings.onChartChangeName(this.id, name);
+
+    // Call all subscribers to name change event
+    this.fireEvent("set-name", this.name);
   }
 
   addIndicator(indicator, { source, name, visible = true }) {

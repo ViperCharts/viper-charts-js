@@ -78,6 +78,16 @@ export default class SettingsState extends EventEmitter {
     this.$global.api.onSaveViperSettings(this.settings);
   }
 
+  onChartChangeName(id, name) {
+    const chart = this.settings.charts[id];
+    if (!chart) {
+      console.error(`Chart id ${id} not found in Viper settings state`);
+      return;
+    }
+    chart.name = name;
+    this.$global.api.onSaveViperSettings(this.settings);
+  }
+
   onChartChangeRangeOrTimeframe(id, { range, timeframe, pixelsPerElement }) {
     const chart = this.settings.charts[id];
     if (!chart) {

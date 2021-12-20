@@ -3,8 +3,6 @@ import ViperChart from "./viperchart";
 
 let Viper;
 
-console.log(ViperChart);
-
 (async () => {
   const res = await fetch("https://demo-api.vipercharts.com/sources");
   if (!res.ok) {
@@ -17,13 +15,15 @@ console.log(ViperChart);
   // Actual chart stuff
   Viper = new ViperChart.Viper({
     sources,
-    initialSettings: JSON.parse(localStorage.getItem("settings") || "{}"),
+    // initialSettings: JSON.parse(localStorage.getItem("settings") || "{}"),
     onRequestHistoricalData,
     onSaveViperSettings,
   });
 
-  const chart = Viper.getChartByName("Untitled Chart");
+  const chart = Viper.getSelectedChart();
   console.log(chart);
+
+  chart.setName("My First Chart");
 
   async function onRequestHistoricalData({ requests, callback }) {
     for (let { id, source, name, timeframe, start, end } of requests) {

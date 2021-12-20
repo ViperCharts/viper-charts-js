@@ -42,6 +42,9 @@ export default class Chart extends React.Component {
       "set-selected-chart-id",
       this.setSelectedChartListener
     );
+
+    this.setChartNameListener = ((name) => this.setState({ name })).bind(this);
+    this.chart.addEventListener("set-name", this.setChartNameListener);
   }
 
   componentDidMount() {
@@ -68,6 +71,7 @@ export default class Chart extends React.Component {
       "set-selected-chart-id",
       this.setSelectedChartListener
     );
+    this.chart.removeEventListener("set-name", this.setChartNameListener);
   }
 
   addIndicator(renderingQueueId, indicator) {
