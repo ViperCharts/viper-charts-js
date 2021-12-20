@@ -76,11 +76,11 @@ export default class TimeScale {
     if (movementY === 0) return;
     this.$state.chart.updateSettings({ lockedYScale: false });
     const { range } = this.$state.chart;
-    const delta = range[3] - range[2];
+    const delta = range.max - range.min;
     const delta10P = delta * 0.01;
     const change = -movementY * delta10P;
-    range[2] += change;
-    range[3] -= change;
+    range.min += change;
+    range.max -= change;
     this.$state.chart.setRange(range, true);
     this.$state.chart.computedData.generateInstructions();
   }

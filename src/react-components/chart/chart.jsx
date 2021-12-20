@@ -97,7 +97,7 @@ export default class Chart extends React.Component {
   onDoubleClick(chart) {
     if (chart === "yScale" && !this.chart.settings.lockedYScale) {
       this.chart.settings.lockedYScale = true;
-      const [start, end] = this.chart.range;
+      const { start, end } = this.chart.range;
       this.chart.setVisibleRange({ start, end });
     }
   }

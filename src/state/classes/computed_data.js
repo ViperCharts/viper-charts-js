@@ -207,7 +207,7 @@ export default class ComputedData extends EventEmitter {
       dataDictionaryCopy[id] = JSON.parse(JSON.stringify(set.data));
       const data = dataDictionaryCopy[id];
 
-      const [start, end] = this.$chart.range;
+      const { start, end } = this.$chart.range;
       const { timeframe } = this.$chart;
 
       for (const time of Utils.getAllTimestampsIn(start, end, timeframe)) {

@@ -16,7 +16,7 @@ export default class ChartState extends EventEmitter {
   constructor({
     $global,
     id = Utils.uniqueId(),
-    range = [],
+    range = {},
     pixelsPerElement = 10,
     timeframe = Constants.HOUR,
     settings = {},
@@ -161,8 +161,8 @@ export default class ChartState extends EventEmitter {
 
     this.$global.data.requestDataPoints({
       dataset,
-      start: this.range[0],
-      end: this.range[1],
+      start: this.range.start,
+      end: this.range.end,
     });
 
     this.$global.settings.onChartIndicatorsChange(this.id, this.indicators);
@@ -209,8 +209,8 @@ export default class ChartState extends EventEmitter {
 
       this.$global.data.requestDataPoints({
         dataset,
-        start: this.range[0],
-        end: this.range[1],
+        start: this.range.start,
+        end: this.range.end,
       });
     }
 
@@ -261,11 +261,11 @@ export default class ChartState extends EventEmitter {
 
   setVisibleRange(newRange = {}, movedId = this.id) {
     // Set visible range
-    const { start = this.range[0], end = this.range[1] } = newRange;
+    const { start = this.range.start, end = this.range.end } = newRange;
     const visibleData = {};
 
-    this.range[0] = start;
-    this.range[1] = end;
+    this.range.start = start;
+    this.range.end = end;
 
     const datasets = Object.values(this.datasets);
     if (datasets.length > 0) {
@@ -276,8 +276,8 @@ export default class ChartState extends EventEmitter {
 
         this.$global.data.requestDataPoints({
           dataset,
-          start: this.range[0],
-          end: this.range[1],
+          start: this.range.start,
+          end: this.range.end,
         });
 
         visibleData[localId] = { data: [] };
@@ -366,19 +366,19 @@ export default class ChartState extends EventEmitter {
       }
     }
 
-    const yRange = this.range[3] - this.range[2];
+    const yRange = this.range.max - this.range.min;
     const exponent = yRange.toExponential().split("e")[1];
     yPriceStep = Math.pow(10, exponent);
 
     // Build timestamps that are on interval
-    const start = this.range[0] - (this.range[0] % xTimeStep);
-    for (let i = start; i < this.range[1]; i += xTimeStep) {
+    const start = this.range.start - (this.range.start % xTimeStep);
+    for (let i = start; i < this.range.end; i += xTimeStep) {
       visibleScales.x.push(i);
     }
 
     // TODO build y axis range
-    const min = this.range[2] - (this.range[2] % yPriceStep);
-    for (let i = min; i < this.range[3]; i += yPriceStep) {
+    const min = this.range.min - (this.range.min % yPriceStep);
+    for (let i = min; i < this.range.max; i += yPriceStep) {
       visibleScales.y.push(i);
     }
 
@@ -390,23 +390,28 @@ export default class ChartState extends EventEmitter {
    */
   setInitialVisibleRange() {
     const { width } = this.$global.layout.chartDimensions[this.id].main;
+    let { start, end } = this.range;
 
-    // End timestamp based on last element
-    let endTimestamp;
-    if (!this.datasets.length) {
-      endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
-    } else {
-      const id = `${this.datasets[0]}:${this.timeframe}`;
-      const { data } = this.$global.data.datasets[id];
-      endTimestamp = data[data.length - 1].time;
+    // If no current visible range
+    if (!start || !end) {
+      // End timestamp based on last element
+      let endTimestamp;
+      if (!this.datasets.length) {
+        endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
+      } else {
+        const id = `${this.datasets[0]}:${this.timeframe}`;
+        const { data } = this.$global.data.datasets[id];
+        endTimestamp = data[data.length - 1].time;
+      }
+
+      end = endTimestamp + this.timeframe * 5;
+
+      // Calculate start timestamp using width and pixelsPerElement
+      const candlesInView = width / this.pixelsPerElement;
+
+      // Set start to candlesInView lookback
+      start = end - candlesInView * this.timeframe;
     }
-
-    const end = endTimestamp + this.timeframe * 5;
-
-    // Calculate start timestamp using width and pixelsPerElement
-    const candlesInView = width / this.pixelsPerElement;
-    // Set start to candlesInView lookback
-    const start = end - candlesInView * this.timeframe;
 
     this.setVisibleRange({ start, end });
   }
@@ -421,7 +426,7 @@ export default class ChartState extends EventEmitter {
     }
 
     // End timestamp based on last element
-    const end = this.range[1];
+    const { end } = this.range;
 
     // Calculate start timestamp using width and pixelsPerElement
     const candlesInView = width / this.pixelsPerElement;
@@ -433,25 +438,25 @@ export default class ChartState extends EventEmitter {
 
   setRange(
     {
-      start = this.range[0],
-      end = this.range[1],
-      min = this.range[2],
-      max = this.range[3],
+      start = this.range.start,
+      end = this.range.end,
+      min = this.range.min,
+      max = this.range.max,
     },
     noRecalc
   ) {
     if (!noRecalc) this.computedData.calculateAllSets();
 
-    this.range[0] = start;
-    this.range[1] = end;
+    this.range.start = start;
+    this.range.end = end;
 
     // If price / y scale is locked, set min and max y values
     if (this.settings.lockedYScale) {
-      if (min !== this.range[2]) {
-        this.range[2] = min - min * 0.05;
+      if (min !== this.range.min) {
+        this.range.min = min - min * 0.05;
       }
-      if (max !== this.range[3]) {
-        this.range[3] = max + max * 0.05;
+      if (max !== this.range.max) {
+        this.range.max = max + max * 0.05;
       }
     }
 
@@ -468,7 +473,7 @@ export default class ChartState extends EventEmitter {
   }
 
   getTimestampByXCoord(x) {
-    const [start, end] = this.range;
+    const { start, end } = this.range;
     const msInView = end - start;
     const perc = x / this.$global.layout.chartDimensions[this.id].main.width;
     const time = perc * msInView;
@@ -476,7 +481,7 @@ export default class ChartState extends EventEmitter {
   }
 
   getXCoordByTimestamp(timestamp) {
-    const [start, end] = this.range;
+    const { start, end } = this.range;
     const msInView = end - start;
     const msFromStart = timestamp - start;
     const perc = msFromStart / msInView;
@@ -485,7 +490,7 @@ export default class ChartState extends EventEmitter {
   }
 
   getYCoordByPrice(price) {
-    const [, , min, max] = this.range;
+    const { min, max } = this.range;
     const yInView = max - min;
     const yFromMin = price - min;
     const perc = yFromMin / yInView;

@@ -125,7 +125,7 @@ export default class Main {
       const change =
         (d > 0 ? d * 100 : -d * -100) * (width / ppe) * (timeframe / 60000);
 
-      let [start, end] = this.$state.chart.range;
+      let { start, end } = this.$state.chart.range;
       start += change;
       end += change;
 
@@ -152,7 +152,7 @@ export default class Main {
     // If mouse down on child canvas
     if (!this.canvas.isMouseDown) return;
 
-    let [start, end, min, max] = this.$state.chart.range;
+    let { start, end, min, max } = this.$state.chart.range;
 
     // Get how many candles moved
     const candlesMoved = movementX / this.$state.chart.pixelsPerElement;
@@ -167,8 +167,8 @@ export default class Main {
       const ppt = yInView / this.canvas.height;
       const y = movementY;
       const movement = y * ppt;
-      this.$state.chart.range[2] += movement;
-      this.$state.chart.range[3] += movement;
+      this.$state.chart.range.min += movement;
+      this.$state.chart.range.max += movement;
     }
 
     this.$state.chart.setVisibleRange({ start, end });

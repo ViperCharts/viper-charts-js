@@ -37,34 +37,6 @@ let chart;
     }
   }
 
-  const settings = {
-    layout: [],
-    charts: {
-      chartId: {
-        timeframe: 60000,
-        range: {
-          start: 12312312,
-          end: 23123123,
-        },
-        indicators: [
-          {
-            id: "price-line",
-            dataset: {
-              source: "COINBASE",
-              name: "BTC-USD",
-            },
-          },
-        ],
-        settings: {
-          syncRange: false,
-          syncWithCrosshair: "",
-          lockedYScale: true,
-          scaleType: "percent",
-        },
-      },
-    },
-  };
-
   function onSaveViperSettings(settings) {
     localStorage.setItem("settings", JSON.stringify(settings));
   }
