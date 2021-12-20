@@ -17,12 +17,13 @@ console.log(ViperChart);
   // Actual chart stuff
   Viper = new ViperChart.Viper({
     sources,
-    // initialSettings: JSON.parse(localStorage.getItem("settings") || "{}"),
+    initialSettings: JSON.parse(localStorage.getItem("settings") || "{}"),
     onRequestHistoricalData,
     onSaveViperSettings,
   });
 
-  const chart = Viper.createChart({ name: "My First Chart" });
+  const chart = Viper.getChartByName("Untitled Chart");
+  console.log(chart);
 
   async function onRequestHistoricalData({ requests, callback }) {
     for (let { id, source, name, timeframe, start, end } of requests) {
@@ -42,6 +43,6 @@ console.log(ViperChart);
   }
 
   function onSaveViperSettings(settings) {
-    // localStorage.setItem("settings", JSON.stringify(settings));
+    localStorage.setItem("settings", JSON.stringify(settings));
   }
 })();

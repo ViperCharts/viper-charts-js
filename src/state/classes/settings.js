@@ -60,6 +60,7 @@ export default class SettingsState extends EventEmitter {
 
   onChartAdd(id, state = {}) {
     state = {
+      name: "",
       timeframe: 0,
       range: {
         start: 0,

@@ -176,6 +176,8 @@ export default class ChartState extends EventEmitter {
   setTimeframe(timeframe, movedId = this.id) {
     const oldDatasets = {};
 
+    const oldTimeframe = this.timeframe;
+
     // Copy all datasets so we can reset master in preperation for setting new visible range
     for (const oldDataset of Object.values(this.datasets)) {
       oldDatasets[oldDataset.getTimeframeAgnosticId()] = oldDataset;
@@ -187,7 +189,18 @@ export default class ChartState extends EventEmitter {
     this.datasets = {};
     this.timeframe = timeframe;
     this.fireEvent("set-timeframe", timeframe);
+
     if (this.isInitialized) {
+      // Update range.start to be same pixelsPerElement calculation
+      const { width } = this.$global.layout.chartDimensions[this.id].main;
+      this.range.start =
+        this.range.end - timeframe * (width / this.pixelsPerElement);
+
+      console.log(
+        (this.range.end - this.range.start) / this.timeframe,
+        this.pixelsPerElement
+      );
+
       this.setInitialVisibleRange();
     }
 
