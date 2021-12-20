@@ -196,11 +196,6 @@ export default class ChartState extends EventEmitter {
       this.range.start =
         this.range.end - timeframe * (width / this.pixelsPerElement);
 
-      console.log(
-        (this.range.end - this.range.start) / this.timeframe,
-        this.pixelsPerElement
-      );
-
       this.setInitialVisibleRange();
     }
 
