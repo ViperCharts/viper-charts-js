@@ -17,9 +17,10 @@ export default class EventsState extends EventEmitter {
     this.keyUpListener = this.onKeyUp.bind(this);
     window.addEventListener("keyup", this.keyUpListener);
     this.contextMenuListener = this.onContextMenu.bind(this);
-    document
-      .getElementById("app")
-      .addEventListener("contextmenu", this.contextMenuListener);
+    this.$global.api.element.addEventListener(
+      "contextmenu",
+      this.contextMenuListener
+    );
   }
 
   destroy() {
@@ -27,9 +28,10 @@ export default class EventsState extends EventEmitter {
     window.removeEventListener("mouseup", this.mouseUpListener);
     window.removeEventListener("mousemove", this.mouseMoveListener);
     window.removeEventListener("keyup", this.keyUpListener);
-    document
-      .getElementById("app")
-      .removeEventListener("contextmenu", this.contextMenuListener);
+    this.$global.api.element.removeEventListener(
+      "contextmenu",
+      this.contextMenuListener
+    );
   }
 
   onMouseDown(e) {

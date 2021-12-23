@@ -13,17 +13,12 @@ let Viper;
   const sources = await res.json();
 
   // Actual chart stuff
-  Viper = new ViperChart.Viper({
+  Viper = new ViperChart({
     sources,
-    // initialSettings: JSON.parse(localStorage.getItem("settings") || "{}"),
+    initialSettings: JSON.parse(localStorage.getItem("settings") || "{}"),
     onRequestHistoricalData,
     onSaveViperSettings,
   });
-
-  const chart = Viper.getSelectedChart();
-  console.log(chart);
-
-  chart.setName("My First Chart");
 
   async function onRequestHistoricalData({ requests, callback }) {
     for (let { id, source, name, timeframe, start, end } of requests) {

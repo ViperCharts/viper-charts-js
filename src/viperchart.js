@@ -5,16 +5,24 @@ import EventEmitter from "./events/event_emitter.ts";
 import Constants from "./constants";
 import Indicators from "./components/indicators.js";
 
-class Viper extends EventEmitter {
+export default class Viper extends EventEmitter {
   constructor(params = {}) {
     super();
 
     const {
+      element,
       sources,
       initialSettings = {},
       onRequestHistoricalData = () => {},
       onSaveViperSettings = () => {},
     } = params;
+
+    if (!element) {
+      console.error("No 'element' provided in Viper constructor");
+      return;
+    }
+
+    this.element = element;
 
     this.$global = GlobalState;
     this.$global.api = this;
@@ -24,6 +32,9 @@ class Viper extends EventEmitter {
     this.$global.init();
     this.setAllDataSources(sources);
     this.$global.settings.parseInitialSettings(initialSettings);
+
+    this.Constants = Constants;
+    this.Indicators = Indicators;
   }
 
   /**
@@ -49,20 +60,24 @@ class Viper extends EventEmitter {
    * @param {string} title Visible title used in UI
    * @param {array[any]} data The data
    */
-  addDataset(id, title, data) {
-    if (!id || !id.length) {
-      console.error("No dataset id provided");
+  addDataset({ source, name, timeframe, data }) {
+    if (!source || !source.length) {
+      console.error("No dataset source provided");
       return;
     }
-    if (!title || !title.length) {
-      console.error("No dataset title provided");
+    if (!name || !name.length) {
+      console.error("No dataset name provided");
       return;
     }
-    if (!data || !data.length) {
+    if (!timeframe || typeof timeframe !== "number") {
+      console.error("No timeframe provided or not numeric value");
+      return;
+    }
+    if (!data || typeof data !== "object") {
       console.error("No dataset data provided");
       return;
     }
-    this.$global.data.addDataset(id, title, data);
+    this.$global.data.addOrGetDataset({ source, name, timeframe, data });
   }
 
   setAllDataSources(all) {
@@ -76,9 +91,3 @@ class Viper extends EventEmitter {
     this.global.data.datasets[id].updateData(data);
   }
 }
-
-export default {
-  Viper,
-  Constants,
-  Indicators,
-};

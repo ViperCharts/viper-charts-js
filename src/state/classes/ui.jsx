@@ -144,7 +144,7 @@ export default class UIState extends EventEmitter {
   }
 
   init() {
-    this.app = ReactDOM.render(<App />, document.getElementById("app"));
+    this.app = ReactDOM.render(<App />, this.$global.api.element);
   }
 
   setIsGridEditMode(value) {
