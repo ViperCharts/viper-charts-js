@@ -17,6 +17,6 @@ export default class TimeSelected extends Overlay {
       this.$state.global.layout.chartDimensions[this.$state.chart.id].yScale;
 
     this.canvas.drawBox("#424242", [0, y - 10, width, 20]);
-    this.canvas.drawText("#fff", [width / 2, y + 3], Math.floor(p));
+    this.canvas.drawText("#fff", [width / 2, y + 3], p);
   }
 }

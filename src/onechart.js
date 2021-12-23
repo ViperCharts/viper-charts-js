@@ -3,55 +3,57 @@ import ViperCharts from "./viperchart";
 
 const Viper = new ViperCharts({
   element: document.getElementById("chart"),
+  onRequestHistoricalData,
 });
 
-getData();
+async function onRequestHistoricalData({ requests, callback }) {
+  for (let { id, source, name, timeframe, start, end } of requests) {
+    const res = await fetch(
+      `https://demo-api.vipercharts.com/candles?source=${source}&name=${name}&timeframe=${timeframe}&start=${start}&end=${end}`
+    );
 
-async function getData() {
-  const res = await fetch(
-    "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400"
-  );
-  const json = await res.json();
+    if (!res.ok) {
+      callback(id, {});
+      return;
+    }
 
-  // Object for ohlcv data,
-  const data = {};
+    const data = await res.json();
 
-  for (const item of json) {
-    data[item[0] * 1000] = {
-      low: item[1],
-      high: item[2],
-      open: item[3],
-      close: item[4],
-      volume: item[5],
-    };
+    callback(id, data);
   }
-
-  Viper.addDataset({
-    source: "COINBSE",
-    name: "BTC-USD",
-    timeframe: Viper.Constants.DAY,
-    data,
-  });
-
-  const chart = Viper.getSelectedChart();
-  chart.setName(
-    "Bitcoin will go up to $100k next year 🔓 Prediction by Roko Technologies"
-  );
-  chart.setTimeframe(Viper.Constants.DAY);
-
-  chart.addIndicator(Viper.Indicators.map.get("candlestick"), {
-    source: "COINBSE",
-    name: "BTC-USD",
-  });
-  chart.addIndicator(Viper.Indicators.map.get("volume"), {
-    source: "COINBSE",
-    name: "BTC-USD",
-  });
-
-  chart.setVisibleRange({
-    start: new Date("11/13/21").getTime(),
-    end: new Date("12/31/22").getTime(),
-    min: 0,
-    max: 100000,
-  });
 }
+
+const timeframe = Viper.Constants.DAY;
+
+// Get the currently selected chart (only 1 chart initialized)
+const chart = Viper.getSelectedChart();
+
+// Update the chart name
+chart.setName(
+  "Bitcoin will go up to $100k next year 🔓 Prediction by Roko Technologies"
+);
+
+// Update the chart timeframe to a ms interval
+chart.setTimeframe(timeframe);
+
+// Add indicators and sources
+chart.addIndicator(Viper.Indicators.map.get("candlestick"), {
+  source: "COINBASE",
+  name: "BTC-USD",
+});
+chart.addIndicator(Viper.Indicators.map.get("volume"), {
+  source: "COINBASE",
+  name: "BTC-USD",
+});
+
+// Set default min and max y scale
+chart.setDefaultRangeBounds({
+  min: 40000,
+  max: 105000,
+});
+
+// Set the visible x range
+chart.setVisibleRange({
+  start: new Date("11/13/21").getTime(),
+  end: new Date("12/31/22").getTime(),
+});

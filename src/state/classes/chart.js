@@ -31,6 +31,7 @@ export default class ChartState extends EventEmitter {
     this.timeframe = 0;
     this.indicators = {};
     this.range = range;
+    this.defaultRangeBounds = undefined;
     this.datasets = {};
     this.visibleData = {};
     this.computedData = new ComputedData({ $global, $chart: this });
@@ -467,6 +468,16 @@ export default class ChartState extends EventEmitter {
     this.setVisibleRange({ start, end });
   }
 
+  setDefaultRangeBounds({ start, end, min, max }) {
+    if (!this.defaultRangeBounds) {
+      this.defaultRangeBounds = {};
+    }
+    if (start) this.defaultRangeBounds.start = start;
+    if (end) this.defaultRangeBounds.end = end;
+    if (min) this.defaultRangeBounds.min = min;
+    if (max) this.defaultRangeBounds.max = max;
+  }
+
   setRange(
     {
       start = this.range.start,
@@ -483,6 +494,15 @@ export default class ChartState extends EventEmitter {
 
     // If price / y scale is locked, set min and max y values
     if (this.settings.lockedYScale) {
+      if (this.defaultRangeBounds) {
+        if (this.defaultRangeBounds.min) {
+          min = this.defaultRangeBounds.min;
+        }
+        if (this.defaultRangeBounds.max) {
+          max = this.defaultRangeBounds.max;
+        }
+      }
+
       if (min !== this.range.min) {
         this.range.min = min - min * 0.05;
       }
@@ -490,6 +510,12 @@ export default class ChartState extends EventEmitter {
         this.range.max = max + max * 0.05;
       }
     }
+
+    // Calculate pixels per element using range
+    const items = (end - start) / this.timeframe;
+    const { width } = this.$global.layout.chartDimensions[this.id].main;
+    const ppe = width / items;
+    this.pixelsPerElement = ppe;
 
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
       range: this.range,
