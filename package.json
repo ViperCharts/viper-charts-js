@@ -3,7 +3,7 @@
   "version": "0.0.3",
   "lockfileVersion": 1,
   "hasInstallScript": true,
-  "main": "./src/viperchart.js",
+  "main": "./src/viper.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
