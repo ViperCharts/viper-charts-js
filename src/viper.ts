@@ -1,19 +1,45 @@
 import GlobalState from "./state/global.js";
 
-import EventEmitter from "./events/event_emitter.ts";
+import EventEmitter from "./events/event_emitter";
 
 import Constants from "./constants";
 import Indicators from "./components/indicators.js";
 
+type DatasetSource = {
+  source: string; // Dataset source (ex: COINBASE, FTX)
+  name: string; // Ticker (ex: BTC-USD, BTC-PERP)
+  maxItemsPerRequest: number; // Max candles to fetch per request (rate limiting)
+  timeframes: [number]; // Array of timeframes in milliseconds supported by dataset
+};
+
+type DatasetSourceMap = {
+  [key: string]: DatasetSource;
+};
+
+type ViperParams = {
+  element: HTMLElement; // The container element for Viper
+  sources?: DatasetSourceMap; // Dataset sources map / object
+  initialSettings?: { [key: string]: any }; // Initial settings, only send was recieved from onSaveViperSettings function
+  onRequestHistoricalData?: ({ requests: [any], callback: Function }) => void; // Resolve requests for historical data
+  onSaveViperSettings?: Function; //
+};
+
 export default class Viper extends EventEmitter {
-  constructor(params = {}) {
+  element: HTMLElement;
+  $global: any;
+  onRequestHistoricalData: Function;
+  onSaveViperSettings: Function;
+  Constants: object;
+  Indicators: object;
+
+  constructor(params: ViperParams) {
     super();
 
     const {
       element,
       sources,
       initialSettings = {},
-      onRequestHistoricalData = () => {},
+      onRequestHistoricalData = async () => {},
       onSaveViperSettings = () => {},
     } = params;
 
@@ -50,7 +76,7 @@ export default class Viper extends EventEmitter {
    */
   getChartByName(name = "") {
     for (const chart of Object.values(this.$global.charts)) {
-      if (chart.name === name) return chart;
+      if (chart["name"] === name) return chart;
     }
   }
 
@@ -88,6 +114,6 @@ export default class Viper extends EventEmitter {
    * Update dataset
    */
   updateDataset(id, data) {
-    this.global.data.datasets[id].updateData(data);
+    this.$global.data.datasets[id].updateData(data);
   }
 }
