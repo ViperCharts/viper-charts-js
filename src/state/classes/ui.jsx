@@ -1,13 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import EventEmitter from "../../events/event_emitter.ts";
+import EventEmitter from "../../events/event_emitter";
 
 import Modal from "../../react-components/modal/modal";
 import ContextMenus from "../../react-components/context_menus/context_menus";
 import Chart from "../../react-components/chart/chart";
 import TopBar from "../../react-components/top-bar/top-bar";
 import Grid from "../../react-components/grid/grid";
+
+import "../../react-components/main.css";
 
 class App extends React.Component {
   constructor(props) {
@@ -71,6 +73,7 @@ class App extends React.Component {
     return (
       <div
         ref={this.appElement}
+        className="viper"
         style={{
           position: "relative",
           display: "flex",
@@ -144,7 +147,7 @@ export default class UIState extends EventEmitter {
   }
 
   init() {
-    this.app = ReactDOM.render(<App />, document.getElementById("app"));
+    this.app = ReactDOM.render(<App />, this.$global.api.element);
   }
 
   setIsGridEditMode(value) {

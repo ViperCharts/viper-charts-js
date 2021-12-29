@@ -12,9 +12,12 @@ export default class Chart extends React.Component {
     super(props);
     GlobalState.ui.charts[this.props.id] = this;
 
+    this.chart = GlobalState.charts[this.props.id];
+
     this.state = {
       id: this.props.id,
-      indicators: GlobalState.charts[this.props.id].indicators,
+      name: this.chart.name,
+      indicators: this.chart.indicators,
 
       isFocused: GlobalState.selectedChartId === this.props.id,
     };
@@ -39,6 +42,9 @@ export default class Chart extends React.Component {
       "set-selected-chart-id",
       this.setSelectedChartListener
     );
+
+    this.setChartNameListener = ((name) => this.setState({ name })).bind(this);
+    this.chart.addEventListener("set-name", this.setChartNameListener);
   }
 
   componentDidMount() {
@@ -65,6 +71,7 @@ export default class Chart extends React.Component {
       "set-selected-chart-id",
       this.setSelectedChartListener
     );
+    this.chart.removeEventListener("set-name", this.setChartNameListener);
   }
 
   addIndicator(renderingQueueId, indicator) {
@@ -97,7 +104,7 @@ export default class Chart extends React.Component {
   onDoubleClick(chart) {
     if (chart === "yScale" && !this.chart.settings.lockedYScale) {
       this.chart.settings.lockedYScale = true;
-      const [start, end] = this.chart.range;
+      const { start, end } = this.chart.range;
       this.chart.setVisibleRange({ start, end });
     }
   }
@@ -113,6 +120,7 @@ export default class Chart extends React.Component {
         <div className="overlay-padding">
           <div className="overlay">
             <div className="top-left">
+              <div className="chart-name">{this.state.name}</div>
               <div className="indicator-list">{this.renderIndicators()}</div>
             </div>
             <div className="top-right">

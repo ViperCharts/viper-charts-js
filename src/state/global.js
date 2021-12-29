@@ -1,4 +1,4 @@
-import EventEmitter from "../events/event_emitter.ts";
+import EventEmitter from "../events/event_emitter";
 
 import ChartState from "./classes/chart";
 import LayoutState from "./classes/layout";
@@ -24,8 +24,6 @@ class GlobalState extends EventEmitter {
     this.layout = new LayoutState({ $global: this });
     this.data = new DataState({ $global: this });
     this.events = new EventsState({ $global: this });
-
-    window.deleteSelectedChart = this.deleteSelectedChart.bind(this);
   }
 
   init() {
@@ -38,7 +36,11 @@ class GlobalState extends EventEmitter {
   }
 
   createChart(state = {}) {
-    const chart = new ChartState({ ...state, $global: this });
+    const chart = new ChartState({
+      name: "Untitled Chart",
+      ...state,
+      $global: this,
+    });
     this.charts[chart.id] = chart;
     this.ui.app.addChart(chart);
     this.setSelectedChartId(chart.id);

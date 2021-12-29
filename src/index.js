@@ -1,7 +1,7 @@
 import "./style.css";
-import { Chart } from "./viperchart";
+import ViperCharts from "./viper.ts";
 
-let chart;
+let Viper;
 
 (async () => {
   const res = await fetch("https://demo-api.vipercharts.com/sources");
@@ -13,7 +13,8 @@ let chart;
   const sources = await res.json();
 
   // Actual chart stuff
-  chart = new Chart({
+  Viper = new ViperCharts({
+    element: document.getElementById("chart"),
     sources,
     initialSettings: JSON.parse(localStorage.getItem("settings") || "{}"),
     onRequestHistoricalData,
@@ -36,34 +37,6 @@ let chart;
       callback(id, data);
     }
   }
-
-  const settings = {
-    layout: [],
-    charts: {
-      chartId: {
-        timeframe: 60000,
-        range: {
-          start: 12312312,
-          end: 23123123,
-        },
-        indicators: [
-          {
-            id: "price-line",
-            dataset: {
-              source: "COINBASE",
-              name: "BTC-USD",
-            },
-          },
-        ],
-        settings: {
-          syncRange: false,
-          syncWithCrosshair: "",
-          lockedYScale: true,
-          scaleType: "percent",
-        },
-      },
-    },
-  };
 
   function onSaveViperSettings(settings) {
     localStorage.setItem("settings", JSON.stringify(settings));
