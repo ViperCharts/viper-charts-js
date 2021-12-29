@@ -1,6 +1,5 @@
 import "./style.css";
-import Chart from "./viperchart";
-import Constants from "./constants";
+import { Chart } from "./viperchart";
 
 let chart;
 

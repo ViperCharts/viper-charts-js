@@ -1,4 +1,4 @@
-import EventEmitter from "../../events/event_emitter";
+import EventEmitter from "../../events/event_emitter.ts";
 
 import Indicators from "../../components/indicators";
 

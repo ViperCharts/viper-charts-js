@@ -1,4 +1,4 @@
-import EventEmitter from "../../events/event_emitter";
+import EventEmitter from "../../events/event_emitter.ts";
 
 export default class EventsState extends EventEmitter {
   constructor({ $global }) {
