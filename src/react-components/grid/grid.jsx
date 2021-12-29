@@ -2,7 +2,7 @@ import React from "react";
 
 import GlobalState from "../../state/global";
 
-import Chart from "../../react-components/chart/chart";
+import Chart from "../../react-components/chart/chart.jsx";
 
 import Utils from "../../utils";
 

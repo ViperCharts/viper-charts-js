@@ -2,8 +2,8 @@ import React from "react";
 
 import GlobalState from "../../state/global";
 
-import Indicator from "./indicator/indicator";
-import ChartSettings from "./chart-settings/chart-settings";
+import Indicator from "./indicator/indicator.jsx";
+import ChartSettings from "./chart-settings/chart-settings.jsx";
 
 import "./chart.css";
 

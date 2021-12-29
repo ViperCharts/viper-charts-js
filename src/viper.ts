@@ -75,8 +75,9 @@ export default class Viper extends EventEmitter {
    * @param {string} name Chart name
    */
   getChartByName(name = "") {
-    for (const chart of Object.values(this.$global.charts)) {
-      if (chart["name"] === name) return chart;
+    for (const id in this.$global.charts) {
+      const chart: any = this.$global.charts[id];
+      if (chart.name === name) return chart;
     }
   }
 

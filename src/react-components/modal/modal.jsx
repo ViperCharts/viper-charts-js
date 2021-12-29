@@ -2,7 +2,7 @@ import React from "react";
 
 import GlobalState from "../../state/global";
 
-import IndicatorsModal from "./modals/indicators/indicators-modal";
+import IndicatorsModal from "./modals/indicators/indicators-modal.jsx";
 
 import "./modal.css";
 

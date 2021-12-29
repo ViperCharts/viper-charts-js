@@ -1,15 +1,18 @@
 {
   "name": "@viper-charts/viper-charts",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "lockfileVersion": 1,
   "hasInstallScript": true,
-  "main": "./src/viper.ts",
+  "main": "dist/index.umd.min.js",
+  "module": "dist/index.es.js",
+  "types": "dist/viper-charts.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview"
   },
   "dependencies": {
+    "@babel/preset-react": "^7.16.5",
     "@types/react": "^17.0.24",
     "@types/react-dom": "^17.0.9",
     "@vitejs/plugin-react": "^1.0.1",
@@ -22,6 +25,12 @@
     "vite-plugin-react-css-modules": "^1.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-babel": "^5.3.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.31.1",
     "vite": "^2.5.4"
+  },
+  "peerDependencies": {
+    "react": "^17.0.2"
   }
 }

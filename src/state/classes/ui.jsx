@@ -3,11 +3,11 @@ import ReactDOM from "react-dom";
 
 import EventEmitter from "../../events/event_emitter.ts";
 
-import Modal from "../../react-components/modal/modal";
-import ContextMenus from "../../react-components/context_menus/context_menus";
-import Chart from "../../react-components/chart/chart";
-import TopBar from "../../react-components/top-bar/top-bar";
-import Grid from "../../react-components/grid/grid";
+import Modal from "../../react-components/modal/modal.jsx";
+import ContextMenus from "../../react-components/context_menus/context_menus.jsx";
+import Chart from "../../react-components/chart/chart.jsx";
+import TopBar from "../../react-components/top-bar/top-bar.jsx";
+import Grid from "../../react-components/grid/grid.jsx";
 
 class App extends React.Component {
   constructor(props) {
