@@ -504,11 +504,11 @@ export default class ChartState extends EventEmitter {
       }
 
       const ySpread5P = (max - min) * 0.05;
-      if (min !== this.range[2]) {
-        this.range[2] = min - ySpread5P;
+      if (min !== this.range.min) {
+        this.range.min = min - ySpread5P;
       }
-      if (max !== this.range[3]) {
-        this.range[3] = max + ySpread5P;
+      if (max !== this.range.max) {
+        this.range.max = max + ySpread5P;
       }
     }
 
