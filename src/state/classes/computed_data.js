@@ -1,4 +1,4 @@
-import EventEmitter from "../../events/event_emitter.ts";
+import EventEmitter from "../../events/event_emitter";
 import Utils from "../../utils";
 
 import ScriptFunctions from "../../viper_script/script_functions";

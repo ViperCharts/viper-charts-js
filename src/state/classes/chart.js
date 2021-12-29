@@ -8,7 +8,7 @@ import PriceScale from "../../components/canvas_components/price_scale.js";
 
 import ComputedData from "./computed_data.js";
 
-import EventEmitter from "../../events/event_emitter.ts";
+import EventEmitter from "../../events/event_emitter";
 
 import _ from "lodash";
 

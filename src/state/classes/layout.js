@@ -1,4 +1,4 @@
-import EventEmitter from "../../events/event_emitter.ts";
+import EventEmitter from "../../events/event_emitter";
 
 import Utils from "../../utils";
 

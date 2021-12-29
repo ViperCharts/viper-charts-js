@@ -2,12 +2,9 @@ import React from "react";
 
 import GlobalState from "../../state/global";
 
-import Chart from "../../react-components/chart/chart.jsx";
+import Chart from "../../react-components/chart/chart";
 
 import Utils from "../../utils";
-
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
 
 import "./grid.css";
 
