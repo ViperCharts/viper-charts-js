@@ -9,6 +9,8 @@ import Chart from "../../react-components/chart/chart";
 import TopBar from "../../react-components/top-bar/top-bar";
 import Grid from "../../react-components/grid/grid";
 
+import "../../react-components/main.css";
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -71,6 +73,7 @@ class App extends React.Component {
     return (
       <div
         ref={this.appElement}
+        className="viper"
         style={{
           position: "relative",
           display: "flex",
