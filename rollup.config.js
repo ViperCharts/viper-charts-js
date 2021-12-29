@@ -1,6 +1,7 @@
 import typescript from "rollup-plugin-typescript2";
 import babel from "@rollup/plugin-babel";
 import { terser } from "rollup-plugin-terser";
+import css from "rollup-plugin-import-css";
 
 export default [
   // ES Modules
@@ -10,7 +11,7 @@ export default [
       file: "dist/index.es.js",
       format: "es",
     },
-    plugins: [typescript(), babel({ extensions: [".ts", ".jsx"] })],
+    plugins: [typescript(), babel({ extensions: [".ts", ".jsx"] }), css()],
   },
 
   // UMD
@@ -26,6 +27,7 @@ export default [
       typescript(),
       babel({ extensions: [".ts", ".jsx"], exclude: "node_modules/**" }),
       terser(),
+      css(),
     ],
   },
 ];
