@@ -1,12 +1,12 @@
 import React from "react";
 
-import GlobalState from "../../state/global";
-
 import "./context_menus.css";
 
 export default class ContextMenus extends React.Component {
   constructor(props) {
     super(props);
+
+    this.$global = props.$global;
   }
 
   render() {
@@ -17,7 +17,7 @@ export default class ContextMenus extends React.Component {
 
     return (
       <div className="context-menu">
-        <ContextMenu data={data} />
+        <ContextMenu $global={this.$global} data={data} />
       </div>
     );
   }
@@ -29,7 +29,7 @@ const contextMenus = {
       super(props);
 
       this.chartId = props.data.chartId;
-      this.chart = GlobalState.charts[this.chartId];
+      this.chart = this.$global.charts[this.chartId];
     }
 
     setChartScaleType(type) {

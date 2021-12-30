@@ -15,6 +15,8 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
+    this.$global = props.$global;
+
     this.state = {
       charts: {},
       modal: "",
@@ -87,7 +89,7 @@ class App extends React.Component {
           rel="stylesheet"
         />
 
-        {modal.length ? <Modal id={modal} /> : null}
+        {modal.length ? <Modal $global={this.$global} id={modal} /> : null}
         {contextmenu.id.length ? (
           <div
             style={{
@@ -99,6 +101,7 @@ class App extends React.Component {
             ref={this.contextMenusElement}
           >
             <ContextMenus
+              $global={this.$global}
               id={contextmenu.id}
               pos={contextmenu.pos}
               data={contextmenu.data}
@@ -106,9 +109,9 @@ class App extends React.Component {
           </div>
         ) : null}
 
-        <TopBar />
+        <TopBar $global={this.$global} />
         <div ref={this.chartsElement} style={{ width: "100%", height: "100%" }}>
-          <Grid charts={this.state.charts} />
+          <Grid $global={this.$global} charts={this.state.charts} />
         </div>
       </div>
     );
@@ -147,7 +150,14 @@ export default class UIState extends EventEmitter {
   }
 
   init() {
-    this.app = ReactDOM.render(<App />, this.$global.api.element);
+    this.app = ReactDOM.render(
+      <App $global={this.$global} />,
+      this.$global.api.element
+    );
+  }
+
+  destroy() {
+    ReactDOM.unmountComponentAtNode(this.$global.api.element);
   }
 
   setIsGridEditMode(value) {

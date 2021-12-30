@@ -1,7 +1,5 @@
 import React from "react";
 
-import GlobalState from "../../state/global";
-
 import Indicator from "./indicator/indicator";
 import ChartSettings from "./chart-settings/chart-settings";
 
@@ -10,16 +8,19 @@ import "./chart.css";
 export default class Chart extends React.Component {
   constructor(props) {
     super(props);
-    GlobalState.ui.charts[this.props.id] = this;
 
-    this.chart = GlobalState.charts[this.props.id];
+    this.$global = props.$global;
+
+    this.$global.ui.charts[this.props.id] = this;
+
+    this.chart = this.$global.charts[this.props.id];
 
     this.state = {
       id: this.props.id,
       name: this.chart.name,
       indicators: this.chart.indicators,
 
-      isFocused: GlobalState.selectedChartId === this.props.id,
+      isFocused: this.$global.selectedChartId === this.props.id,
     };
 
     this.subcharts = {
@@ -38,7 +39,7 @@ export default class Chart extends React.Component {
       }
       this.setState({ isFocused: true });
     }).bind(this);
-    GlobalState.addEventListener(
+    this.$global.addEventListener(
       "set-selected-chart-id",
       this.setSelectedChartListener
     );
@@ -49,8 +50,8 @@ export default class Chart extends React.Component {
 
   componentDidMount() {
     const { clientWidth, clientHeight } = this.chartContainer.current;
-    GlobalState.layout.addChart(this.state.id, clientWidth, clientHeight);
-    this.chart = GlobalState.charts[this.state.id];
+    this.$global.layout.addChart(this.state.id, clientWidth, clientHeight);
+    this.chart = this.$global.charts[this.state.id];
 
     // If React component is re-mounting on an existing initialized chart state
     if (this.chart.isInitialized) {
@@ -63,11 +64,11 @@ export default class Chart extends React.Component {
 
   componentDidUpdate() {
     const { clientWidth, clientHeight } = this.chartContainer.current;
-    GlobalState.layout.updateSize(this.state.id, clientWidth, clientHeight);
+    this.$global.layout.updateSize(this.state.id, clientWidth, clientHeight);
   }
 
   componentWillUnmount() {
-    GlobalState.removeEventListener(
+    this.$global.removeEventListener(
       "set-selected-chart-id",
       this.setSelectedChartListener
     );
@@ -97,7 +98,7 @@ export default class Chart extends React.Component {
    */
   onFocusChart() {
     if (!this.state.isFocused) {
-      GlobalState.setSelectedChartId(this.state.id);
+      this.$global.setSelectedChartId(this.state.id);
     }
   }
 
@@ -124,7 +125,7 @@ export default class Chart extends React.Component {
               <div className="indicator-list">{this.renderIndicators()}</div>
             </div>
             <div className="top-right">
-              <ChartSettings chartId={this.state.id} />
+              <ChartSettings $global={this.$global} chartId={this.state.id} />
             </div>
           </div>
         </div>
@@ -154,7 +155,7 @@ export default class Chart extends React.Component {
   }
 
   renderFocusedChart() {
-    const multipleCharts = Object.keys(GlobalState.charts).length > 1;
+    const multipleCharts = Object.keys(this.$global.charts).length > 1;
     return this.state.isFocused && multipleCharts ? (
       <div className="chart__focused"></div>
     ) : null;
@@ -165,6 +166,7 @@ export default class Chart extends React.Component {
     if (!keys.length) return;
     const indicators = keys.map((key) => (
       <Indicator
+        $global={this.$global}
         chartId={this.state.id}
         indicator={this.state.indicators[key]}
         renderingQueueId={key}

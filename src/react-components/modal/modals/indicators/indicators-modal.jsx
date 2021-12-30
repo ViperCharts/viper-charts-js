@@ -1,7 +1,5 @@
 import React from "react";
 
-import GlobalState from "../../../../state/global";
-
 import { series, indicators } from "../../../../components/indicators";
 
 import "./indicators-modal.css";
@@ -14,8 +12,10 @@ export default {
     constructor(props) {
       super(props);
 
+      this.$global = props.$global;
+
       this.state = {
-        sources: GlobalState.data.sources,
+        sources: this.$global.data.sources,
         selectedIndicator: {},
         search: "",
         searchResults: [],
@@ -25,7 +25,7 @@ export default {
         this.setState({ sources: all });
         this.updateSearchResults(this.state.search);
       }).bind(this);
-      GlobalState.data.addEventListener(
+      this.$global.data.addEventListener(
         "set-all-data-sources",
         this.setAllDataSourcesListener
       );
@@ -36,7 +36,7 @@ export default {
     }
 
     componentWillUnmount() {
-      GlobalState.data.removeEventListener(
+      this.$global.data.removeEventListener(
         "set-all-data-sources",
         this.setAllDataSourcesListener
       );
@@ -47,7 +47,7 @@ export default {
      * @param {object} searchResult The datasaet from searchResults array
      */
     addIndicator(searchResult) {
-      const chart = GlobalState.charts[GlobalState.selectedChartId];
+      const chart = this.$global.charts[this.$global.selectedChartId];
       const indicator = this.state.selectedIndicator;
       chart.addIndicator(indicator, searchResult);
     }

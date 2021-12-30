@@ -1,14 +1,14 @@
 import React from "react";
 
-import GlobalState from "../../../state/global";
-
 import "./indicator.css";
 
 export default class Indicator extends React.Component {
   constructor(props) {
     super(props);
 
-    this.chart = GlobalState.charts[props.chartId];
+    this.$global = props.$global;
+
+    this.chart = this.$global.charts[props.chartId];
   }
 
   toggleVisibility() {

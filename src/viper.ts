@@ -59,7 +59,7 @@ export default class Viper extends EventEmitter {
 
     this.element = element;
 
-    this.$global = GlobalState;
+    this.$global = new GlobalState();
     this.$global.api = this;
     this.onRequestHistoricalData = onRequestHistoricalData;
     this.onSaveViperSettings = onSaveViperSettings;
@@ -125,5 +125,17 @@ export default class Viper extends EventEmitter {
    */
   updateDataset(id, data) {
     this.$global.data.datasets[id].updateData(data);
+  }
+
+  /**
+   * Destroy Viper instance
+   */
+  destroy() {
+    // Destroy all event listeners
+    this.$global.events.destroy();
+    this.$global.layout.destroy();
+    this.$global.ui.destroy();
+
+    // TODO Kill all workers
   }
 }

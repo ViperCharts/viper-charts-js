@@ -1,7 +1,5 @@
 import React from "react";
 
-import GlobalState from "../../state/global";
-
 import Constants from "../../constants";
 
 import "./top-bar.css";
@@ -9,6 +7,8 @@ import "./top-bar.css";
 export default class TopBar extends React.Component {
   constructor(props) {
     super(props);
+
+    this.$global = props.$global;
 
     this.state = {
       selectedChart: null,
@@ -24,15 +24,15 @@ export default class TopBar extends React.Component {
 
       isIndicatorsButton: false,
 
-      globalSettings: GlobalState.settings.settings.global,
+      globalSettings: this.$global.settings.settings.global,
 
-      isGridEditMode: GlobalState.ui.isGridEditMode,
+      isGridEditMode: this.$global.ui.isGridEditMode,
     };
 
     this.onSetSelectedChartId = ((id) => {
-      this.setSelectedChart(GlobalState.charts[id]);
+      this.setSelectedChart(this.$global.charts[id]);
     }).bind(this);
-    GlobalState.addEventListener(
+    this.$global.addEventListener(
       "set-selected-chart-id",
       this.onSetSelectedChartId
     );
@@ -40,7 +40,7 @@ export default class TopBar extends React.Component {
     this.onSetIsGridEditMode = ((isGridEditMode) => {
       this.setState({ isGridEditMode });
     }).bind(this);
-    GlobalState.ui.addEventListener(
+    this.$global.ui.addEventListener(
       "set-is-grid-edit-mode",
       this.onSetIsGridEditMode
     );
@@ -51,17 +51,18 @@ export default class TopBar extends React.Component {
   componentDidMount() {
     this.buildTimeframeLabels();
 
-    if (Object.keys(GlobalState.data.sources).length) {
+    const { sources } = this.$global.data;
+    if (sources && Object.keys(sources).length) {
       this.setState({ isIndicatorsButton: true });
     }
   }
 
   componentWillUnmount() {
-    GlobalState.removeEventListener(
+    this.$global.removeEventListener(
       "set-selected-chart-id",
       this.onSetSelectedChartId
     );
-    GlobalState.ui.removeEventListener(
+    this.$global.ui.removeEventListener(
       "set-is-grid-edit-mode",
       this.onSetIsGridEditMode
     );
@@ -128,7 +129,7 @@ export default class TopBar extends React.Component {
   }
 
   showIndicatorsModal() {
-    GlobalState.ui.app.setModal("indicators");
+    this.$global.ui.app.setModal("indicators");
   }
 
   setTimeframe(timeframe) {
@@ -136,7 +137,7 @@ export default class TopBar extends React.Component {
   }
 
   setIsGridEditMode() {
-    GlobalState.ui.setIsGridEditMode(!this.state.isGridEditMode);
+    this.$global.ui.setIsGridEditMode(!this.state.isGridEditMode);
   }
 
   render() {

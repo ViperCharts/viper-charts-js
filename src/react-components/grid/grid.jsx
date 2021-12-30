@@ -1,7 +1,5 @@
 import React from "react";
 
-import GlobalState from "../../state/global";
-
 import Chart from "../../react-components/chart/chart";
 
 import Utils from "../../utils";
@@ -11,6 +9,8 @@ import "./grid.css";
 export default class Grid extends React.Component {
   constructor(props) {
     super(props);
+
+    this.$global = props.$global;
 
     this.state = {
       boxes: [],
@@ -24,26 +24,26 @@ export default class Grid extends React.Component {
     this.boxRefs = {};
 
     this.setLayoutListener = this.onSetLayout.bind(this);
-    GlobalState.layout.addEventListener("set-layout", this.setLayoutListener);
+    this.$global.layout.addEventListener("set-layout", this.setLayoutListener);
 
     this.onSetIsGridEditMode = (() => this.forceUpdate()).bind(this);
-    GlobalState.ui.addEventListener(
+    this.$global.ui.addEventListener(
       "set-is-grid-edit-mode",
       this.onSetIsGridEditMode
     );
 
     this.mouseUpListener = (() =>
       (this.breakpointResizingBox = undefined)).bind(this);
-    GlobalState.events.addEventListener("mouseup", this.mouseUpListener);
+    this.$global.events.addEventListener("mouseup", this.mouseUpListener);
   }
 
   componentWillUnmount() {
-    GlobalState.layout.removeEventListener(
+    this.$global.layout.removeEventListener(
       "set-layout",
       this.setLayoutListener
     );
-    GlobalState.events.removeEventListener("mouseup", this.mouseUpListener);
-    GlobalState.ui.removeEventListener(
+    this.$global.events.removeEventListener("mouseup", this.mouseUpListener);
+    this.$global.ui.removeEventListener(
       "set-is-grid-edit-mode",
       this.onSetIsGridEditMode
     );
@@ -114,7 +114,7 @@ export default class Grid extends React.Component {
       box2.height = 50;
     }
 
-    const { id } = GlobalState.createChart();
+    const { id } = this.$global.createChart();
     box2.chartId = id;
     delete box.chartId;
 
@@ -126,7 +126,7 @@ export default class Grid extends React.Component {
       box.children = [box1, box2];
     }
 
-    GlobalState.layout.setLayout(boxes);
+    this.$global.layout.setLayout(boxes);
   }
 
   onClickBreakpoint(box) {
@@ -227,7 +227,7 @@ export default class Grid extends React.Component {
           height: `${box.height}%`,
         }}
       >
-        {GlobalState.ui.isGridEditMode ? (
+        {this.$global.ui.isGridEditMode ? (
           <div className="grid-box-controls">
             <div
               onClick={() => this.addBoxToSide(box, "left")}
@@ -260,7 +260,7 @@ export default class Grid extends React.Component {
           <div className="grid">
             {box.chartId ? (
               <div style={{ padding: "2px", width: "100%", height: "100%" }}>
-                <Chart id={box.chartId} />
+                <Chart $global={this.$global} id={box.chartId} />
               </div>
             ) : null}
             {box.children.length ? this.renderBreakpoint(box) : null}

@@ -8,7 +8,7 @@ import DataState from "./classes/data";
 import EventsState from "./classes/events";
 import SettingsState from "./classes/settings";
 
-class GlobalState extends EventEmitter {
+export default class GlobalState extends EventEmitter {
   constructor() {
     super();
 
@@ -18,6 +18,7 @@ class GlobalState extends EventEmitter {
 
     // Child states
     this.charts = {};
+
     this.settings = new SettingsState({ $global: this });
     this.crosshair = new CrosshairState({ $global: this });
     this.ui = new UIState({ $global: this });
@@ -62,5 +63,3 @@ class GlobalState extends EventEmitter {
     this.fireEvent("set-selected-chart-id", id);
   }
 }
-
-export default new GlobalState();
