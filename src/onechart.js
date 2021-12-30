@@ -3,6 +3,11 @@ import ViperCharts from "./viper.ts";
 
 const Viper = new ViperCharts({
   element: document.getElementById("chart"),
+  settings: {
+    global: {
+      gridEdit: false,
+    },
+  },
   onRequestHistoricalData,
 });
 

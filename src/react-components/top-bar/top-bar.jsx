@@ -24,6 +24,8 @@ export default class TopBar extends React.Component {
 
       isIndicatorsButton: false,
 
+      globalSettings: GlobalState.settings.settings.global,
+
       isGridEditMode: GlobalState.ui.isGridEditMode,
     };
 
@@ -150,13 +152,15 @@ export default class TopBar extends React.Component {
         ) : null}
         {this.renderTimeframes()}
         <div className="top-bar-seperator"></div>
-        <button
-          onClick={this.setIsGridEditMode.bind(this)}
-          className="top-bar-item"
-        >
-          <i className="gg-display-grid"></i>
-          {!isGridEditMode ? "Grid Locked" : "Grid Edit"}
-        </button>
+        {this.state.globalSettings.gridEdit ? (
+          <button
+            onClick={this.setIsGridEditMode.bind(this)}
+            className="top-bar-item"
+          >
+            <i className="gg-display-grid"></i>
+            {!isGridEditMode ? "Grid Locked" : "Grid Edit"}
+          </button>
+        ) : null}
       </div>
     );
   }

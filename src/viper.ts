@@ -16,10 +16,19 @@ type DatasetSourceMap = {
   [key: string]: DatasetSource;
 };
 
+type Settings = {
+  layout: [any];
+  charts: { [key: string]: object };
+  global: {
+    maxCharts: number; // Max charts per layout
+    gridEdit: boolean; // Enable or disable grid edit feature
+  };
+};
+
 type ViperParams = {
   element: HTMLElement; // The container element for Viper
   sources?: DatasetSourceMap; // Dataset sources map / object
-  initialSettings?: { [key: string]: any }; // Initial settings, only send was recieved from onSaveViperSettings function
+  settings?: Settings; // Initial settings
   onRequestHistoricalData?: ({ requests: [any], callback: Function }) => void; // Resolve requests for historical data
   onSaveViperSettings?: Function; //
 };
@@ -38,7 +47,7 @@ export default class Viper extends EventEmitter {
     const {
       element,
       sources,
-      initialSettings = {},
+      settings = {},
       onRequestHistoricalData = async () => {},
       onSaveViperSettings = () => {},
     } = params;
@@ -57,7 +66,7 @@ export default class Viper extends EventEmitter {
 
     this.$global.init();
     this.setAllDataSources(sources);
-    this.$global.settings.parseInitialSettings(initialSettings);
+    this.$global.settings.setSettings(settings);
 
     this.Constants = Constants;
     this.Indicators = Indicators;
