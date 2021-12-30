@@ -30,6 +30,9 @@ class App extends React.Component {
     this.appElement = React.createRef();
     this.chartsElement = React.createRef();
     this.contextMenusElement = React.createRef();
+
+    this.$global.ui.app = this;
+    props.onReady();
   }
 
   addChart(chart) {
@@ -150,10 +153,12 @@ export default class UIState extends EventEmitter {
   }
 
   init() {
-    this.app = ReactDOM.render(
-      <App $global={this.$global} />,
-      this.$global.api.element
-    );
+    return new Promise((resolve) => {
+      ReactDOM.render(
+        <App $global={this.$global} onReady={resolve} />,
+        this.$global.api.element
+      );
+    });
   }
 
   destroy() {

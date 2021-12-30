@@ -27,10 +27,10 @@ export default class GlobalState extends EventEmitter {
     this.events = new EventsState({ $global: this });
   }
 
-  init() {
+  async init() {
     this.settings.init();
     this.crosshair.init();
-    this.ui.init();
+    await this.ui.init();
     this.layout.init();
     this.data.init();
     this.events.init();

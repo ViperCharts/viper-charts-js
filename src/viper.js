@@ -44,6 +44,10 @@ export default class Viper extends EventEmitter {
   constructor(params) {
     super();
 
+    this.init(params);
+  }
+
+  async init(params) {
     const {
       element,
       sources,
@@ -64,7 +68,7 @@ export default class Viper extends EventEmitter {
     this.onRequestHistoricalData = onRequestHistoricalData;
     this.onSaveViperSettings = onSaveViperSettings;
 
-    this.$global.init();
+    await this.$global.init();
     this.setAllDataSources(sources);
     this.$global.settings.setSettings(settings);
 
