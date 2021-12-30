@@ -1,7 +1,5 @@
 import React from "react";
 
-import GlobalState from "../../state/global";
-
 import IndicatorsModal from "./modals/indicators/indicators-modal";
 
 import "./modal.css";
@@ -9,10 +7,12 @@ import "./modal.css";
 export default class Modal extends React.Component {
   constructor(props) {
     super(props);
+
+    this.$global = props.$global;
   }
 
   close() {
-    GlobalState.ui.app.setModal("");
+    this.$global.ui.app.setModal("");
   }
 
   render() {
@@ -30,11 +30,11 @@ export default class Modal extends React.Component {
           <div className="modal-top">
             <h1>{title}</h1>
             <button>
-              <i onClick={this.close} className="gg-close"></i>
+              <i onClick={this.close.bind(this)} className="gg-close"></i>
             </button>
           </div>
           <div className="modal-body">
-            <Component />
+            <Component $global={this.$global} />
           </div>
         </div>
       </div>

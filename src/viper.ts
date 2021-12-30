@@ -16,10 +16,19 @@ type DatasetSourceMap = {
   [key: string]: DatasetSource;
 };
 
+type Settings = {
+  layout: [any];
+  charts: { [key: string]: object };
+  global: {
+    maxCharts: number; // Max charts per layout
+    gridEdit: boolean; // Enable or disable grid edit feature
+  };
+};
+
 type ViperParams = {
   element: HTMLElement; // The container element for Viper
   sources?: DatasetSourceMap; // Dataset sources map / object
-  initialSettings?: { [key: string]: any }; // Initial settings, only send was recieved from onSaveViperSettings function
+  settings?: Settings; // Initial settings
   onRequestHistoricalData?: ({ requests: [any], callback: Function }) => void; // Resolve requests for historical data
   onSaveViperSettings?: Function; //
 };
@@ -38,7 +47,7 @@ export default class Viper extends EventEmitter {
     const {
       element,
       sources,
-      initialSettings = {},
+      settings = {},
       onRequestHistoricalData = async () => {},
       onSaveViperSettings = () => {},
     } = params;
@@ -50,14 +59,14 @@ export default class Viper extends EventEmitter {
 
     this.element = element;
 
-    this.$global = GlobalState;
+    this.$global = new GlobalState();
     this.$global.api = this;
     this.onRequestHistoricalData = onRequestHistoricalData;
     this.onSaveViperSettings = onSaveViperSettings;
 
     this.$global.init();
     this.setAllDataSources(sources);
-    this.$global.settings.parseInitialSettings(initialSettings);
+    this.$global.settings.setSettings(settings);
 
     this.Constants = Constants;
     this.Indicators = Indicators;
@@ -116,5 +125,17 @@ export default class Viper extends EventEmitter {
    */
   updateDataset(id, data) {
     this.$global.data.datasets[id].updateData(data);
+  }
+
+  /**
+   * Destroy Viper instance
+   */
+  destroy() {
+    // Destroy all event listeners
+    this.$global.events.destroy();
+    this.$global.layout.destroy();
+    this.$global.ui.destroy();
+
+    // TODO Kill all workers
   }
 }

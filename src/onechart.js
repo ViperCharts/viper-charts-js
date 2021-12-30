@@ -3,6 +3,11 @@ import ViperCharts from "./viper.ts";
 
 const Viper = new ViperCharts({
   element: document.getElementById("chart"),
+  settings: {
+    global: {
+      gridEdit: false,
+    },
+  },
   onRequestHistoricalData,
 });
 
@@ -57,3 +62,6 @@ chart.setVisibleRange({
   start: new Date("11/13/21").getTime(),
   end: new Date("12/31/22").getTime(),
 });
+
+// Destroy all event listeners and kill workers (Cleanup)
+// Viper.destroy()

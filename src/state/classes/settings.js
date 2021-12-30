@@ -13,14 +13,14 @@ export default class SettingsState extends EventEmitter {
       charts: {},
       global: {
         maxCharts: Infinity,
-        gridEnabled: true,
+        gridEdit: true,
       },
     };
   }
 
   init() {}
 
-  parseInitialSettings(settings) {
+  setSettings(settings) {
     let layout = [];
 
     if (settings.layout instanceof Array) {
@@ -52,6 +52,12 @@ export default class SettingsState extends EventEmitter {
             });
           }
         }
+      }
+    }
+
+    if (typeof settings.global === "object") {
+      for (const property in settings.global) {
+        this.settings.global[property] = settings.global[property];
       }
     }
 
