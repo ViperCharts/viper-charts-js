@@ -5,43 +5,43 @@ import EventEmitter from "./events/event_emitter";
 import Constants from "./constants";
 import Indicators from "./components/indicators.js";
 
-type DatasetSource = {
-  source: string; // Dataset source (ex: COINBASE, FTX)
-  name: string; // Ticker (ex: BTC-USD, BTC-PERP)
-  maxItemsPerRequest: number; // Max candles to fetch per request (rate limiting)
-  timeframes: [number]; // Array of timeframes in milliseconds supported by dataset
-};
+// type DatasetSource = {
+//   source: string; // Dataset source (ex: COINBASE, FTX)
+//   name: string; // Ticker (ex: BTC-USD, BTC-PERP)
+//   maxItemsPerRequest: number; // Max candles to fetch per request (rate limiting)
+//   timeframes: [number]; // Array of timeframes in milliseconds supported by dataset
+// };
 
-type DatasetSourceMap = {
-  [key: string]: DatasetSource;
-};
+// type DatasetSourceMap = {
+//   [key: string]: DatasetSource;
+// };
 
-type Settings = {
-  layout: [any];
-  charts: { [key: string]: object };
-  global: {
-    maxCharts: number; // Max charts per layout
-    gridEdit: boolean; // Enable or disable grid edit feature
-  };
-};
+// type Settings = {
+//   layout: [any];
+//   charts: { [key: string]: object };
+//   global: {
+//     maxCharts: number; // Max charts per layout
+//     gridEdit: boolean; // Enable or disable grid edit feature
+//   };
+// };
 
-type ViperParams = {
-  element: HTMLElement; // The container element for Viper
-  sources?: DatasetSourceMap; // Dataset sources map / object
-  settings?: Settings; // Initial settings
-  onRequestHistoricalData?: ({ requests: [any], callback: Function }) => void; // Resolve requests for historical data
-  onSaveViperSettings?: Function; //
-};
+// type ViperParams = {
+//   element: HTMLElement; // The container element for Viper
+//   sources?: DatasetSourceMap; // Dataset sources map / object
+//   settings?: Settings; // Initial settings
+//   onRequestHistoricalData?: ({ requests: [any], callback: Function }) => void; // Resolve requests for historical data
+//   onSaveViperSettings?: Function; //
+// };
 
 export default class Viper extends EventEmitter {
-  element: HTMLElement;
-  $global: any;
-  onRequestHistoricalData: Function;
-  onSaveViperSettings: Function;
-  Constants: object;
-  Indicators: object;
+  // element: HTMLElement;
+  // $global: any;
+  // onRequestHistoricalData: Function;
+  // onSaveViperSettings: Function;
+  // Constants: object;
+  // Indicators: object;
 
-  constructor(params: ViperParams) {
+  constructor(params) {
     super();
 
     const {
@@ -85,7 +85,7 @@ export default class Viper extends EventEmitter {
    */
   getChartByName(name = "") {
     for (const id in this.$global.charts) {
-      const chart: any = this.$global.charts[id];
+      const chart = this.$global.charts[id];
       if (chart.name === name) return chart;
     }
   }

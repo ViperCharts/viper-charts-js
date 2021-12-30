@@ -1,5 +1,5 @@
 import "./style.css";
-import ViperCharts from "./viper.ts";
+import ViperCharts from "./viper";
 
 const Viper = new ViperCharts({
   element: document.getElementById("chart"),
