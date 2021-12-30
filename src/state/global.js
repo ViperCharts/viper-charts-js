@@ -44,6 +44,7 @@ class GlobalState extends EventEmitter {
     this.charts[chart.id] = chart;
     this.ui.app.addChart(chart);
     this.setSelectedChartId(chart.id);
+    this.fireEvent("charts-change", this.charts);
     return this.charts[chart.id];
   }
 
@@ -53,6 +54,7 @@ class GlobalState extends EventEmitter {
     const chart = this.charts[id];
     chart.destroy();
     this.setSelectedChartId(Object.keys(this.charts)[0]);
+    this.fireEvent("charts-change", this.charts);
   }
 
   setSelectedChartId(id) {

@@ -11,10 +11,18 @@ export default class ChartSettings extends React.Component {
     this.chart = GlobalState.charts[this.props.chartId];
     this.state = {
       settings: this.chart.settings,
+
+      isSyncTimeButton: Object.keys(GlobalState.charts).length > 1,
     };
 
     this.updateSettingsListener = (() => this.forceUpdate()).bind(this);
     this.chart.addEventListener("update-settings", this.updateSettingsListener);
+
+    this.chartsChangeListener = () =>
+      this.setState({
+        isSyncTimeButton: Object.keys(GlobalState.charts).length > 1,
+      });
+    GlobalState.addEventListener("charts-change", this.chartsChangeListener);
   }
 
   updateChartSetting(setting, value) {
@@ -26,24 +34,29 @@ export default class ChartSettings extends React.Component {
       "update-settings",
       this.updateSettingsListener
     );
+    GlobalState.removeEventListener("charts-change", this.chartsChangeListener);
   }
 
   render() {
+    const { isSyncTimeButton } = this.state;
+
     return (
       <div className="chart-settings">
-        <label>
-          <input
-            checked={this.state.settings.syncRange}
-            onChange={() =>
-              this.updateChartSetting(
-                "syncRange",
-                !this.state.settings.syncRange
-              )
-            }
-            type="checkbox"
-          />
-          Sync Time
-        </label>
+        {isSyncTimeButton ? (
+          <label>
+            <input
+              checked={this.state.settings.syncRange}
+              onChange={() =>
+                this.updateChartSetting(
+                  "syncRange",
+                  !this.state.settings.syncRange
+                )
+              }
+              type="checkbox"
+            />
+            Sync Time
+          </label>
+        ) : null}
       </div>
     );
   }
