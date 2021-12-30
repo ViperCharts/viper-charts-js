@@ -22,6 +22,8 @@ export default class TopBar extends React.Component {
       ],
       timeframeLabels: {},
 
+      isIndicatorsButton: false,
+
       isGridEditMode: GlobalState.ui.isGridEditMode,
     };
 
@@ -46,6 +48,10 @@ export default class TopBar extends React.Component {
 
   componentDidMount() {
     this.buildTimeframeLabels();
+
+    if (Object.keys(GlobalState.data.sources).length) {
+      this.setState({ isIndicatorsButton: true });
+    }
   }
 
   componentWillUnmount() {
@@ -132,14 +138,16 @@ export default class TopBar extends React.Component {
   }
 
   render() {
-    const { isGridEditMode } = this.state;
+    const { isIndicatorsButton, isGridEditMode } = this.state;
 
     return (
       <div className="top-bar">
         <button className="top-bar-item">🐍</button>
-        <button onClick={this.showIndicatorsModal} className="top-bar-item">
-          Indicators
-        </button>
+        {isIndicatorsButton ? (
+          <button onClick={this.showIndicatorsModal} className="top-bar-item">
+            Indicators
+          </button>
+        ) : null}
         {this.renderTimeframes()}
         <div className="top-bar-seperator"></div>
         <button
