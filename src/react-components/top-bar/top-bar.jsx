@@ -45,16 +45,21 @@ export default class TopBar extends React.Component {
       this.onSetIsGridEditMode
     );
 
+    this.setAllDataSourcesListener = ((sources) => {
+      this.setState({
+        isIndicatorsButton: sources && Object.keys(sources).length,
+      });
+    }).bind(this);
+    this.$global.data.addEventListener(
+      "set-all-data-sources",
+      this.setAllDataSourcesListener
+    );
+
     this.setTimeframeListener = null;
   }
 
   componentDidMount() {
     this.buildTimeframeLabels();
-
-    const { sources } = this.$global.data;
-    if (sources && Object.keys(sources).length) {
-      this.setState({ isIndicatorsButton: true });
-    }
   }
 
   componentWillUnmount() {
@@ -65,6 +70,10 @@ export default class TopBar extends React.Component {
     this.$global.ui.removeEventListener(
       "set-is-grid-edit-mode",
       this.onSetIsGridEditMode
+    );
+    this.$global.data.removeEventListener(
+      "set-all-data-sources",
+      this.setAllDataSourcesListener
     );
   }
 
@@ -147,12 +156,16 @@ export default class TopBar extends React.Component {
       <div className="top-bar">
         <button className="top-bar-item">🐍</button>
         {isIndicatorsButton ? (
-          <button onClick={this.showIndicatorsModal} className="top-bar-item">
+          <button
+            onClick={this.showIndicatorsModal.bind(this)}
+            className="top-bar-item"
+          >
             Indicators
           </button>
         ) : null}
         {this.renderTimeframes()}
         <div className="top-bar-seperator"></div>
+
         {this.state.globalSettings.gridEdit ? (
           <button
             onClick={this.setIsGridEditMode.bind(this)}

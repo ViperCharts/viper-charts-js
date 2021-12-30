@@ -28,6 +28,8 @@ const contextMenus = {
     constructor(props) {
       super(props);
 
+      this.$global = props.$global;
+
       this.chartId = props.data.chartId;
       this.chart = this.$global.charts[this.chartId];
     }

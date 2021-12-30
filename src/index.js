@@ -16,7 +16,7 @@ let Viper;
   Viper = new ViperCharts({
     element: document.getElementById("chart"),
     sources,
-    initialSettings: JSON.parse(localStorage.getItem("settings") || "{}"),
+    settings: JSON.parse(localStorage.getItem("settings") || "{}"),
     onRequestHistoricalData,
     onSaveViperSettings,
   });

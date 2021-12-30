@@ -30,7 +30,7 @@ export default class Modal extends React.Component {
           <div className="modal-top">
             <h1>{title}</h1>
             <button>
-              <i onClick={this.close} className="gg-close"></i>
+              <i onClick={this.close.bind(this)} className="gg-close"></i>
             </button>
           </div>
           <div className="modal-body">
