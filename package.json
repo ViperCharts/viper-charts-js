@@ -2,7 +2,7 @@
   "name": "@viper-charts/viper-charts",
   "description": "Charting library",
   "homepage": "https://github.com/vipercharts/viper-charts-js",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "lockfileVersion": 1,
   "hasInstallScript": true,
   "main": "dist/viper.js",
