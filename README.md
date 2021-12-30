@@ -30,9 +30,9 @@ The constructor for ViperCharts accepts an object with multiple properties. Here
 type ViperParams = {
   element: HTMLElement; // The container element for Viper
   sources?: DatasetSourceMap; // Dataset sources map / object
-  initialSettings?: { [key: string]: any }; // Initial settings, only send was recieved from onSaveViperSettings function
+  settings?: { [key: string]: any }; // Settings
   onRequestHistoricalData?: Function; // Resolve requests for historical data
-  onSaveViperSettings?: Function; //
+  onSaveViperSettings?: Function; // Called when viper settings (layout, charts, indicators) udpates (same layout as settings object)
 };
 
 type DatasetSourceMap = {
