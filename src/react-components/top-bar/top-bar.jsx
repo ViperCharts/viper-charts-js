@@ -60,10 +60,6 @@ export default class TopBar extends React.Component {
 
   componentDidMount() {
     this.buildTimeframeLabels();
-
-    if (Object.keys(GlobalState.data.sources).length) {
-      this.setState({ isIndicatorsButton: true });
-    }
   }
 
   componentWillUnmount() {
