@@ -276,6 +276,7 @@ export default class ComputedData extends EventEmitter {
 
       instructions[id] = {};
       const set = this.sets[id];
+      const indicator = this.$chart.indicators[id];
 
       for (const time in data) {
         const item = JSON.parse(JSON.stringify(data[time]));
@@ -383,7 +384,7 @@ export default class ComputedData extends EventEmitter {
               ? parseFloat(value).toFixed(set.decimalPlaces)
               : value;
 
-          const text = `${symbol}${val}${extra}`;
+          const text = `${indicator.datasetId} ${symbol}${val}${extra}`;
           const { ctx } = this.$chart.subcharts.yScale.canvas;
           const textWidth = Math.ceil(ctx.measureText(text).width);
 
