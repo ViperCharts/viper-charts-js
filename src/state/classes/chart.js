@@ -8,7 +8,7 @@ import PriceScale from "../../components/canvas_components/price_scale.js";
 
 import ComputedData from "./computed_data.js";
 
-import EventEmitter from "../../events/event_emitter.ts";
+import EventEmitter from "../../events/event_emitter";
 
 import _ from "lodash";
 
@@ -16,7 +16,8 @@ export default class ChartState extends EventEmitter {
   constructor({
     $global,
     id = Utils.uniqueId(),
-    range = [],
+    name = "",
+    range = {},
     pixelsPerElement = 10,
     timeframe = Constants.HOUR,
     settings = {},
@@ -30,6 +31,7 @@ export default class ChartState extends EventEmitter {
     this.timeframe = 0;
     this.indicators = {};
     this.range = range;
+    this.defaultRangeBounds = undefined;
     this.datasets = {};
     this.visibleData = {};
     this.computedData = new ComputedData({ $global, $chart: this });
@@ -58,6 +60,7 @@ export default class ChartState extends EventEmitter {
 
     this.setPixelsPerElement(pixelsPerElement);
     this.setTimeframe(timeframe);
+    this.setName(name);
   }
 
   init() {
@@ -121,6 +124,27 @@ export default class ChartState extends EventEmitter {
     delete this.$global.charts[this.id];
   }
 
+  /**
+   * Set chart name
+   * @param {string} name New chart name
+   */
+  setName(name = "") {
+    // Check if a chart already exists with that name
+    for (const chart of Object.values(this.$global.charts)) {
+      if (chart.name === name) {
+        return { error: "A chart with that name already exists." };
+      }
+    }
+
+    this.name = name;
+
+    // Update name in Viper settings state
+    this.$global.settings.onChartChangeName(this.id, name);
+
+    // Call all subscribers to name change event
+    this.fireEvent("set-name", this.name);
+  }
+
   addIndicator(indicator, { source, name, visible = true }) {
     // Get or create dataset if doesn't exist
     const dataset = this.$global.data.addOrGetDataset({
@@ -168,8 +192,8 @@ export default class ChartState extends EventEmitter {
 
     this.$global.data.requestDataPoints({
       dataset,
-      start: this.range[0],
-      end: this.range[1],
+      start: this.range.start,
+      end: this.range.end,
     });
 
     this.$global.settings.onChartIndicatorsChange(this.id, this.indicators);
@@ -180,6 +204,8 @@ export default class ChartState extends EventEmitter {
 
   setTimeframe(timeframe, movedId = this.id) {
     const oldDatasets = {};
+
+    const oldTimeframe = this.timeframe;
 
     // Copy all datasets so we can reset master in preperation for setting new visible range
     for (const oldDataset of Object.values(this.datasets)) {
@@ -192,7 +218,13 @@ export default class ChartState extends EventEmitter {
     this.datasets = {};
     this.timeframe = timeframe;
     this.fireEvent("set-timeframe", timeframe);
+
     if (this.isInitialized) {
+      // Update range.start to be same pixelsPerElement calculation
+      const { width } = this.$global.layout.chartDimensions[this.id].main;
+      this.range.start =
+        this.range.end - timeframe * (width / this.pixelsPerElement);
+
       this.setInitialVisibleRange();
     }
 
@@ -216,8 +248,8 @@ export default class ChartState extends EventEmitter {
 
       this.$global.data.requestDataPoints({
         dataset,
-        start: this.range[0],
-        end: this.range[1],
+        start: this.range.start,
+        end: this.range.end,
       });
     }
 
@@ -354,8 +386,8 @@ export default class ChartState extends EventEmitter {
 
         this.$global.data.requestDataPoints({
           dataset,
-          start: this.range[0],
-          end: this.range[1],
+          start: this.range.start,
+          end: this.range.end,
         });
 
         visibleData[localId] = { data: [] };
@@ -406,23 +438,28 @@ export default class ChartState extends EventEmitter {
    */
   setInitialVisibleRange() {
     const { width } = this.$global.layout.chartDimensions[this.id].main;
+    let { start, end } = this.range;
 
-    // End timestamp based on last element
-    let endTimestamp;
-    if (!this.datasets.length) {
-      endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
-    } else {
-      const id = `${this.datasets[0]}:${this.timeframe}`;
-      const { data } = this.$global.data.datasets[id];
-      endTimestamp = data[data.length - 1].time;
+    // If no current visible range
+    if (!start || !end) {
+      // End timestamp based on last element
+      let endTimestamp;
+      if (!this.datasets.length) {
+        endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
+      } else {
+        const id = `${this.datasets[0]}:${this.timeframe}`;
+        const { data } = this.$global.data.datasets[id];
+        endTimestamp = data[data.length - 1].time;
+      }
+
+      end = endTimestamp + this.timeframe * 5;
+
+      // Calculate start timestamp using width and pixelsPerElement
+      const candlesInView = width / this.pixelsPerElement;
+
+      // Set start to candlesInView lookback
+      start = end - candlesInView * this.timeframe;
     }
-
-    const end = endTimestamp + this.timeframe * 5;
-
-    // Calculate start timestamp using width and pixelsPerElement
-    const candlesInView = width / this.pixelsPerElement;
-    // Set start to candlesInView lookback
-    const start = end - candlesInView * this.timeframe;
 
     this.setVisibleRange({ start, end });
   }
@@ -437,7 +474,7 @@ export default class ChartState extends EventEmitter {
     }
 
     // End timestamp based on last element
-    const end = this.range[1];
+    const { end } = this.range;
 
     // Calculate start timestamp using width and pixelsPerElement
     const candlesInView = width / this.pixelsPerElement;
@@ -447,29 +484,55 @@ export default class ChartState extends EventEmitter {
     this.setVisibleRange({ start, end });
   }
 
+  setDefaultRangeBounds({ start, end, min, max }) {
+    if (!this.defaultRangeBounds) {
+      this.defaultRangeBounds = {};
+    }
+    if (start) this.defaultRangeBounds.start = start;
+    if (end) this.defaultRangeBounds.end = end;
+    if (min) this.defaultRangeBounds.min = min;
+    if (max) this.defaultRangeBounds.max = max;
+  }
+
   setRange(
     {
-      start = this.range[0],
-      end = this.range[1],
-      min = this.range[2],
-      max = this.range[3],
+      start = this.range.start,
+      end = this.range.end,
+      min = this.range.min,
+      max = this.range.max,
     },
     noRecalc
   ) {
     if (!noRecalc) this.computedData.calculateAllSets();
 
-    this.range[0] = start;
-    this.range[1] = end;
+    this.range.start = start;
+    this.range.end = end;
 
     // If price / y scale is locked, set min and max y values
     if (this.settings.lockedYScale) {
-      if (min !== this.range[2]) {
-        this.range[2] = min - min * 0.05;
+      if (this.defaultRangeBounds) {
+        if (this.defaultRangeBounds.min) {
+          min = this.defaultRangeBounds.min;
+        }
+        if (this.defaultRangeBounds.max) {
+          max = this.defaultRangeBounds.max;
+        }
       }
-      if (max !== this.range[3]) {
-        this.range[3] = max + max * 0.05;
+
+      const ySpread5P = (max - min) * 0.05;
+      if (min !== this.range.min) {
+        this.range.min = min - ySpread5P;
+      }
+      if (max !== this.range.max) {
+        this.range.max = max + ySpread5P;
       }
     }
+
+    // Calculate pixels per element using range
+    const items = (end - start) / this.timeframe;
+    const { width } = this.$global.layout.chartDimensions[this.id].main;
+    const ppe = width / items;
+    this.pixelsPerElement = ppe;
 
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
       range: this.range,

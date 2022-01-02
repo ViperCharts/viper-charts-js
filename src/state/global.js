@@ -1,4 +1,4 @@
-import EventEmitter from "../events/event_emitter.ts";
+import EventEmitter from "../events/event_emitter";
 
 import ChartState from "./classes/chart";
 import LayoutState from "./classes/layout";
@@ -9,7 +9,7 @@ import EventsState from "./classes/events";
 import SettingsState from "./classes/settings";
 import WorkerState from "./classes/workers";
 
-class GlobalState extends EventEmitter {
+export default class GlobalState extends EventEmitter {
   constructor() {
     super();
 
@@ -19,6 +19,7 @@ class GlobalState extends EventEmitter {
 
     // Child states
     this.charts = {};
+
     this.settings = new SettingsState({ $global: this });
     this.crosshair = new CrosshairState({ $global: this });
     this.ui = new UIState({ $global: this });
@@ -30,10 +31,10 @@ class GlobalState extends EventEmitter {
     window.deleteSelectedChart = this.deleteSelectedChart.bind(this);
   }
 
-  init() {
+  async init() {
     this.settings.init();
     this.crosshair.init();
-    this.ui.init();
+    await this.ui.init();
     this.layout.init();
     this.data.init();
     this.events.init();
@@ -41,10 +42,15 @@ class GlobalState extends EventEmitter {
   }
 
   createChart(state = {}) {
-    const chart = new ChartState({ ...state, $global: this });
+    const chart = new ChartState({
+      name: "Untitled Chart",
+      ...state,
+      $global: this,
+    });
     this.charts[chart.id] = chart;
     this.ui.app.addChart(chart);
     this.setSelectedChartId(chart.id);
+    this.fireEvent("charts-change", this.charts);
     return this.charts[chart.id];
   }
 
@@ -54,6 +60,7 @@ class GlobalState extends EventEmitter {
     const chart = this.charts[id];
     chart.destroy();
     this.setSelectedChartId(Object.keys(this.charts)[0]);
+    this.fireEvent("charts-change", this.charts);
   }
 
   setSelectedChartId(id) {
@@ -61,5 +68,3 @@ class GlobalState extends EventEmitter {
     this.fireEvent("set-selected-chart-id", id);
   }
 }
-
-export default new GlobalState();

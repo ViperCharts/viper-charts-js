@@ -1,7 +1,5 @@
 import React from "react";
 
-import GlobalState from "../../state/global";
-
 import Constants from "../../constants";
 
 import "./top-bar.css";
@@ -9,6 +7,8 @@ import "./top-bar.css";
 export default class TopBar extends React.Component {
   constructor(props) {
     super(props);
+
+    this.$global = props.$global;
 
     this.state = {
       selectedChart: null,
@@ -18,18 +18,21 @@ export default class TopBar extends React.Component {
         Constants.MINUTE5,
         Constants.MINUTE15,
         Constants.HOUR,
-        Constants.HOUR * 6,
         Constants.DAY,
       ],
       timeframeLabels: {},
 
-      isGridEditMode: GlobalState.ui.isGridEditMode,
+      isIndicatorsButton: false,
+
+      globalSettings: this.$global.settings.settings.global,
+
+      isGridEditMode: this.$global.ui.isGridEditMode,
     };
 
     this.onSetSelectedChartId = ((id) => {
-      this.setSelectedChart(GlobalState.charts[id]);
+      this.setSelectedChart(this.$global.charts[id]);
     }).bind(this);
-    GlobalState.addEventListener(
+    this.$global.addEventListener(
       "set-selected-chart-id",
       this.onSetSelectedChartId
     );
@@ -37,9 +40,19 @@ export default class TopBar extends React.Component {
     this.onSetIsGridEditMode = ((isGridEditMode) => {
       this.setState({ isGridEditMode });
     }).bind(this);
-    GlobalState.ui.addEventListener(
+    this.$global.ui.addEventListener(
       "set-is-grid-edit-mode",
       this.onSetIsGridEditMode
+    );
+
+    this.setAllDataSourcesListener = ((sources) => {
+      this.setState({
+        isIndicatorsButton: sources && Object.keys(sources).length,
+      });
+    }).bind(this);
+    this.$global.data.addEventListener(
+      "set-all-data-sources",
+      this.setAllDataSourcesListener
     );
 
     this.setTimeframeListener = null;
@@ -50,13 +63,17 @@ export default class TopBar extends React.Component {
   }
 
   componentWillUnmount() {
-    GlobalState.removeEventListener(
+    this.$global.removeEventListener(
       "set-selected-chart-id",
       this.onSetSelectedChartId
     );
-    GlobalState.ui.removeEventListener(
+    this.$global.ui.removeEventListener(
       "set-is-grid-edit-mode",
       this.onSetIsGridEditMode
+    );
+    this.$global.data.removeEventListener(
+      "set-all-data-sources",
+      this.setAllDataSourcesListener
     );
   }
 
@@ -121,7 +138,7 @@ export default class TopBar extends React.Component {
   }
 
   showIndicatorsModal() {
-    GlobalState.ui.app.setModal("indicators");
+    this.$global.ui.app.setModal("indicators");
   }
 
   setTimeframe(timeframe) {
@@ -129,27 +146,35 @@ export default class TopBar extends React.Component {
   }
 
   setIsGridEditMode() {
-    GlobalState.ui.setIsGridEditMode(!this.state.isGridEditMode);
+    this.$global.ui.setIsGridEditMode(!this.state.isGridEditMode);
   }
 
   render() {
-    const { isGridEditMode } = this.state;
+    const { isIndicatorsButton, isGridEditMode } = this.state;
 
     return (
       <div className="top-bar">
         <button className="top-bar-item">🐍</button>
-        <button onClick={this.showIndicatorsModal} className="top-bar-item">
-          Indicators
-        </button>
+        {isIndicatorsButton ? (
+          <button
+            onClick={this.showIndicatorsModal.bind(this)}
+            className="top-bar-item"
+          >
+            Indicators
+          </button>
+        ) : null}
         {this.renderTimeframes()}
         <div className="top-bar-seperator"></div>
-        <button
-          onClick={this.setIsGridEditMode.bind(this)}
-          className="top-bar-item"
-        >
-          <i className="gg-display-grid"></i>
-          {!isGridEditMode ? "Grid Locked" : "Grid Edit"}
-        </button>
+
+        {this.state.globalSettings.gridEdit ? (
+          <button
+            onClick={this.setIsGridEditMode.bind(this)}
+            className="top-bar-item"
+          >
+            <i className="gg-display-grid"></i>
+            {!isGridEditMode ? "Grid Locked" : "Grid Edit"}
+          </button>
+        ) : null}
       </div>
     );
   }

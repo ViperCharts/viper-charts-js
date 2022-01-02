@@ -1,19 +1,21 @@
 {
   "name": "@viper-charts/viper-charts",
-  "version": "0.0.2",
+  "description": "Charting library",
+  "homepage": "https://github.com/vipercharts/viper-charts-js",
+  "version": "0.0.11",
   "lockfileVersion": 1,
   "hasInstallScript": true,
-  "main": "./src/viperchart.js",
+  "main": "dist/viper.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "prepublish": "rm -rf dist && tsc && babel src/ --out-dir dist --copy-files",
     "serve": "vite preview"
   },
   "dependencies": {
     "@types/react": "^17.0.24",
     "@types/react-dom": "^17.0.9",
     "@vitejs/plugin-react": "^1.0.1",
-    "@vitejs/plugin-react-refresh": "^1.3.6",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -21,6 +23,19 @@
     "vite-plugin-react-css-modules": "^1.0.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.16.0",
+    "@babel/core": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
+    "@babel/preset-react": "^7.16.5",
+    "@vitejs/plugin-react-refresh": "^1.3.6",
     "vite": "^2.5.4"
-  }
+  },
+  "peerDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "files": [
+    "/dist",
+    "package.json"
+  ]
 }

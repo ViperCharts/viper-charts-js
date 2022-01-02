@@ -1,11 +1,10 @@
 import "./style.css";
-import Chart from "./viperchart";
-import Constants from "./constants";
+import ViperCharts from "./viper";
 
-let chart;
+let Viper;
 
 (async () => {
-  const res = await fetch("http://demo-api.vipercharts.com/sources");
+  const res = await fetch("https://demo-api.vipercharts.com/sources");
   if (!res.ok) {
     alert("An error occurred when fetching available markets.");
     return;
@@ -14,9 +13,10 @@ let chart;
   const sources = await res.json();
 
   // Actual chart stuff
-  chart = new Chart({
+  Viper = new ViperCharts({
+    element: document.getElementById("chart"),
     sources,
-    initialSettings: JSON.parse(localStorage.getItem("settings") || "{}"),
+    settings: JSON.parse(localStorage.getItem("settings") || "{}"),
     onRequestHistoricalData,
     onSaveViperSettings,
   });
@@ -24,7 +24,7 @@ let chart;
   async function onRequestHistoricalData({ requests, callback }) {
     for (let { id, source, name, timeframe, start, end } of requests) {
       const res = await fetch(
-        `http://demo-api.vipercharts.com/candles?source=${source}&name=${name}&timeframe=${timeframe}&start=${start}&end=${end}`
+        `https://demo-api.vipercharts.com/candles?source=${source}&name=${name}&timeframe=${timeframe}&start=${start}&end=${end}`
       );
 
       if (!res.ok) {

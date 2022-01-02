@@ -1,4 +1,4 @@
-import EventEmitter from "../../events/event_emitter.ts";
+import EventEmitter from "../../events/event_emitter";
 
 import Utils from "../../utils";
 
@@ -54,7 +54,7 @@ export default class LayoutState extends EventEmitter {
 
     this.height = 0;
     this.width = 0;
-    this.layout = {};
+    this.layout = [];
     this.chartDimensions = {};
   }
 

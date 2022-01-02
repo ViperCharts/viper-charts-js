@@ -23,9 +23,9 @@ export default class LastPriceLine extends Overlay {
     const color = isUp ? this.upColor : this.downColor;
 
     this.canvas.drawLineByPriceAndTime(color, [
-      this.$state.chart.range[0],
+      this.$state.chart.range.start,
       close,
-      this.$state.chart.range[1],
+      this.$state.chart.range.end,
       close,
     ]);
   }

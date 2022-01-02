@@ -21,6 +21,25 @@ export default {
     });
   },
 
+  plotVolume(
+    { renderingQueueId, chart, time, dataset },
+    { volume, title, color }
+  ) {
+    chart.computedData.addSetItem(
+      renderingQueueId,
+      time,
+      "volume",
+      dataset.timeframe,
+      {
+        series: [volume],
+        title,
+        colors: {
+          color,
+        },
+      }
+    );
+  },
+
   plotCandle(
     { addSetItem, time },
     {

@@ -11,12 +11,16 @@ export default class SettingsState extends EventEmitter {
     this.settings = {
       layout: [],
       charts: {},
+      global: {
+        maxCharts: Infinity,
+        gridEdit: true,
+      },
     };
   }
 
   init() {}
 
-  parseInitialSettings(settings) {
+  setSettings(settings) {
     let layout = [];
 
     if (settings.layout instanceof Array) {
@@ -51,13 +55,25 @@ export default class SettingsState extends EventEmitter {
       }
     }
 
+    if (typeof settings.global === "object") {
+      for (const property in settings.global) {
+        this.settings.global[property] = settings.global[property];
+      }
+    }
+
     this.$global.layout.setInitialLayout(layout);
   }
 
   onChartAdd(id, state = {}) {
     state = {
+      name: "",
       timeframe: 0,
-      range: [0, 0],
+      range: {
+        start: 0,
+        end: 0,
+        min: 0,
+        max: 0,
+      },
       pixelsPerElement: 0,
       indicators: [],
       settings: {},
@@ -65,6 +81,16 @@ export default class SettingsState extends EventEmitter {
     };
 
     this.settings.charts[id] = state;
+    this.$global.api.onSaveViperSettings(this.settings);
+  }
+
+  onChartChangeName(id, name) {
+    const chart = this.settings.charts[id];
+    if (!chart) {
+      console.error(`Chart id ${id} not found in Viper settings state`);
+      return;
+    }
+    chart.name = name;
     this.$global.api.onSaveViperSettings(this.settings);
   }
 

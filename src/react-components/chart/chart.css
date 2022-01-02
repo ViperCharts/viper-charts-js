@@ -70,6 +70,14 @@
   right: 0;
 }
 
+.chart-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #cccccc;
+  margin: 4px;
+  margin-bottom: 8px;
+}
+
 .indicator-list {
   display: flex;
   flex-direction: column;
@@ -85,6 +93,7 @@
 .chart-main {
   position: absolute;
   top: 0;
+  left: 0;
   width: calc(100% - 50px);
   height: calc(100% - 20px);
 }
@@ -92,12 +101,14 @@
 .chart-x-axis {
   position: absolute;
   bottom: 0;
+  left: 0;
   width: calc(100% - 50px);
   height: 20px;
 }
 
 .chart-y-axis {
   position: absolute;
+  top: 0;
   right: 0;
   width: 50px;
   height: calc(100% - 20px);
