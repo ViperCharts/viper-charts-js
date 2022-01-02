@@ -33,7 +33,6 @@ export default class ChartState extends EventEmitter {
     this.range = range;
     this.defaultRangeBounds = undefined;
     this.datasets = {};
-    this.visibleData = {};
     this.computedData = new ComputedData({ $global, $chart: this });
     this.visibleScales = { x: [], y: [] };
     this.subcharts = {
@@ -209,7 +208,6 @@ export default class ChartState extends EventEmitter {
 
     // Now that we have unsubscribed from datasets, and emptied the local dataset array
     // We can reset to initial default range
-    this.visibleData = {};
     this.datasets = {};
     this.timeframe = timeframe;
     this.fireEvent("set-timeframe", timeframe);
@@ -311,14 +309,11 @@ export default class ChartState extends EventEmitter {
     } = newRange;
 
     // Update pixel instructions based on
-    if (window.stopit == true) {
-      this.computedData.addPixelInstructionsOffset(
-        { start, end, min, max },
-        { ...this.range },
-        this.pixelsPerElement
-      );
-      return;
-    }
+    // this.computedData.addPixelInstructionsOffset(
+    //   { start, end, min, max },
+    //   { ...this.range },
+    //   this.pixelsPerElement
+    // );
 
     // Set visible range
     this.setRange(newRange);
@@ -349,8 +344,14 @@ export default class ChartState extends EventEmitter {
     // Build the visible x and y scales
     this.buildXAndYVisibleScales();
 
-    // Call throttled recalc
-    this.calculateVisibleData();
+    // Check for any un-fetched data points in all subscribed datasets
+    for (const datasetId in this.datasets) {
+      this.$global.data.requestDataPoints({
+        dataset: this.datasets[datasetId],
+        start: this.range.start,
+        end: this.range.end,
+      });
+    }
   }
 
   buildXAndYVisibleScales() {
@@ -388,68 +389,6 @@ export default class ChartState extends EventEmitter {
     }
 
     this.visibleScales = visibleScales;
-  }
-
-  calculateVisibleData() {
-    const visibleData = {};
-
-    const { start, end } = this.range;
-
-    // Get all visible data in viewport
-    const datasets = Object.values(this.datasets);
-    if (datasets.length > 0) {
-      // Loop through each dataset and find the max value
-      for (const dataset of datasets) {
-        const { data } = dataset;
-        const localId = dataset.getTimeframeAgnosticId();
-
-        this.$global.data.requestDataPoints({
-          dataset,
-          start: this.range.start,
-          end: this.range.end,
-        });
-
-        visibleData[localId] = { data: [] };
-
-        // Loop through all subscribed indicators to verify at least one is visible
-        let isOneVisible = false;
-        for (const renderingQueueId of dataset.subscribers[this.id]) {
-          const indicator = this.indicators[renderingQueueId];
-          if (indicator.visible) {
-            isOneVisible = true;
-            break;
-          }
-        }
-
-        // If no subscribed indicators are visible, skip this dataset from calculation
-        if (!isOneVisible) {
-          continue;
-        }
-
-        const visibleDataItem = visibleData[localId];
-
-        for (const timestamp of Utils.getAllTimestampsIn(
-          start,
-          end,
-          this.timeframe
-        )) {
-          const candle = data[timestamp];
-
-          // Check if candle has not been loaded or if its loaded, but no data was available at time
-          if (candle !== undefined && candle !== null) {
-            visibleDataItem.data.push({
-              time: timestamp,
-              ...candle,
-            });
-          }
-        }
-      }
-
-      this.visibleData = visibleData;
-    }
-
-    // Re-calculate all set visible data
-    this.computedData.calculateAllSets();
   }
 
   /**

@@ -59,14 +59,8 @@ export default class ComputedData extends EventEmitter {
     const { indicator, visible } = this.queue.get(key);
     const dataset = this.$chart.datasets[indicator.datasetId];
 
-    // Delete old set TODO CHANGE THIS IT HURTS PERFORMANCE
-
     // If indicator is set to invisible, dont calculate data
     if (!visible) return;
-
-    // Loop through each visible item of dataset indicator is subscribed to
-    const visibleData = this.$chart.visibleData[indicator.datasetId];
-    if (!visibleData || !visibleData.data) return;
 
     // Get the indicator name
     const { id: indicatorName } = this.$chart.indicators[key];
@@ -76,7 +70,7 @@ export default class ComputedData extends EventEmitter {
       method: "calculateOneSet",
       params: {
         indicatorName,
-        visibleData,
+        range: this.$chart.range,
         datasetData: dataset.data,
         timeframe: dataset.timeframe,
         computedState: this.computedState[key] || {},
@@ -108,8 +102,6 @@ export default class ComputedData extends EventEmitter {
     const w = newRangeWidth / (oldRange.end - oldRange.start);
     const h = newRangeHeight / (oldRange.max - oldRange.min);
 
-    console.log(newRangeWidth, newRangeHeight);
-
     // Adjust pixels per element based on new width
     // pixelsPerElement *= w;
 
@@ -118,8 +110,8 @@ export default class ComputedData extends EventEmitter {
 
     this.offsetX += x;
     this.offsetY += y;
-    this.offsetW *= w;
-    this.offsetH *= h;
+    // this.offsetW *= w;
+    // this.offsetH *= h;
   }
 
   addToQueue(indicator, index) {

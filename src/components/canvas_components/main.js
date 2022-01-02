@@ -167,10 +167,10 @@ export default class Main {
       const ppt = yInView / this.canvas.height;
       const y = movementY;
       const movement = y * ppt;
-      this.$state.chart.range.min += movement;
-      this.$state.chart.range.max += movement;
+      min += movement;
+      max += movement;
     }
 
-    this.$state.chart.setVisibleRange({ start, end });
+    this.$state.chart.setVisibleRange({ start, end, min, max });
   }
 }

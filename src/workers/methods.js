@@ -5,7 +5,7 @@ import indicators from "../components/indicators";
 export default {
   calculateOneSet({
     indicatorName,
-    visibleData,
+    range,
     datasetData,
     timeframe,
     computedState,
@@ -82,8 +82,15 @@ export default {
     }
 
     // Run the indicator function for this candle and get all results
-    for (const point of visibleData.data) {
-      iteratedTime = point.time;
+    for (const timestamp of Utils.getAllTimestampsIn(
+      range.start,
+      range.end,
+      timeframe
+    )) {
+      iteratedTime = timestamp;
+      const point = datasetData[iteratedTime];
+
+      if (point === undefined || point === null) continue;
 
       indicator.drawFunc.bind(indicator)({
         ...point,
