@@ -300,7 +300,7 @@ export default class ChartState extends EventEmitter {
 
   setVisibleRange(newRange = {}, movedId = this.id) {
     // Set visible range
-    const { start = this.range[0], end = this.range[1] } = newRange;
+    const { start = this.range.start, end = this.range.end } = newRange;
 
     this.setRange({ start, end });
 
@@ -352,19 +352,19 @@ export default class ChartState extends EventEmitter {
       }
     }
 
-    const yRange = this.range[3] - this.range[2];
+    const yRange = this.range.max - this.range.min;
     const exponent = yRange.toExponential().split("e")[1];
     yPriceStep = Math.pow(10, exponent);
 
     // Build timestamps that are on interval
-    const start = this.range[0] - (this.range[0] % xTimeStep);
-    for (let i = start; i < this.range[1]; i += xTimeStep) {
+    const start = this.range.start - (this.range.start % xTimeStep);
+    for (let i = start; i < this.range.end; i += xTimeStep) {
       visibleScales.x.push(i);
     }
 
     // TODO build y axis range
-    const min = this.range[2] - (this.range[2] % yPriceStep);
-    for (let i = min; i < this.range[3]; i += yPriceStep) {
+    const min = this.range.min - (this.range.min % yPriceStep);
+    for (let i = min; i < this.range.max; i += yPriceStep) {
       visibleScales.y.push(i);
     }
 
@@ -374,7 +374,7 @@ export default class ChartState extends EventEmitter {
   calculateVisibleData() {
     const visibleData = {};
 
-    const [start, end] = this.range;
+    const { start, end } = this.range;
 
     // Get all visible data in viewport
     const datasets = Object.values(this.datasets);
@@ -548,8 +548,8 @@ export default class ChartState extends EventEmitter {
 
   getTimestampByXCoord(x) {
     return Utils.getTimestampByXCoord(
-      this.range[0],
-      this.range[1],
+      this.range.start,
+      this.range.end,
       this.$global.layout.chartDimensions[this.id].main.width,
       x
     );
@@ -557,8 +557,8 @@ export default class ChartState extends EventEmitter {
 
   getXCoordByTimestamp(timestamp) {
     return Utils.getXCoordByTimestamp(
-      this.range[0],
-      this.range[1],
+      this.range.start,
+      this.range.end,
       this.$global.layout.chartDimensions[this.id].main.width,
       timestamp
     );
@@ -566,8 +566,8 @@ export default class ChartState extends EventEmitter {
 
   getYCoordByPrice(price) {
     return Utils.getYCoordByPrice(
-      this.range[2],
-      this.range[3],
+      this.range.min,
+      this.range.max,
       this.$global.layout.chartDimensions[this.id].main.height,
       price
     );

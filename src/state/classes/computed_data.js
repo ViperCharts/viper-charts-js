@@ -168,12 +168,7 @@ export default class ComputedData extends EventEmitter {
           xScale: chartDimensions.xScale,
         },
         pixelsPerElement: this.$chart.pixelsPerElement,
-        visibleRange: {
-          start: this.$chart.range[0],
-          end: this.$chart.range[1],
-          min: this.$chart.range[2],
-          max: this.$chart.range[3],
-        },
+        visibleRange: this.$chart.range,
       },
     });
 
