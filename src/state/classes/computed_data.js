@@ -42,6 +42,11 @@ export default class ComputedData extends EventEmitter {
       yScale: {},
       xScale: {},
     };
+
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.offsetH = 1;
+    this.offsetW = 1;
   }
 
   calculateAllSets() {
@@ -90,6 +95,31 @@ export default class ComputedData extends EventEmitter {
     });
 
     this.sets[key].setDecimalPlaces(decimalPlaces);
+  }
+
+  addPixelInstructionsOffset(newRange, oldRange, pixelsPerElement) {
+    const { width, height } =
+      this.$global.layout.chartDimensions[this.$chart.id].main;
+
+    const newRangeWidth = newRange.end - newRange.start;
+    const newRangeHeight = newRange.max - newRange.min;
+
+    // Calculate percentage difference between widths
+    const w = newRangeWidth / (oldRange.end - oldRange.start);
+    const h = newRangeHeight / (oldRange.max - oldRange.min);
+
+    console.log(newRangeWidth, newRangeHeight);
+
+    // Adjust pixels per element based on new width
+    // pixelsPerElement *= w;
+
+    const x = -((newRange.start - oldRange.start) / newRangeWidth) * width;
+    const y = ((newRange.min - oldRange.min) / newRangeHeight) * height;
+
+    this.offsetX += x;
+    this.offsetY += y;
+    this.offsetW *= w;
+    this.offsetH *= h;
   }
 
   addToQueue(indicator, index) {

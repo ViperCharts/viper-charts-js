@@ -49,11 +49,6 @@ export default class ChartState extends EventEmitter {
       ...settings,
     };
 
-    this.throttledCalculateVisibleData = _.throttle(
-      this.calculateVisibleData.bind(this),
-      100
-    );
-
     this.$global.settings.onChartAdd(this.id, {
       settings: this.settings,
     });
@@ -298,11 +293,35 @@ export default class ChartState extends EventEmitter {
     this.setVisibleRange();
   }
 
+  /**
+   * Set the visible range of the chart
+   * @param {object} newRange Visible range boundaries
+   * @param {number} newRange.start Start unix timestamp for time axis
+   * @param {number} newRange.end End unix timestamp for time axis
+   * @param {number} newRange.min Min value for price axis
+   * @param {number} newRange.max Max value for price axis
+   * @param {string} movedId The chart id of the chart that initialzed the move
+   */
   setVisibleRange(newRange = {}, movedId = this.id) {
-    // Set visible range
-    const { start = this.range.start, end = this.range.end } = newRange;
+    const {
+      start = this.range.start,
+      end = this.range.end,
+      min = this.range.min,
+      max = this.range.max,
+    } = newRange;
 
-    this.setRange({ start, end });
+    // Update pixel instructions based on
+    if (window.stopit == true) {
+      this.computedData.addPixelInstructionsOffset(
+        { start, end, min, max },
+        { ...this.range },
+        this.pixelsPerElement
+      );
+      return;
+    }
+
+    // Set visible range
+    this.setRange(newRange);
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours
@@ -331,7 +350,7 @@ export default class ChartState extends EventEmitter {
     this.buildXAndYVisibleScales();
 
     // Call throttled recalc
-    this.throttledCalculateVisibleData();
+    this.calculateVisibleData();
   }
 
   buildXAndYVisibleScales() {

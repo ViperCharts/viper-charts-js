@@ -79,18 +79,40 @@ export default class RenderingEngine {
       const times = Object.keys(instructions);
 
       const parseInstruction = (a, i, j) => {
+        const { offsetX, offsetY, offsetW, offsetH } =
+          this.$state.chart.computedData;
+
         if (a.type === "line") {
           if (i === undefined || j === undefined) return;
           let b = instructions[times[i + 1]];
           if (!b) return;
           b = b[j];
-          this.canvas.drawLine(a.color, [a.x, a.y, b.x, b.y], a.linewidth);
+          this.canvas.drawLine(
+            a.color,
+            [a.x + offsetX, a.y + offsetY, b.x + offsetX, b.y + offsetY],
+            a.linewidth
+          );
         } else if (a.type === "box") {
-          this.canvas.drawBox(a.color, [a.x, a.y, a.w, a.h]);
+          this.canvas.drawBox(a.color, [
+            a.x + offsetX,
+            a.y + offsetY,
+            a.w,
+            a.h,
+          ]);
         } else if (a.type === "single-line") {
-          this.canvas.drawLine(a.color, [a.x, a.y, a.x2, a.y2]);
+          this.canvas.drawLine(a.color, [
+            a.x + offsetX,
+            a.y + offsetY,
+            a.x2 + offsetX,
+            a.y2 + offsetY,
+          ]);
         } else if (a.type === "text") {
-          this.canvas.drawText(a.color, [a.x, a.y], a.text, { font: a.font });
+          this.canvas.drawText(
+            a.color,
+            [a.x + offsetX, a.y + offsetY],
+            a.text,
+            { font: a.font }
+          );
         }
       };
 
