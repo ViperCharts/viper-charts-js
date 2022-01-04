@@ -1,46 +1,59 @@
-class Indicator {
-  constructor(name, dataSources, c) {
-    this.id = name.replaceAll(" ", "-").toLowerCase();
-    this.name = name;
-    this.dataSources = dataSources;
-    this.class = c;
-  }
-}
+export default {
+  priceLine({ close, plot }) {
+    plot({
+      value: close,
+      title: "Price line",
+      color: this.color,
+      linewidth: 2,
+      ylabel: true,
+    });
+  },
 
-import Candlestick from "./canvas_components/primitives/candlestick.js";
-import PriceLine from "./canvas_components/primitives/price_line.js";
-import Footprint from "./canvas_components/primitives/footprint.js";
+  candlestick({ open, high, low, close, plotCandle }) {
+    const color = close >= open ? this.upColor : this.downColor;
+    plotCandle({
+      open,
+      high,
+      low,
+      close,
+      title: "Candlestick",
+      color,
+      wickcolor: color,
+      ylabel: true,
+    });
+  },
 
-export const series = [
-  new Indicator("Candlestick", [], Candlestick),
-  // new Indicator("Footprint", [], Footprint),
-  new Indicator("Price Line", [], PriceLine),
-];
+  sma({ plot, sma }) {
+    const ma20 = sma({ source: "close", length: 20 });
 
-import VolumeBar from "./canvas_components/primitives/volume_bar.js";
-import VolumeBySideBar from "./canvas_components/primitives/volume_by_side_bar.js";
-import SMA from "./canvas_components/primitives/sma";
-import MASlope from "./canvas_components/primitives/ma_slope";
+    plot({
+      value: ma20,
+      title: "MA20",
+      color: this.color,
+      linewidth: 2,
+      ylabel: true,
+    });
+  },
 
-export const indicators = [
-  new Indicator("Volume", [], VolumeBar),
-  // new Indicator("Volume By Side", [], VolumeBySideBar),
-  new Indicator("MA Slope", [], MASlope),
-  new Indicator("SMA", [], SMA),
-];
+  maSlope({ plot, sma, setVar, getVar }) {
+    const ma20 = sma({ source: "close", length: 20 });
+    setVar({ name: "ma20", value: ma20 });
 
-export const map = (() => {
-  const map = new Map();
+    const slope = ma20 - getVar({ name: "ma20", lookback: 1 });
 
-  for (const indi of [...series, ...indicators]) {
-    if (map.has(indi.id)) {
-      console.error("Duplicate indicator ID detected for: " + indi.name);
-      return;
-    }
-    map.set(indi.id, indi);
-  }
+    plot({
+      value: slope,
+      title: "MA20 Slope",
+      color: this.color,
+      linewidth: 2,
+      ylabel: true,
+    });
+  },
 
-  return map;
-})();
+  volumeBar({ open, close, volume, plotVolume }) {
+    const isUp = close >= open;
+    const color = isUp ? this.upColor : this.downColor;
 
-export default { series, indicators, map };
+    plotVolume({ volume, color });
+  },
+};
