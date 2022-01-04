@@ -2,6 +2,8 @@ import Constants from "../../constants.js";
 
 import Utils from "../../utils.js";
 
+import Indicators from "../../components/indicators.js";
+
 import Main from "../../components/canvas_components/main.js";
 import TimeScale from "../../components/canvas_components/time_scale.js";
 import PriceScale from "../../components/canvas_components/price_scale.js";
@@ -143,6 +145,10 @@ export default class ChartState extends EventEmitter {
    * @param {*} options
    */
   async addIndicator(indicator, { source, name, visible = true }) {
+    if (typeof indicator === "string") {
+      indicator = Indicators[indicator];
+    }
+
     // Get or create dataset if doesn't exist
     const dataset = this.$global.data.addOrGetDataset({
       source,
@@ -162,8 +168,12 @@ export default class ChartState extends EventEmitter {
     };
 
     // Add to the rendering queue on computed state and rendering engine
+    // NOTE: draw is set to undefined here because you cannot pass
     const { renderingQueueId } = await this.computedState.addToQueue({
-      indicator,
+      indicator: {
+        ...indicator,
+        draw: undefined,
+      },
     });
 
     indicator.renderingQueueId = renderingQueueId;

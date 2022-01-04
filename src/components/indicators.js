@@ -1,5 +1,5 @@
 export default {
-  priceLine: {
+  "price-line": {
     id: "price-line",
     name: "Price Line",
     draw({ close, plot }) {
@@ -47,7 +47,7 @@ export default {
     },
   },
 
-  maSlope: {
+  "ma-slope": {
     id: "ma-slope",
     name: "MA Slope",
     draw({ plot, sma, setVar, getVar }) {
@@ -66,7 +66,7 @@ export default {
     },
   },
 
-  volume: {
+  "volume-bar": {
     id: "volume-bar",
     name: "Volume",
     draw({ open, close, volume, plotVolume }) {

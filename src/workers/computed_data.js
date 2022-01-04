@@ -1,4 +1,5 @@
 import Utils from "../utils";
+import Indicators from "../components/indicators";
 import ScriptFunctions from "../viper_script/script_functions";
 
 import EventEmitter from "../events/event_emitter";
@@ -22,7 +23,7 @@ class ComputedSet {
 
   setDecimalPlaces(decimalPlaces) {
     this.decimalPlaces = decimalPlaces;
-    this.$state.computedData.calculateMaxDecimalPlaces();
+    this.$state.calculateMaxDecimalPlaces();
   }
 }
 
@@ -55,25 +56,73 @@ export default class ComputedData extends EventEmitter {
     this.offsetY = 0;
   }
 
-  calculateOneSet({ indicator, timestamps, dataset }) {
+  calculateOneSet({ renderingQueueId, timestamps, dataset }) {
+    const indicator = this.queue.get(renderingQueueId);
+    indicator.draw = Indicators[indicator.id].draw;
+
     // If indicator is set to invisible, dont calculate data
     if (!indicator.visible) return;
+
+    // Create a set if it doesnt exist
+    if (!this.sets[renderingQueueId]) {
+      this.sets[renderingQueueId] = new ComputedSet({
+        $state: this,
+        timeframe: dataset.timeframe,
+      });
+    }
+
+    const set = this.sets[renderingQueueId];
 
     let iteratedTime = 0;
 
     // Storage for global variables used across indicator times only defined once
     const globals = {};
 
+    const addSetItem = ((time, type, values) => {
+      // If first plotted item at time, create fresh array
+      if (!set.data[time]) set.data[time] = [];
+
+      // Add plot type and plot values to time
+      set.data[time].push({ type, values });
+
+      // Update max & min if applicable
+      const { series } = values;
+      for (const val of series) {
+        // Update min
+        if (val < set.min) {
+          set.min = val;
+        }
+
+        // Update max
+        if (val > set.max) {
+          set.max = val;
+        }
+
+        // If potential for more decimal places, check
+        if (set.decimalPlaces < 8) {
+          const decimalPlaces = Utils.getDecimalPlaces(val, 8);
+
+          // If decimal places for number is larger, set max decimal places
+          if (decimalPlaces > set.decimalPlaces) {
+            set.setDecimalPlaces(decimalPlaces);
+          }
+        }
+      }
+
+      this.sets[renderingQueueId] = set;
+    }).bind(this);
+
     const funcWraps = {};
     for (const funcName in ScriptFunctions) {
       funcWraps[funcName] = function () {
         return ScriptFunctions[funcName](
           {
+            addSetItem,
             time: iteratedTime,
             timeframe: dataset.timeframe,
             data: dataset.data,
             globals,
-            computedState,
+            computedState: this.computedState[renderingQueueId],
           },
           ...arguments
         );
@@ -83,11 +132,15 @@ export default class ComputedData extends EventEmitter {
     // Run the indicator function for this candle and get all results
     for (const timestamp of timestamps) {
       iteratedTime = timestamp;
-      const point = datasetData[iteratedTime];
+
+      // If item exists at iterated time, delete it
+      delete set.data[iteratedTime];
+
+      const point = dataset.data[iteratedTime];
 
       if (point === undefined || point === null) continue;
 
-      indicator.drawFunc.bind(indicator)({
+      indicator.draw({
         ...point,
         ...funcWraps,
       });
@@ -126,45 +179,6 @@ export default class ComputedData extends EventEmitter {
    * @param {number} timeframe
    * @param {array} values
    */
-  addSetItem(id, time, type, timeframe, values) {
-    if (!this.sets[id]) {
-      this.sets[id] = new ComputedSet({ $state: this.$chart, timeframe });
-    }
-
-    const set = this.sets[id];
-
-    // If first plotted item at time, create fresh array
-    if (!set.data[time]) set.data[time] = [];
-
-    // Add plot type and plot values to time
-    set.data[time].push({ type, values });
-
-    // Update max & min if applicable
-    const { series } = values;
-    for (const val of series) {
-      // Update min
-      if (val < set.min) {
-        set.min = val;
-      }
-
-      // Update max
-      if (val > set.max) {
-        set.max = val;
-      }
-
-      // If potential for more decimal places, check
-      if (set.decimalPlaces < 8) {
-        const decimalPlaces = Utils.getDecimalPlaces(val, 8);
-
-        // If decimal places for number is larger, set max decimal places
-        if (decimalPlaces > set.decimalPlaces) {
-          set.decimalPlaces = decimalPlaces;
-        }
-      }
-    }
-
-    this.sets[id] = set;
-  }
 
   toggleVisibility(id) {
     if (!this.queue.has(id)) {

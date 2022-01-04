@@ -24,8 +24,19 @@ class ComputedStateMessenger {
     });
   }
 
-  calculateOneSet({ key, timestamps, dataset }) {
-    console.log(arguments);
+  calculateOneSet({ renderingQueueId, timestamps, dataset }) {
+    this.worker.postMessage({
+      type: "runComputedStateMethod",
+      data: {
+        method: "calculateOneSet",
+        chartId: this.chart.id,
+        params: {
+          renderingQueueId,
+          timestamps,
+          dataset,
+        },
+      },
+    });
   }
 
   async addToQueue({ indicator }) {

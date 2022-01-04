@@ -42,8 +42,8 @@ class Dataset extends EventEmitter {
       // Calculate all indicator data for new time additions
       const indicatorIdArray = this.subscribers[chartId];
       for (const renderingQueueId of indicatorIdArray) {
-        chart.computedStateMessenger.calculateOneSet({
-          key: renderingQueueId,
+        chart.computedState.calculateOneSet({
+          renderingQueueId,
           timestamps,
           dataset: {
             source: this.source,
