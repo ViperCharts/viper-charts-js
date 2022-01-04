@@ -24,6 +24,11 @@ export default class RenderingEngine {
     this.instructions = {};
     this.lastFrameTime = -1;
 
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.offsetH = 1;
+    this.offsetW = 1;
+
     this.initDraw();
   }
 
@@ -79,8 +84,7 @@ export default class RenderingEngine {
       const times = Object.keys(instructions);
 
       const parseInstruction = (a, i, j) => {
-        const { offsetX, offsetY, offsetW, offsetH } =
-          this.$state.chart.computedData;
+        const { offsetX, offsetY, offsetW, offsetH } = this;
 
         if (a.type === "line") {
           if (i === undefined || j === undefined) return;

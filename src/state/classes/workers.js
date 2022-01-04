@@ -7,7 +7,7 @@ class ComputedStateMessenger {
     this.chart = chart;
     this.worker = worker;
 
-    this.maxDecimalPlaces = 0;
+    this.maxDecimalPlaces = 6;
   }
 
   addPixelInstructionsOffset({ newRange, oldRange }) {
@@ -20,21 +20,6 @@ class ComputedStateMessenger {
         chartId: this.chart.id,
         method: "addPixelInstructionsOffset",
         params: { newRange, oldRange, width, height },
-      },
-    });
-  }
-
-  calculateOneSet({ renderingQueueId, timestamps, dataset }) {
-    this.worker.postMessage({
-      type: "runComputedStateMethod",
-      data: {
-        method: "calculateOneSet",
-        chartId: this.chart.id,
-        params: {
-          renderingQueueId,
-          timestamps,
-          dataset,
-        },
       },
     });
   }
@@ -60,7 +45,99 @@ class ComputedStateMessenger {
     return { renderingQueueId };
   }
 
-  generateInstructions() {}
+  async calculateOneSet({ renderingQueueId, timestamps, dataset }) {
+    await new Promise((resolve) => {
+      const id = this.$global.workers.addToResolveQueue(resolve);
+
+      this.worker.postMessage({
+        type: "runComputedStateMethod",
+        data: {
+          method: "calculateOneSet",
+          resolveId: id,
+          chartId: this.chart.id,
+          params: {
+            renderingQueueId,
+            timestamps,
+            dataset,
+          },
+        },
+      });
+    });
+
+    // Generate instructions for this set
+    await this.generateInstructions({ renderingQueueId, timestamps });
+  }
+
+  async generateInstructions({ renderingQueueId, timestamps }) {
+    const { instructions } = await new Promise((resolve) => {
+      const id = this.$global.workers.addToResolveQueue(resolve);
+
+      const chartDimensions =
+        this.$global.layout.chartDimensions[this.chart.id];
+
+      this.worker.postMessage({
+        type: "runComputedStateMethod",
+        data: {
+          method: "generateInstructions",
+          resolveId: id,
+          chartId: this.chart.id,
+          params: {
+            renderingQueueId,
+            timestamps,
+            scaleType: this.chart.settings.scaleType,
+            visibleRange: this.chart.range,
+            timeframe: this.chart.timeframe,
+            chartDimensions: {
+              main: chartDimensions.main,
+              yScale: chartDimensions.yScale,
+              xScale: chartDimensions.xScale,
+            },
+            pixelsPerElement: this.chart.pixelsPerElement,
+          },
+        },
+      });
+    });
+
+    // Set instructions to respective chart rendering engines
+    const { RE } = this.chart.subcharts.main.canvas;
+    if (!RE.instructions[renderingQueueId]) {
+      RE.instructions[renderingQueueId] = {};
+    }
+    Object.assign(RE.instructions[renderingQueueId], instructions.main);
+  }
+
+  async generateAllInstructions() {
+    const { allInstructions } = await new Promise((resolve) => {
+      const id = this.$global.workers.addToResolveQueue(resolve);
+
+      const chartDimensions =
+        this.$global.layout.chartDimensions[this.chart.id];
+
+      this.worker.postMessage({
+        type: "runComputedStateMethod",
+        data: {
+          method: "generateAllInstructions",
+          resolveId: id,
+          chartId: this.chart.id,
+          params: {
+            scaleType: this.chart.settings.scaleType,
+            visibleRange: this.chart.range,
+            timeframe: this.chart.timeframe,
+            chartDimensions: {
+              main: chartDimensions.main,
+              yScale: chartDimensions.yScale,
+              xScale: chartDimensions.xScale,
+            },
+            pixelsPerElement: this.chart.pixelsPerElement,
+          },
+        },
+      });
+    });
+
+    const { RE } = this.chart.subcharts.main.canvas;
+    console.log(RE.instructions, allInstructions);
+    RE.instructions = allInstructions.main;
+  }
 }
 
 export default class WorkerState extends EventEmitter {

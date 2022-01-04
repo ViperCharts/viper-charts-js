@@ -350,15 +350,6 @@ export default class ChartState extends EventEmitter {
     // Build the visible x and y scales
     this.buildXAndYVisibleScales();
 
-    // Check for any un-fetched data points in all subscribed datasets
-    for (const datasetId in this.datasets) {
-      this.$global.data.requestDataPoints({
-        dataset: this.datasets[datasetId],
-        start: this.range.start,
-        end: this.range.end,
-      });
-    }
-
     // If price / y scale is locked, set min and max y values
     if (this.settings.lockedYScale) {
       if (this.defaultRangeBounds) {
@@ -389,7 +380,16 @@ export default class ChartState extends EventEmitter {
       range: this.range,
     });
 
-    this.computedState.generateInstructions();
+    this.computedState.generateAllInstructions();
+
+    // Check for any un-fetched data points in all subscribed datasets
+    for (const datasetId in this.datasets) {
+      this.$global.data.requestDataPoints({
+        dataset: this.datasets[datasetId],
+        start: this.range.start,
+        end: this.range.end,
+      });
+    }
   }
 
   buildXAndYVisibleScales() {
@@ -457,7 +457,7 @@ export default class ChartState extends EventEmitter {
       start = end - candlesInView * this.timeframe;
     }
 
-    this.setVisibleRange({ start, end });
+    this.setVisibleRange({ start, end, min: 0.6, max: 0.9 });
   }
 
   resizeXRange(delta, width) {
