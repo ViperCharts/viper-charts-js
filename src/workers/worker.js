@@ -1,18 +1,31 @@
+import ComputedData from "./computed_data";
+
 let id = "";
 
-import Methods from "./methods";
+const computedStates = {};
 
 self.addEventListener("message", (e) => {
   const { type, data } = e.data;
+
+  console.log(e.data);
 
   switch (type) {
     case "id":
       id = data;
       break;
+    case "addComputedState":
+      this.computedStates[data.chartId] = new ComputedData();
+      break;
+    case "runComputedStateMethod":
+      this.computedStates[data.chartId][data.method](...data.params);
+      break;
+    case "deleteComputedState":
+      delete computedStates[data.chartId];
+      break;
     case "method":
       // Run appropriate method
-      const { queueId, method, params } = data;
-      const res = Methods[method](params);
+      const { queueId } = data;
+      const res = Methods[data.method](data.params);
       postMessage({ type: "finished", id, queueId, res });
 
       break;

@@ -44,6 +44,8 @@ export default class RenderingEngine {
    * This can be used for when user interacts with the window like resizing
    */
   draw() {
+    return;
+
     // Reset canvas
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 

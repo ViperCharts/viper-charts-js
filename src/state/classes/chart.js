@@ -6,8 +6,6 @@ import Main from "../../components/canvas_components/main.js";
 import TimeScale from "../../components/canvas_components/time_scale.js";
 import PriceScale from "../../components/canvas_components/price_scale.js";
 
-import ComputedData from "./computed_data.js";
-
 import EventEmitter from "../../events/event_emitter";
 
 import _ from "lodash";
@@ -33,7 +31,7 @@ export default class ChartState extends EventEmitter {
     this.range = range;
     this.defaultRangeBounds = undefined;
     this.datasets = {};
-    this.computedData = new ComputedData({ $global, $chart: this });
+    this.computedStateMessenger = this.$global.workers.createComputedState(id);
     this.visibleScales = { x: [], y: [] };
     this.subcharts = {
       main: undefined,
@@ -309,14 +307,16 @@ export default class ChartState extends EventEmitter {
     } = newRange;
 
     // Update pixel instructions based on
-    // this.computedData.addPixelInstructionsOffset(
-    //   { start, end, min, max },
-    //   { ...this.range },
-    //   this.pixelsPerElement
-    // );
+    this.computedStateMessenger.addPixelInstructionsOffset(
+      { start, end, min, max },
+      { ...this.range }
+    );
 
     // Set visible range
-    this.setRange(newRange);
+    this.range.start = start;
+    this.range.end = end;
+    this.range.min = min;
+    this.range.max = max;
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours
@@ -352,6 +352,38 @@ export default class ChartState extends EventEmitter {
         end: this.range.end,
       });
     }
+
+    // If price / y scale is locked, set min and max y values
+    if (this.settings.lockedYScale) {
+      if (this.defaultRangeBounds) {
+        if (this.defaultRangeBounds.min) {
+          min = this.defaultRangeBounds.min;
+        }
+        if (this.defaultRangeBounds.max) {
+          max = this.defaultRangeBounds.max;
+        }
+      }
+
+      const ySpread5P = (max - min) * 0.05;
+      if (min !== this.range.min) {
+        this.range.min = min - ySpread5P;
+      }
+      if (max !== this.range.max) {
+        this.range.max = max + ySpread5P;
+      }
+    }
+
+    // Calculate pixels per element using range
+    const items = (end - start) / this.timeframe;
+    const { width } = this.$global.layout.chartDimensions[this.id].main;
+    const ppe = width / items;
+    this.pixelsPerElement = ppe;
+
+    this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
+      range: this.range,
+    });
+
+    this.computedStateMessenger.generateInstructions();
   }
 
   buildXAndYVisibleScales() {
@@ -450,51 +482,6 @@ export default class ChartState extends EventEmitter {
     if (end) this.defaultRangeBounds.end = end;
     if (min) this.defaultRangeBounds.min = min;
     if (max) this.defaultRangeBounds.max = max;
-  }
-
-  setRange(
-    {
-      start = this.range.start,
-      end = this.range.end,
-      min = this.range.min,
-      max = this.range.max,
-    },
-    noRecalc
-  ) {
-    if (!noRecalc) this.computedData.calculateAllSets();
-
-    this.range.start = start;
-    this.range.end = end;
-
-    // If price / y scale is locked, set min and max y values
-    if (this.settings.lockedYScale) {
-      if (this.defaultRangeBounds) {
-        if (this.defaultRangeBounds.min) {
-          min = this.defaultRangeBounds.min;
-        }
-        if (this.defaultRangeBounds.max) {
-          max = this.defaultRangeBounds.max;
-        }
-      }
-
-      const ySpread5P = (max - min) * 0.05;
-      if (min !== this.range.min) {
-        this.range.min = min - ySpread5P;
-      }
-      if (max !== this.range.max) {
-        this.range.max = max + ySpread5P;
-      }
-    }
-
-    // Calculate pixels per element using range
-    const items = (end - start) / this.timeframe;
-    const { width } = this.$global.layout.chartDimensions[this.id].main;
-    const ppe = width / items;
-    this.pixelsPerElement = ppe;
-
-    this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
-      range: this.range,
-    });
   }
 
   setPixelsPerElement(pixelsPerElement) {

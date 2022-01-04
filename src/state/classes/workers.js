@@ -1,6 +1,27 @@
 import EventEmitter from "../../events/event_emitter";
 import utils from "../../utils";
 
+class ComputedStateMessenger {
+  constructor({ chartId, worker }) {
+    this.chartId = chartId;
+    this.worker = worker;
+  }
+
+  addPixelInstructionsOffset(newRange, oldRange) {
+    console.log(this.worker);
+    this.worker.worker.postMessage({
+      type: "runComputedStateMethod",
+      data: {
+        chartId: this.chartId,
+        method: "addPixelInstructionsOffset",
+        params: [newRange, oldRange],
+      },
+    });
+  }
+
+  generateInstructions() {}
+}
+
 export default class WorkerState extends EventEmitter {
   constructor({ $global }) {
     super();
@@ -11,9 +32,13 @@ export default class WorkerState extends EventEmitter {
     this.workers = {};
     this.queue = {};
     this.inProgress = {};
+
+    this.lastUsedWorkerIndex = -1;
   }
 
   init() {
+    // If Workers not supported
+    // TODO: Handle no workers support, do single threaded
     if (!window.Worker) return;
 
     this.workersSupported = true;
@@ -38,6 +63,37 @@ export default class WorkerState extends EventEmitter {
       worker,
       inUse: false,
     };
+  }
+
+  /**
+   * Create a computed state for a newly created chart
+   * @param {string} chartId The chart id
+   * @returns {ComputedStateMessenger} API for messaging the computed state stored on a JS worker (separate CPU core)
+   */
+  createComputedState(chartId) {
+    const workerKeys = Object.keys(this.workers);
+
+    this.lastUsedWorkerIndex++;
+
+    // If index is larger than count of workers
+    if (this.lastUsedWorkerIndex === workerKeys.length) {
+      this.lastUsedWorkerIndex = 0;
+    }
+
+    // Get a worker
+    const worker = this.workers[workerKeys[this.lastUsedWorkerIndex]];
+
+    worker.worker.postMessage({
+      type: "addComputedState",
+      data: { chartId },
+    });
+
+    const computedStateMessenger = new ComputedStateMessenger({
+      chartId,
+      worker,
+    });
+
+    return computedStateMessenger;
   }
 
   attemptToRunOnFreeWorker() {
@@ -98,6 +154,6 @@ export default class WorkerState extends EventEmitter {
   }
 
   onWorkerError(e) {
-    console.error(e.data);
+    console.error(e);
   }
 }
