@@ -50,7 +50,7 @@ export default class CrosshairState extends EventEmitter {
     const price = chart.range.min + rangeOffset;
 
     this.timestamp = timestamp;
-    this.price = Utils.toFixed(price, chart.computedData.maxDecimalPlaces);
+    this.price = Utils.toFixed(price, chart.computedState.maxDecimalPlaces);
 
     // Loop through all charts and get x and y pos using timestamp and price
     for (const chartId in this.$global.charts) {

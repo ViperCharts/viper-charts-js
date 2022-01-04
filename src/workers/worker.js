@@ -14,10 +14,10 @@ self.addEventListener("message", (e) => {
       id = data;
       break;
     case "addComputedState":
-      this.computedStates[data.chartId] = new ComputedData();
+      computedStates[data.chartId] = new ComputedData();
       break;
     case "runComputedStateMethod":
-      this.computedStates[data.chartId][data.method](...data.params);
+      computedStates[data.chartId][data.method](data.params);
       break;
     case "deleteComputedState":
       delete computedStates[data.chartId];

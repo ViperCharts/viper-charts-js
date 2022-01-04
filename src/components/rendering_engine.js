@@ -21,6 +21,7 @@ export default class RenderingEngine {
      * @type {Array<string>} id
      */
     this.renderingOrder = [];
+    this.instructions = {};
     this.lastFrameTime = -1;
 
     this.initDraw();
@@ -44,15 +45,12 @@ export default class RenderingEngine {
    * This can be used for when user interacts with the window like resizing
    */
   draw() {
-    return;
-
     // Reset canvas
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     const ids = [...this.renderingOrder];
 
-    const allInstructions =
-      this.$state.chart.computedData.instructions[this.type];
+    const allInstructions = this.instructions;
 
     // If no instructions
     if (!allInstructions || typeof allInstructions !== "object") {

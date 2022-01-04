@@ -24,11 +24,13 @@ class Dataset extends EventEmitter {
   /**
    * Update the data and call all subscribers that updates were applied
    * @param {object} dataset
-   * @param {array} updates
+   * @param {object} updates
    */
   updateDataset(updates) {
     // Apply updates
     Object.assign(this.data, updates);
+
+    const timestamps = Object.keys(updates).sort((a, b) => a - b);
 
     // Update all listeners to re-render this particular element
     for (const chartId in this.subscribers) {
@@ -37,16 +39,20 @@ class Dataset extends EventEmitter {
       // Load the visible data for this chart range
       chart.setVisibleRange();
 
-      // Calculate all indicator data for subscribers to dataset
+      // Calculate all indicator data for new time additions
       const indicatorIdArray = this.subscribers[chartId];
       for (const renderingQueueId of indicatorIdArray) {
-        chart.computedData.calculateOneSet(renderingQueueId);
+        chart.computedStateMessenger.calculateOneSet({
+          key: renderingQueueId,
+          timestamps,
+          dataset: {
+            source: this.source,
+            name: this.name,
+            timeframe: this.timeframe,
+            data: this.data,
+          },
+        });
       }
-
-      // Re-generate pixel instructions for canvas
-      // This MUST be done once. Otherwise it will waste resources
-      // and be very laggy
-      chart.computedData.generateInstructions();
     }
   }
 

@@ -2,21 +2,30 @@ import EventEmitter from "../../events/event_emitter";
 import utils from "../../utils";
 
 class ComputedStateMessenger {
-  constructor({ chartId, worker }) {
+  constructor({ $global, chartId, worker }) {
+    this.$global = $global;
     this.chartId = chartId;
     this.worker = worker;
+
+    this.maxDecimalPlaces = 0;
   }
 
-  addPixelInstructionsOffset(newRange, oldRange) {
-    console.log(this.worker);
+  addPixelInstructionsOffset({ newRange, oldRange }) {
+    const { width, height } =
+      this.$global.layout.chartDimensions[this.chartId].main;
+
     this.worker.worker.postMessage({
       type: "runComputedStateMethod",
       data: {
         chartId: this.chartId,
         method: "addPixelInstructionsOffset",
-        params: [newRange, oldRange],
+        params: { newRange, oldRange, width, height },
       },
     });
+  }
+
+  calculateOneSet({ key, timestamps, dataset }) {
+    console.log(arguments);
   }
 
   generateInstructions() {}
@@ -89,6 +98,7 @@ export default class WorkerState extends EventEmitter {
     });
 
     const computedStateMessenger = new ComputedStateMessenger({
+      $global: this.$global,
       chartId,
       worker,
     });

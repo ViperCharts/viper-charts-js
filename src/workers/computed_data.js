@@ -47,36 +47,13 @@ export default class ComputedData extends EventEmitter {
     this.offsetY = 0;
   }
 
-  async calculateOneSet(key, start, end) {
+  calculateOneSet({ key, timestamps, dataset }) {
     const { indicator, visible } = this.queue.get(key);
-    const dataset = this.$chart.datasets[indicator.datasetId];
 
     // If indicator is set to invisible, dont calculate data
     if (!visible) return;
 
-    // Get the indicator name
-    const { id: indicatorName } = this.$chart.indicators[key];
-
     let iteratedTime = 0;
-
-    const set = {
-      data: {},
-      min: Infinity,
-      max: -Infinity,
-      decimalPlaces: 0,
-    };
-
-    // Load the indicator file if it exists
-    const indi = indicators.map.get(indicatorName);
-
-    if (!indi) {
-      return {
-        ok: false,
-        error: `No indicator found by name ${indicatorName}`,
-      };
-    }
-
-    const instance = new indi.class({ color });
 
     // Storage for global variables used across indicator times only defined once
     const globals = {};
@@ -86,10 +63,9 @@ export default class ComputedData extends EventEmitter {
       funcWraps[funcName] = function () {
         return ScriptFunctions[funcName](
           {
-            addSetItem,
             time: iteratedTime,
-            timeframe,
-            data: datasetData,
+            timeframe: dataset.timeframe,
+            data: dataset.data,
             globals,
             computedState,
           },
@@ -99,24 +75,20 @@ export default class ComputedData extends EventEmitter {
     }
 
     // Run the indicator function for this candle and get all results
-    for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
+    for (const timestamp of timestamps) {
       iteratedTime = timestamp;
       const point = datasetData[iteratedTime];
 
       if (point === undefined || point === null) continue;
 
-      instance.drawFunc.bind(instance)({
+      indicator.drawFunc.bind(indicator)({
         ...point,
         ...funcWraps,
       });
     }
   }
 
-  addPixelInstructionsOffset(newRange, oldRange) {
-    console.log(newRange);
-    const { width, height } =
-      this.$global.layout.chartDimensions[this.$chart.id].main;
-
+  addPixelInstructionsOffset({ newRange, oldRange, width, height }) {
     const newRangeWidth = newRange.end - newRange.start;
     const newRangeHeight = newRange.max - newRange.min;
 
@@ -126,8 +98,6 @@ export default class ComputedData extends EventEmitter {
 
     this.offsetX += x;
     this.offsetY += y;
-
-    console.log(this);
   }
 
   addToQueue(indicator, index) {
@@ -147,6 +117,15 @@ export default class ComputedData extends EventEmitter {
     return id;
   }
 
+  /**
+   * Add instruction to set (aka: plot a value)
+   * *Should only be called from script_functions, not from anywhere else
+   * @param {string} id
+   * @param {number} time
+   * @param {string} type
+   * @param {number} timeframe
+   * @param {array} values
+   */
   addSetItem(id, time, type, timeframe, values) {
     if (!this.sets[id]) {
       this.sets[id] = new ComputedSet({ $state: this.$chart, timeframe });
@@ -196,6 +175,8 @@ export default class ComputedData extends EventEmitter {
     const item = this.queue.get(id);
     item.visible = !item.visible;
     this.queue.set(id, item);
+
+    // TODO dont delete sets or computed state only delete instructions
     delete this.sets[id];
     delete this.computedState[id];
   }

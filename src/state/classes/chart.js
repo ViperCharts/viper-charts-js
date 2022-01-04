@@ -31,7 +31,7 @@ export default class ChartState extends EventEmitter {
     this.range = range;
     this.defaultRangeBounds = undefined;
     this.datasets = {};
-    this.computedStateMessenger = this.$global.workers.createComputedState(id);
+    this.computedState = this.$global.workers.createComputedState(id);
     this.visibleScales = { x: [], y: [] };
     this.subcharts = {
       main: undefined,
@@ -307,10 +307,10 @@ export default class ChartState extends EventEmitter {
     } = newRange;
 
     // Update pixel instructions based on
-    this.computedStateMessenger.addPixelInstructionsOffset(
-      { start, end, min, max },
-      { ...this.range }
-    );
+    this.computedState.addPixelInstructionsOffset({
+      newRange: { start, end, min, max },
+      oldRange: { ...this.range },
+    });
 
     // Set visible range
     this.range.start = start;
@@ -383,7 +383,7 @@ export default class ChartState extends EventEmitter {
       range: this.range,
     });
 
-    this.computedStateMessenger.generateInstructions();
+    this.computedState.generateInstructions();
   }
 
   buildXAndYVisibleScales() {
