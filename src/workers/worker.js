@@ -17,17 +17,18 @@ self.addEventListener("message", (e) => {
       computedStates[data.chartId] = new ComputedData();
       break;
     case "runComputedStateMethod":
-      computedStates[data.chartId][data.method](data.params);
+      const res = computedStates[data.chartId][data.method](data.params);
+      if (data.resolveId) {
+        postMessage({
+          type: "resolve",
+          chartId: data.chartId,
+          resolveId: data.resolveId,
+          res,
+        });
+      }
       break;
     case "deleteComputedState":
       delete computedStates[data.chartId];
-      break;
-    case "method":
-      // Run appropriate method
-      const { queueId } = data;
-      const res = Methods[data.method](data.params);
-      postMessage({ type: "finished", id, queueId, res });
-
       break;
     default:
       console.error(`No implementation for type: ${type}`);

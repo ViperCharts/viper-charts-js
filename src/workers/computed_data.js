@@ -1,6 +1,5 @@
 import Utils from "../utils";
 import ScriptFunctions from "../viper_script/script_functions";
-import indicators from "../components/indicators";
 
 import EventEmitter from "../events/event_emitter";
 
@@ -27,10 +26,19 @@ class ComputedSet {
   }
 }
 
+class MainThreadMessenger {
+  constructor() {}
+
+  addToRenderingOrder({}) {
+    self.postMessage();
+  }
+}
+
 export default class ComputedData extends EventEmitter {
   constructor() {
     super();
 
+    this.mainThreadMessenger = new MainThreadMessenger();
     this.queue = new Map();
     this.sets = {};
     this.computedState = {};
@@ -47,11 +55,9 @@ export default class ComputedData extends EventEmitter {
     this.offsetY = 0;
   }
 
-  calculateOneSet({ key, timestamps, dataset }) {
-    const { indicator, visible } = this.queue.get(key);
-
+  calculateOneSet({ indicator, timestamps, dataset }) {
     // If indicator is set to invisible, dont calculate data
-    if (!visible) return;
+    if (!indicator.visible) return;
 
     let iteratedTime = 0;
 
@@ -100,21 +106,15 @@ export default class ComputedData extends EventEmitter {
     this.offsetY += y;
   }
 
-  addToQueue(indicator, index) {
+  addToQueue({ indicator }) {
     let id = Utils.uniqueId();
     do {
       id = Utils.uniqueId();
     } while (this.queue.has(id));
 
-    this.queue.set(id, {
-      indicator,
-      visible: true,
-    });
+    this.queue.set(id, indicator);
 
-    const { canvas } = this.$chart.subcharts.main;
-    canvas.RE.addToRenderingOrder(id);
-
-    return id;
+    return { renderingQueueId: id };
   }
 
   /**

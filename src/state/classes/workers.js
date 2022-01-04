@@ -1,10 +1,10 @@
 import EventEmitter from "../../events/event_emitter";
-import utils from "../../utils";
+import Utils from "../../utils";
 
 class ComputedStateMessenger {
-  constructor({ $global, chartId, worker }) {
+  constructor({ $global, chart, worker }) {
     this.$global = $global;
-    this.chartId = chartId;
+    this.chart = chart;
     this.worker = worker;
 
     this.maxDecimalPlaces = 0;
@@ -12,12 +12,12 @@ class ComputedStateMessenger {
 
   addPixelInstructionsOffset({ newRange, oldRange }) {
     const { width, height } =
-      this.$global.layout.chartDimensions[this.chartId].main;
+      this.$global.layout.chartDimensions[this.chart.id].main;
 
-    this.worker.worker.postMessage({
+    this.worker.postMessage({
       type: "runComputedStateMethod",
       data: {
-        chartId: this.chartId,
+        chartId: this.chart.id,
         method: "addPixelInstructionsOffset",
         params: { newRange, oldRange, width, height },
       },
@@ -26,6 +26,27 @@ class ComputedStateMessenger {
 
   calculateOneSet({ key, timestamps, dataset }) {
     console.log(arguments);
+  }
+
+  async addToQueue({ indicator }) {
+    const { renderingQueueId } = await new Promise((resolve) => {
+      const id = this.$global.workers.addToResolveQueue(resolve);
+
+      this.worker.postMessage({
+        type: "runComputedStateMethod",
+        data: {
+          method: "addToQueue",
+          resolveId: id,
+          chartId: this.chart.id,
+          params: { indicator },
+        },
+      });
+    });
+
+    const { canvas } = this.chart.subcharts.main;
+    canvas.RE.addToRenderingOrder(renderingQueueId);
+
+    return { renderingQueueId };
   }
 
   generateInstructions() {}
@@ -39,8 +60,7 @@ export default class WorkerState extends EventEmitter {
 
     this.workersSupported = false;
     this.workers = {};
-    this.queue = {};
-    this.inProgress = {};
+    this.resolveQueue = {};
 
     this.lastUsedWorkerIndex = -1;
   }
@@ -64,22 +84,19 @@ export default class WorkerState extends EventEmitter {
     worker.onmessage = this.onWorkerMessage.bind(this);
     worker.onerror = this.onWorkerError.bind(this);
 
-    const id = utils.uniqueId();
+    const id = Utils.uniqueId();
 
     worker.postMessage({ type: "id", data: id });
 
-    this.workers[id] = {
-      worker,
-      inUse: false,
-    };
+    this.workers[id] = worker;
   }
 
   /**
    * Create a computed state for a newly created chart
-   * @param {string} chartId The chart id
+   * @param {ChartState} chart The chart state
    * @returns {ComputedStateMessenger} API for messaging the computed state stored on a JS worker (separate CPU core)
    */
-  createComputedState(chartId) {
+  createComputedState(chart) {
     const workerKeys = Object.keys(this.workers);
 
     this.lastUsedWorkerIndex++;
@@ -92,73 +109,38 @@ export default class WorkerState extends EventEmitter {
     // Get a worker
     const worker = this.workers[workerKeys[this.lastUsedWorkerIndex]];
 
-    worker.worker.postMessage({
+    worker.postMessage({
       type: "addComputedState",
-      data: { chartId },
+      data: { chartId: chart.id },
     });
 
     const computedStateMessenger = new ComputedStateMessenger({
       $global: this.$global,
-      chartId,
+      chart,
       worker,
     });
 
     return computedStateMessenger;
   }
 
-  attemptToRunOnFreeWorker() {
-    // Get an array of workers that are free
-    const freeWorkerIds = Object.keys(this.workers).filter((id) => {
-      if (!this.workers[id].inUse) return id;
-    });
-
-    const queueIds = Object.keys(this.queue);
-
-    // Loop through each free worker id and apply queue item to it
-    for (let i = 0; i < freeWorkerIds.length && i < queueIds.length; i++) {
-      const queueId = queueIds[i];
-      const queueItem = this.queue[queueId];
-      const workerId = freeWorkerIds[i];
-      const worker = this.workers[workerId];
-
-      delete this.queue[queueId];
-      worker.inUse = true;
-      this.inProgress[queueId] = queueItem;
-
-      const { method, params } = queueItem;
-      worker.worker.postMessage({
-        type: "method",
-        data: { queueId, method, params },
-      });
-    }
-  }
-
-  dispatch({ id, method, params }) {
-    return new Promise((resolve) => {
-      if (!id) id = utils.uniqueId();
-
-      this.queue[id] = {
-        queueId: id,
-        method,
-        params,
-        resolve,
-      };
-
-      this.attemptToRunOnFreeWorker();
-    });
+  /**
+   * Add resolve function to queue for resolving result of worker
+   * @param {function} resolve
+   * @returns {string} Resolve id
+   */
+  addToResolveQueue(resolve) {
+    const id = Utils.uniqueId();
+    this.resolveQueue[id] = resolve;
+    return id;
   }
 
   onWorkerMessage(e) {
-    const { type, id, queueId, res } = e.data;
+    const { type, chartId, resolveId, res } = e.data;
 
     switch (type) {
-      case "finished":
-        const queued = this.inProgress[queueId];
-        if (!queued) return;
-        queued.resolve(res);
-        delete this.inProgress[queueId];
-        this.workers[id].inUse = false;
-        this.attemptToRunOnFreeWorker();
+      case "resolve":
+        this.resolveQueue[resolveId](res);
+        delete this.resolveQueue[resolveId];
         break;
     }
   }

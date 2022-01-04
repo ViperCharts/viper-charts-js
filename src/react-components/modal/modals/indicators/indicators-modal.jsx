@@ -1,6 +1,6 @@
 import React from "react";
 
-import { series, indicators } from "../../../../components/indicators";
+import indicators from "../../../../components/indicators";
 
 import "./indicators-modal.css";
 
@@ -16,7 +16,7 @@ export default {
 
       this.state = {
         sources: this.$global.data.sources,
-        selectedIndicator: {},
+        selectedIndicatorId: "",
         search: "",
         searchResults: [],
       };
@@ -48,8 +48,7 @@ export default {
      */
     addIndicator(searchResult) {
       const chart = this.$global.charts[this.$global.selectedChartId];
-      const indicator = this.state.selectedIndicator;
-      chart.addIndicator(indicator, searchResult);
+      chart.addIndicator(this.state.selectedIndicatorId, searchResult);
     }
 
     onSearchInput({ target }) {
@@ -85,8 +84,7 @@ export default {
       return (
         <div className="indicators-modal">
           <div className="indicators">
-            {series.map(this.renderButton.bind(this))}
-            {indicators.map(this.renderButton.bind(this))}
+            {Object.keys(indicators).map(this.renderButton.bind(this))}
           </div>
           <div className="markets-search-box">
             <input
@@ -97,7 +95,7 @@ export default {
             />
           </div>
           <div className="datasets">
-            {this.state.selectedIndicator.id
+            {this.state.selectedIndicatorId
               ? this.state.searchResults.map((result) => (
                   <button
                     onClick={() => this.addIndicator(result)}
@@ -114,14 +112,15 @@ export default {
       );
     }
 
-    renderButton(indicator) {
-      const { selectedIndicator } = this.state;
-      const selected = selectedIndicator.id === indicator.id;
+    renderButton(indicatorId) {
+      const { selectedIndicatorId } = this.state;
+      const selected = selectedIndicatorId === indicatorId;
+      const indicator = indicators[indicatorId];
 
       return (
         <button
-          onClick={() => this.setState({ selectedIndicator: indicator })}
-          key={indicator.id}
+          onClick={() => this.setState({ selectedIndicatorId: indicatorId })}
+          key={indicatorId}
           className={`indicator-button ${
             selected ? "indicator-button__selected" : ""
           }`}

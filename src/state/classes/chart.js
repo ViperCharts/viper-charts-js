@@ -31,7 +31,7 @@ export default class ChartState extends EventEmitter {
     this.range = range;
     this.defaultRangeBounds = undefined;
     this.datasets = {};
-    this.computedState = this.$global.workers.createComputedState(id);
+    this.computedState = this.$global.workers.createComputedState(this);
     this.visibleScales = { x: [], y: [] };
     this.subcharts = {
       main: undefined,
@@ -137,7 +137,12 @@ export default class ChartState extends EventEmitter {
     this.fireEvent("set-name", this.name);
   }
 
-  addIndicator(indicator, { source, name, visible = true }) {
+  /**
+   * Add an indicator to this chart by id or by object
+   * @param {string|indicator} indicator The indicator to add
+   * @param {*} options
+   */
+  async addIndicator(indicator, { source, name, visible = true }) {
     // Get or create dataset if doesn't exist
     const dataset = this.$global.data.addOrGetDataset({
       source,
@@ -145,43 +150,34 @@ export default class ChartState extends EventEmitter {
       timeframe: this.timeframe,
     });
 
-    const { canvas } = this.subcharts.main;
-
-    const $state = {
-      chart: this,
-      global: this.$global,
-    };
-
     const localId = dataset.getTimeframeAgnosticId();
     const color = Utils.randomHexColor();
 
-    // Create an instance of the indicator class
-    const indicatorClass = new indicator.class({
-      $state,
-      canvas,
-      color,
-      datasetId: localId,
-    });
-
+    // Add additional required options to indicator
     indicator = {
-      id: indicator.id,
-      name: indicator.name,
+      ...indicator,
       visible,
       datasetId: localId,
+      color,
     };
 
+    // Add to the rendering queue on computed state and rendering engine
+    const { renderingQueueId } = await this.computedState.addToQueue({
+      indicator,
+    });
+
+    indicator.renderingQueueId = renderingQueueId;
+
     // Subscribe to dataset updates
-    dataset.addSubscriber(this.id, indicatorClass.renderingQueueId);
+    dataset.addSubscriber(this.id, renderingQueueId);
     this.datasets[localId] = dataset;
 
-    this.indicators[indicatorClass.renderingQueueId] = indicator;
+    this.indicators[renderingQueueId] = indicator;
 
     // Add indicator to UI state
-    this.$global.ui.charts[this.id].addIndicator(
-      indicatorClass.renderingQueueId,
-      indicator
-    );
+    this.$global.ui.charts[this.id].addIndicator(renderingQueueId, indicator);
 
+    // Request data points for dataset
     this.$global.data.requestDataPoints({
       dataset,
       start: this.range.start,
