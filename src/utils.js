@@ -62,7 +62,7 @@ export default {
     const yFromMin = price - min;
     const perc = yFromMin / yInView;
     const y = -Math.floor(perc * height - height);
-    return Math.min(Math.max(y, -1), height);
+    return Math.min(Math.max(y, -1), height + 1);
   },
 
   wipeObject(object) {

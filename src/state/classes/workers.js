@@ -8,6 +8,9 @@ class ComputedStateMessenger {
     this.worker = worker;
 
     this.maxDecimalPlaces = 6;
+
+    this.isRequestingToGenerateAllInstructions = false;
+    this.isGeneratingAllInstrutions = false;
   }
 
   addPixelInstructionsOffset({ newRange, oldRange }) {
@@ -107,6 +110,12 @@ class ComputedStateMessenger {
   }
 
   async generateAllInstructions() {
+    // If already generating instructions, dont fill the call stack with useless calls
+    if (this.isGeneratingAllInstrutions) {
+      this.isRequestingToGenerateAllInstructions = true;
+      return;
+    }
+
     const { allInstructions } = await new Promise((resolve) => {
       const id = this.$global.workers.addToResolveQueue(resolve);
 
@@ -135,8 +144,17 @@ class ComputedStateMessenger {
     });
 
     const { RE } = this.chart.subcharts.main.canvas;
-    console.log(RE.instructions, allInstructions);
     RE.instructions = allInstructions.main;
+    this.isGeneratingAllInstrutions = false;
+
+    RE.offsetX = 0;
+    RE.offsetY = 0;
+
+    // If another generation is requested, call again
+    if (this.isRequestingToGenerateAllInstructions) {
+      this.isRequestingToGenerateAllInstructions = false;
+      this.generateAllInstructions();
+    }
   }
 }
 

@@ -147,18 +147,6 @@ export default class ComputedData extends EventEmitter {
     }
   }
 
-  addPixelInstructionsOffset({ newRange, oldRange, width, height }) {
-    const newRangeWidth = newRange.end - newRange.start;
-    const newRangeHeight = newRange.max - newRange.min;
-
-    // Calculate percentage difference between widths
-    const x = -((newRange.start - oldRange.start) / newRangeWidth) * width;
-    const y = ((newRange.min - oldRange.min) / newRangeHeight) * height;
-
-    this.offsetX += x;
-    this.offsetY += y;
-  }
-
   addToQueue({ indicator }) {
     let id = Utils.uniqueId();
     do {

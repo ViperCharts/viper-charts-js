@@ -15,7 +15,6 @@ self.addEventListener("message", (e) => {
       computedStates[data.chartId] = new ComputedData();
       break;
     case "runComputedStateMethod":
-      console.log(data.method);
       const res = computedStates[data.chartId][data.method](data.params);
       if (data.resolveId) {
         postMessage({

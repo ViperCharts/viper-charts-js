@@ -143,6 +143,23 @@ export default class RenderingEngine {
     this.renderingOrder.splice(i, 1);
   }
 
+  adjustInstructions({ newRange, oldRange }) {
+    const { width, height } = this.canvas;
+
+    const newRangeWidth = newRange.end - newRange.start;
+    const newRangeHeight = newRange.max - newRange.min;
+
+    const leftOffset = oldRange.start - newRange.start;
+    const rightOffset = oldRange.end - newRange.end;
+    if (leftOffset !== rightOffset) {
+      // console.log(rightOffset - leftOffset);
+    }
+
+    // Calculate percentage difference between widths
+    const x = -((newRange.start - oldRange.start) / newRangeWidth) * width;
+    const y = ((newRange.min - oldRange.min) / newRangeHeight) * height;
+  }
+
   addOverlay(overlay) {
     let id = Utils.uniqueId();
     do {

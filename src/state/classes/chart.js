@@ -304,7 +304,7 @@ export default class ChartState extends EventEmitter {
    * @param {number} newRange.max Max value for price axis
    * @param {string} movedId The chart id of the chart that initialzed the move
    */
-  setVisibleRange(newRange = {}, movedId = this.id) {
+  async setVisibleRange(newRange = {}, movedId = this.id) {
     const {
       start = this.range.start,
       end = this.range.end,
@@ -312,17 +312,22 @@ export default class ChartState extends EventEmitter {
       max = this.range.max,
     } = newRange;
 
-    // Update pixel instructions based on
-    this.computedState.addPixelInstructionsOffset({
-      newRange: { start, end, min, max },
-      oldRange: { ...this.range },
-    });
+    // TODO FIX Update pixel instructions based on
+    // const { canvas } = this.subcharts.main;
+    // if (canvas) {
+    //   canvas.RE.adjustInstructions({
+    //     newRange: { start, end, min, max },
+    //     oldRange: { ...this.range },
+    //   });
+    // }
 
     // Set visible range
     this.range.start = start;
     this.range.end = end;
     this.range.min = min;
     this.range.max = max;
+
+    await this.computedState.generateAllInstructions();
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours
@@ -379,8 +384,6 @@ export default class ChartState extends EventEmitter {
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
       range: this.range,
     });
-
-    this.computedState.generateAllInstructions();
 
     // Check for any un-fetched data points in all subscribed datasets
     for (const datasetId in this.datasets) {
