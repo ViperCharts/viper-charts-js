@@ -5,18 +5,10 @@ import ScriptFunctions from "../viper_script/script_functions";
 import EventEmitter from "../events/event_emitter";
 
 class ComputedSet {
-  constructor({
-    $state,
-    timeframe,
-    data = {},
-    max = -Infinity,
-    min = Infinity,
-  }) {
+  constructor({ $state, timeframe, data = {} }) {
     this.$state = $state;
 
     this.data = data;
-    this.max = max;
-    this.min = min;
     this.timeframe = timeframe;
     this.decimalPlaces = 0;
   }
@@ -88,16 +80,6 @@ export default class ComputedData extends EventEmitter {
       // Update max & min if applicable
       const { series } = values;
       for (const val of series) {
-        // Update min
-        if (val < set.min) {
-          set.min = val;
-        }
-
-        // Update max
-        if (val > set.max) {
-          set.max = val;
-        }
-
         // If potential for more decimal places, check
         if (set.decimalPlaces < 8) {
           const decimalPlaces = Utils.getDecimalPlaces(val, 8);
@@ -200,18 +182,90 @@ export default class ComputedData extends EventEmitter {
 
   generateAllInstructions({
     scaleType,
-    visibleRange,
+    requestedRange,
     timeframe,
     chartDimensions,
     pixelsPerElement,
+    settings,
   }) {
+    const isPercent = scaleType === "percent";
+    const isNormalized = scaleType === "normalized";
+
     const timestamps = Utils.getAllTimestampsIn(
-      visibleRange.start,
-      visibleRange.end,
+      requestedRange.start,
+      requestedRange.end,
       timeframe
     );
 
     const renderingQueueIds = Object.keys(this.sets);
+    const data = {};
+
+    let max = -Infinity;
+    let min = Infinity;
+
+    // Loop through all indicators to be rendered
+    for (const renderingQueueId of renderingQueueIds) {
+      const set = this.sets[renderingQueueId];
+
+      data[renderingQueueId] = {};
+
+      for (const time of timestamps) {
+        let item = set.data[time];
+        if (!item) continue;
+
+        data[renderingQueueId][time] = JSON.parse(
+          JSON.stringify(set.data[time])
+        );
+        item = data[renderingQueueId][time];
+
+        for (let i = 0; i < item.length; i++) {
+          const { values } = item[i];
+
+          // If percent, loop through all instructions at and loop through every value for each instruction
+          // and compare it to starting value
+          if (isPercent) {
+            // Get the first set item of the visible range
+            const firstInstructions = set.data[timestamps[0]];
+
+            if (firstInstructions) {
+              const { series: firstSeries } = firstInstructions[i].values;
+
+              // TODO fix this so we dont compare EVERY value to start candle
+              values.series = values.series.map((val, j) => {
+                return Utils.toFixed(
+                  ((val - firstSeries[j]) / firstSeries[j]) * 100,
+                  2
+                );
+              });
+            }
+          }
+
+          // If a normalized chart, every value is compared relatively to its own max and min (visible range);
+          else if (isNormalized) {
+            const range = set.max - set.min;
+
+            values.series = values.series.map((val) =>
+              Utils.toFixed(((val - set.min) / range) * 100, 4)
+            );
+          }
+
+          const { series } = values;
+
+          // Compute max plotted visible data
+          for (const value of series) {
+            if (value > max) {
+              max = value;
+            }
+            if (value < min) {
+              min = value;
+            }
+          }
+        }
+      }
+    }
+
+    this.max = max;
+    this.min = min;
 
     const allInstructions = {
       main: {},
@@ -219,9 +273,19 @@ export default class ComputedData extends EventEmitter {
       xScale: {},
     };
 
+    const visibleRange = { ...requestedRange };
+
+    // If price / y scale is locked, set min and max y values
+    if (settings.lockedYScale) {
+      const ySpread5P = (max - min) * 0.05;
+      visibleRange.min = min - ySpread5P;
+      visibleRange.max = max + ySpread5P;
+    }
+
     // Loop through all sets and generate instructions based on them
     for (const renderingQueueId of renderingQueueIds) {
       const { instructions } = this.generateInstructions({
+        data: data[renderingQueueId],
         renderingQueueId,
         timestamps,
         scaleType,
@@ -234,10 +298,11 @@ export default class ComputedData extends EventEmitter {
       allInstructions.main[renderingQueueId] = instructions.main;
     }
 
-    return { allInstructions };
+    return { allInstructions, visibleRange };
   }
 
   generateInstructions({
+    data,
     renderingQueueId,
     timestamps,
     scaleType,
@@ -246,19 +311,11 @@ export default class ComputedData extends EventEmitter {
     chartDimensions,
     pixelsPerElement,
   }) {
-    const set = this.sets[renderingQueueId];
-
-    const isPercent = scaleType === "percent";
-    const isNormalized = scaleType === "normalized";
-
-    let max = -Infinity;
-    let min = Infinity;
-
     const vr = visibleRange;
 
     // TODO re-add min max calcs and bs
 
-    const { main, yScale } = chartDimensions;
+    const { main } = chartDimensions;
 
     const instructions = {
       main: {},
@@ -275,7 +332,7 @@ export default class ComputedData extends EventEmitter {
 
     // Loop through each timestamp of desired range and generate instructions for each plot point
     for (const time of timestamps) {
-      const item = set.data[time];
+      const item = data[time];
 
       if (!item) continue;
 
@@ -338,11 +395,6 @@ export default class ComputedData extends EventEmitter {
       }
     }
 
-    // this.max = max;
-    // this.min = min;
-    // this.$chart.range.min = min;
-    // this.$chart.range.max = max;
-
     // const width = maxWidth + 12;
 
     // // Check if max text width is different than yscale layout width
@@ -371,61 +423,6 @@ export default class ComputedData extends EventEmitter {
     this.maxDecimalPlaces = maxDecimalPlaces;
   }
 }
-
-// for (const id in sets) {
-//   const set = sets[id];
-//   dataDictionaryCopy[id] = JSON.parse(JSON.stringify(set.data));
-//   const data = dataDictionaryCopy[id];
-
-//   for (const time of times) {
-//     const item = data[time];
-
-//     if (!item) continue;
-
-//     for (let i = 0; i < item.length; i++) {
-//       const { values } = item[i];
-
-//       // If percent, loop through all instructions at and loop through every value for each instruction
-//       // and compare it to starting value
-//       if (isPercent) {
-//         const firstInstructions = set.data[Object.keys(set.data)[0]];
-
-//         if (firstInstructions) {
-//           const { series: firstSeries } = firstInstructions[i].values;
-
-//           // TODO fix this so we dont compare EVERY value to start candle
-//           values.series = values.series.map((val, j) => {
-//             return Utils.toFixed(
-//               ((val - firstSeries[j]) / firstSeries[j]) * 100,
-//               2
-//             );
-//           });
-//         }
-//       }
-
-//       // If a normalized chart, every value is compared relatively to its own max and min (visible range);
-//       else if (isNormalized) {
-//         const range = set.max - set.min;
-
-//         values.series = values.series.map((val) =>
-//           Utils.toFixed(((val - set.min) / range) * 100, 4)
-//         );
-//       }
-
-//       const { series } = values;
-
-//       // Compute max plotted visible data
-//       for (const value of series) {
-//         if (value > max) {
-//           max = value;
-//         }
-//         if (value < min) {
-//           min = value;
-//         }
-//       }
-//     }
-//   }
-// }
 
 // CALCUALTE Y LABEL INSTRUICTIONS TODO REFACTOR THIS GARBAGE
 

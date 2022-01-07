@@ -16,7 +16,7 @@ let Viper;
   Viper = new ViperCharts({
     element: document.getElementById("chart"),
     sources,
-    // settings: JSON.parse(localStorage.getItem("settings") || "{}"),
+    settings: JSON.parse(localStorage.getItem("settings") || "{}"),
     onRequestHistoricalData,
     onSaveViperSettings,
   });
@@ -39,6 +39,6 @@ let Viper;
   }
 
   function onSaveViperSettings(settings) {
-    // localStorage.setItem("settings", JSON.stringify(settings));
+    localStorage.setItem("settings", JSON.stringify(settings));
   }
 })();

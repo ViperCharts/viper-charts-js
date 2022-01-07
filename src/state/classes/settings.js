@@ -43,7 +43,7 @@ export default class SettingsState extends EventEmitter {
 
               for (const indicator of Object.values(state.indicators)) {
                 const [source, name] = indicator.datasetId.split(":");
-                chart.addIndicator(Indicators.map.get(indicator.id), {
+                chart.addIndicator(Indicators[indicator.id], {
                   source,
                   name,
                   visible: indicator.visible,

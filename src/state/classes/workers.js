@@ -8,6 +8,8 @@ class ComputedStateMessenger {
     this.worker = worker;
 
     this.maxDecimalPlaces = 6;
+    this.min = Infinity;
+    this.max = -Infinity;
 
     this.isRequestingToGenerateAllInstructions = false;
     this.isGeneratingAllInstrutions = false;
@@ -68,7 +70,7 @@ class ComputedStateMessenger {
     });
 
     // Generate instructions for this set
-    await this.generateInstructions({ renderingQueueId, timestamps });
+    await this.generateAllInstructions();
   }
 
   async generateInstructions({ renderingQueueId, timestamps }) {
@@ -96,6 +98,7 @@ class ComputedStateMessenger {
               xScale: chartDimensions.xScale,
             },
             pixelsPerElement: this.chart.pixelsPerElement,
+            settings: this.chart.settings,
           },
         },
       });
@@ -113,10 +116,10 @@ class ComputedStateMessenger {
     // If already generating instructions, dont fill the call stack with useless calls
     if (this.isGeneratingAllInstrutions) {
       this.isRequestingToGenerateAllInstructions = true;
-      return;
+      return {};
     }
 
-    const { allInstructions } = await new Promise((resolve) => {
+    const { allInstructions, visibleRange } = await new Promise((resolve) => {
       const id = this.$global.workers.addToResolveQueue(resolve);
 
       const chartDimensions =
@@ -130,7 +133,7 @@ class ComputedStateMessenger {
           chartId: this.chart.id,
           params: {
             scaleType: this.chart.settings.scaleType,
-            visibleRange: this.chart.range,
+            requestedRange: this.chart.range,
             timeframe: this.chart.timeframe,
             chartDimensions: {
               main: chartDimensions.main,
@@ -138,6 +141,7 @@ class ComputedStateMessenger {
               xScale: chartDimensions.xScale,
             },
             pixelsPerElement: this.chart.pixelsPerElement,
+            settings: this.chart.settings,
           },
         },
       });
@@ -153,8 +157,10 @@ class ComputedStateMessenger {
     // If another generation is requested, call again
     if (this.isRequestingToGenerateAllInstructions) {
       this.isRequestingToGenerateAllInstructions = false;
-      this.generateAllInstructions();
+      setTimeout(() => this.generateAllInstructions());
     }
+
+    return { allInstructions, visibleRange };
   }
 }
 

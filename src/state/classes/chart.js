@@ -321,13 +321,7 @@ export default class ChartState extends EventEmitter {
     //   });
     // }
 
-    // Set visible range
-    this.range.start = start;
-    this.range.end = end;
-    this.range.min = min;
-    this.range.max = max;
-
-    await this.computedState.generateAllInstructions();
+    this.range = { start, end, min, max };
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours
@@ -352,28 +346,17 @@ export default class ChartState extends EventEmitter {
       }
     }
 
+    const { visibleRange } = await this.computedState.generateAllInstructions();
+
+    if (!visibleRange) return;
+
+    if (this.settings.lockedYScale) {
+      this.range.min = visibleRange.min;
+      this.range.max = visibleRange.max;
+    }
+
     // Build the visible x and y scales
     this.buildXAndYVisibleScales();
-
-    // If price / y scale is locked, set min and max y values
-    if (this.settings.lockedYScale) {
-      if (this.defaultRangeBounds) {
-        if (this.defaultRangeBounds.min) {
-          min = this.defaultRangeBounds.min;
-        }
-        if (this.defaultRangeBounds.max) {
-          max = this.defaultRangeBounds.max;
-        }
-      }
-
-      const ySpread5P = (max - min) * 0.05;
-      if (min !== this.range.min) {
-        this.range.min = min - ySpread5P;
-      }
-      if (max !== this.range.max) {
-        this.range.max = max + ySpread5P;
-      }
-    }
 
     // Calculate pixels per element using range
     const items = (end - start) / this.timeframe;
@@ -460,7 +443,7 @@ export default class ChartState extends EventEmitter {
       start = end - candlesInView * this.timeframe;
     }
 
-    this.setVisibleRange({ start, end, min: 0.6, max: 0.9 });
+    this.setVisibleRange({ start, end });
   }
 
   resizeXRange(delta, width) {
