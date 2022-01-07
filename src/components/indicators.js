@@ -17,7 +17,7 @@ export default {
     id: "candlestick",
     name: "Candlestick",
     draw({ open, high, low, close, plotCandle }) {
-      const color = close >= open ? this.upColor : this.downColor;
+      const color = close >= open ? "#C4FF49" : "#FE3A64";
       plotCandle({
         open,
         high,

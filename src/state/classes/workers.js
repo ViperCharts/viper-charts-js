@@ -50,6 +50,24 @@ class ComputedStateMessenger {
     return { renderingQueueId };
   }
 
+  async toggleVisibility({ renderingQueueId }) {
+    await new Promise((resolve) => {
+      const id = this.$global.workers.addToResolveQueue(resolve);
+
+      this.worker.postMessage({
+        type: "runComputedStateMethod",
+        data: {
+          method: "toggleVisibility",
+          resolveId: id,
+          chartId: this.chart.id,
+          params: { renderingQueueId },
+        },
+      });
+    });
+
+    await this.generateAllInstructions();
+  }
+
   async calculateOneSet({ renderingQueueId, timestamps, dataset }) {
     await new Promise((resolve) => {
       const id = this.$global.workers.addToResolveQueue(resolve);
@@ -162,6 +180,31 @@ class ComputedStateMessenger {
     }
 
     return { allInstructions, visibleRange, visibleScales, pixelsPerElement };
+  }
+
+  emptyAllSets() {
+    this.worker.postMessage({
+      type: "runComputedStateMethod",
+      data: {
+        method: "emptyAllSets",
+        chartId: this.chart.id,
+        params: {},
+      },
+    });
+  }
+
+  removeFromQueue({ renderingQueueId }) {
+    this.worker.postMessage({
+      type: "runComputedStateMethod",
+      data: {
+        method: "removeFromQueue",
+        chartId: this.chart.id,
+        params: { renderingQueueId },
+      },
+    });
+
+    const { canvas } = this.chart.subcharts.main;
+    canvas.RE.removeFromRenderingOrder(renderingQueueId);
   }
 }
 

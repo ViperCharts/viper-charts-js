@@ -189,44 +189,42 @@ export default class ComputedData extends EventEmitter {
     return { renderingQueueId: id };
   }
 
-  /**
-   * Add instruction to set (aka: plot a value)
-   * *Should only be called from script_functions, not from anywhere else
-   * @param {string} id
-   * @param {number} time
-   * @param {string} type
-   * @param {number} timeframe
-   * @param {array} values
-   */
-
-  toggleVisibility(id) {
-    if (!this.queue.has(id)) {
-      console.error(`${id} was not found in rendering queue`);
+  toggleVisibility({ renderingQueueId }) {
+    if (!this.queue.has(renderingQueueId)) {
+      console.error(`${renderingQueueId} was not found in rendering queue`);
       return;
     }
 
-    const item = this.queue.get(id);
+    const item = this.queue.get(renderingQueueId);
     item.visible = !item.visible;
-    this.queue.set(id, item);
-
-    // TODO dont delete sets or computed state only delete instructions
-    delete this.sets[id];
-    delete this.computedState[id];
+    this.queue.set(renderingQueueId, item);
   }
 
-  removeFromQueue(id) {
-    if (!this.queue.has(id)) {
-      console.error(`${id} was not found in rendering queue`);
+  emptySet({ renderingQueueId }) {
+    delete this.sets[renderingQueueId];
+    delete this.computedState[renderingQueueId];
+  }
+
+  emptyAllSets() {
+    for (const renderingQueueId in this.sets) {
+      this.emptySet({ renderingQueueId });
+    }
+  }
+
+  /**
+   * Remove all data relating to this set/renderingQueueId
+   * @param {object} params
+   * @param {string} params.renderingQueueId The id in the sets object
+   * @returns
+   */
+  removeFromQueue({ renderingQueueId }) {
+    if (!this.queue.has(renderingQueueId)) {
+      console.error(`${renderingQueueId} was not found in rendering queue`);
       return false;
     }
 
-    const { canvas } = this.$chart.subcharts.main;
-    canvas.RE.removeFromRenderingOrder(id);
-    this.queue.delete(id);
-    delete this.sets[id];
-    delete this.computedState[id];
-
-    return true;
+    this.queue.delete(renderingQueueId);
+    this.emptySet({ renderingQueueId });
   }
 
   generateAllInstructions({
@@ -256,7 +254,11 @@ export default class ComputedData extends EventEmitter {
     for (const renderingQueueId of renderingQueueIds) {
       const set = this.sets[renderingQueueId];
 
+      const queueItem = this.queue.get(renderingQueueId);
+
       data[renderingQueueId] = {};
+
+      if (!queueItem.visible) continue;
 
       for (const time of timestamps) {
         let item = set.data[time];

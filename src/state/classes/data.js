@@ -151,6 +151,8 @@ export default class DataState extends EventEmitter {
       }
     }
 
+    // Get array of timestamps that are already in data store and check if
+
     if (requestedPoint[0] === Infinity || requestedPoint[1] === -Infinity) {
       return;
     }

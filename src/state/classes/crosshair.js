@@ -32,6 +32,27 @@ export default class CrosshairState extends EventEmitter {
    */
   updateCrosshair(chart, x, y) {
     if (!this.visible) return;
+
+    this.updateCrosshairTimeAndPrice(chart, x, y);
+
+    // Loop through all charts and get x and y pos using timestamp and price
+    for (const chartId in this.$global.charts) {
+      chart = this.$global.charts[chartId];
+      if (!chart.isInitialized) continue;
+
+      this.crosshairs[chart.id] = {
+        x: chart.getXCoordByTimestamp(this.timestamp),
+        y: chart.getYCoordByPrice(this.price),
+      };
+    }
+  }
+
+  updateCrosshairTimeAndPrice(chart, x, y) {
+    if (!x || !y) {
+      x = this.crosshairs[chart.id].x;
+      y = this.crosshairs[chart.id].y;
+    }
+
     let timestamp = chart.getTimestampByXCoord(x);
 
     // Check if timestamp remainder is less than half a single timeframe unit
@@ -51,16 +72,5 @@ export default class CrosshairState extends EventEmitter {
 
     this.timestamp = timestamp;
     this.price = Utils.toFixed(price, chart.computedState.maxDecimalPlaces);
-
-    // Loop through all charts and get x and y pos using timestamp and price
-    for (const chartId in this.$global.charts) {
-      chart = this.$global.charts[chartId];
-      if (!chart.isInitialized) continue;
-
-      this.crosshairs[chart.id] = {
-        x: chart.getXCoordByTimestamp(this.timestamp),
-        y: chart.getYCoordByPrice(this.price),
-      };
-    }
   }
 }

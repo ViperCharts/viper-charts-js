@@ -178,6 +178,21 @@ export default class ChartState extends EventEmitter {
 
     indicator.renderingQueueId = renderingQueueId;
 
+    // If dataset already exists, get all times and calculate them
+    const timestamps = Object.keys(dataset.data);
+    if (timestamps.length) {
+      this.computedState.calculateOneSet({
+        renderingQueueId,
+        timestamps,
+        dataset: {
+          source: dataset.source,
+          name: dataset.name,
+          timeframe: dataset.timeframe,
+          data: dataset.data,
+        },
+      });
+    }
+
     // Subscribe to dataset updates
     dataset.addSubscriber(this.id, renderingQueueId);
     this.datasets[localId] = dataset;
@@ -203,8 +218,6 @@ export default class ChartState extends EventEmitter {
   setTimeframe(timeframe, movedId = this.id) {
     const oldDatasets = {};
 
-    const oldTimeframe = this.timeframe;
-
     // Copy all datasets so we can reset master in preperation for setting new visible range
     for (const oldDataset of Object.values(this.datasets)) {
       oldDatasets[oldDataset.getTimeframeAgnosticId()] = oldDataset;
@@ -215,6 +228,9 @@ export default class ChartState extends EventEmitter {
     this.datasets = {};
     this.timeframe = timeframe;
     this.fireEvent("set-timeframe", timeframe);
+
+    // Clear all computed indicator results
+    this.computedState.emptyAllSets();
 
     if (this.isInitialized) {
       // Update range.start to be same pixelsPerElement calculation
@@ -266,19 +282,38 @@ export default class ChartState extends EventEmitter {
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, { timeframe });
   }
 
-  toggleVisibility(id) {
-    this.computedData.toggleVisibility(id);
-    const visible = !this.indicators[id].visible;
-    this.indicators[id].visible = visible;
-    this.$global.ui.charts[this.id].updateIndicator(id, { visible });
+  async toggleVisibility(renderingQueueId) {
+    await this.computedState.toggleVisibility({ renderingQueueId });
 
-    // Re calculate visible range
-    this.setVisibleRange();
+    const visible = !this.indicators[renderingQueueId].visible;
+    this.indicators[renderingQueueId].visible = visible;
+    this.$global.ui.charts[this.id].updateIndicator(renderingQueueId, {
+      visible,
+    });
+
+    if (visible) {
+      // If dataset already exists, get all times and calculate them
+      const dataset =
+        this.datasets[this.indicators[renderingQueueId].datasetId];
+      const timestamps = Object.keys(dataset.data);
+      if (timestamps.length) {
+        this.computedState.calculateOneSet({
+          renderingQueueId,
+          timestamps,
+          dataset: {
+            source: dataset.source,
+            name: dataset.name,
+            timeframe: dataset.timeframe,
+            data: dataset.data,
+          },
+        });
+      }
+    }
   }
 
   removeIndicator(id) {
     const indicator = this.indicators[id];
-    this.computedData.removeFromQueue(id);
+    this.computedState.removeFromQueue({ renderingQueueId: id });
     delete this.indicators[id];
 
     // Remove dataset listener and dataset if no more listeners;
@@ -292,7 +327,7 @@ export default class ChartState extends EventEmitter {
 
     this.$global.settings.onChartIndicatorsChange(this.id, this.indicators);
 
-    this.setVisibleRange();
+    this.setVisibleRange({});
   }
 
   /**
@@ -311,15 +346,6 @@ export default class ChartState extends EventEmitter {
       min = this.range.min,
       max = this.range.max,
     } = newRange;
-
-    // TODO FIX Update pixel instructions based on
-    // const { canvas } = this.subcharts.main;
-    // if (canvas) {
-    //   canvas.RE.adjustInstructions({
-    //     newRange: { start, end, min, max },
-    //     oldRange: { ...this.range },
-    //   });
-    // }
 
     this.range = { start, end, min, max };
 
@@ -358,6 +384,8 @@ export default class ChartState extends EventEmitter {
 
     this.pixelsPerElement = pixelsPerElement;
     this.visibleScales = visibleScales;
+
+    this.$global.crosshair.updateCrosshairTimeAndPrice(this);
 
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
       range: this.range,

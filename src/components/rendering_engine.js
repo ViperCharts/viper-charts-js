@@ -140,6 +140,7 @@ export default class RenderingEngine {
 
   removeFromRenderingOrder(id) {
     const i = this.renderingOrder.indexOf(id);
+    delete this.instructions[id];
     this.renderingOrder.splice(i, 1);
   }
 
