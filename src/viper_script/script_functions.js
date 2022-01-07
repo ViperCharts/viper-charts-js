@@ -58,7 +58,8 @@ export default {
   plotText() {},
 
   // Get value from previous or future data point if exists
-  getData({ timeframe, data, time }, { lookback, source }) {
+  getData({ set, timeframe, data, time }, { lookback, source }) {
+    set.addLookback(lookback);
     const timestamp = time - lookback * timeframe;
     const item = data[timestamp];
     if (!item) return undefined;
@@ -70,18 +71,18 @@ export default {
     computedState[time][name] = value;
   },
 
-  getVar({ time, timeframe, computedState }, { name, lookback }) {
+  getVar({ set, time, timeframe, computedState }, { name, lookback }) {
+    set.addLookback(lookback);
     const timestamp = time - lookback * timeframe;
-
     const item = computedState[timestamp];
     if (!item) return undefined;
     return item[name];
   },
 
-  sma({ timeframe, data, time }, { source, length }) {
+  sma({}, { source, length }) {
     let total = 0;
     for (let i = 0; i < length; i++) {
-      total += this.getData({ timeframe, data, time }, { lookback: i, source });
+      total += this.getData(arguments[0], { lookback: i, source });
     }
     return total / length;
   },

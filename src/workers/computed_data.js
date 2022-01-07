@@ -12,11 +12,25 @@ class ComputedSet {
     this.data = data;
     this.timeframe = timeframe;
     this.decimalPlaces = 0;
+    this.maxLookback = 0;
+    this.maxLookforward = 0;
   }
 
   setDecimalPlaces(decimalPlaces) {
     this.decimalPlaces = decimalPlaces;
     this.$state.calculateMaxDecimalPlaces();
+  }
+
+  addLookback(lookback) {
+    if (lookback === 0) return;
+    // If lookback is positive, means we are looking back and if greater than historical lookback
+    if (lookback > 0 && lookback > this.maxLookback) {
+      this.maxLookback = lookback;
+    }
+    // If lookback is negative, means we are looking forward and if less than historial lookforward
+    if (lookback < 0 && lookback < -this.maxLookforward) {
+      this.maxLookforward = -lookback;
+    }
   }
 }
 
@@ -50,6 +64,8 @@ export default class ComputedData extends EventEmitter {
   }
 
   calculateOneSet({ renderingQueueId, timestamps, dataset }) {
+    const { timeframe } = dataset;
+
     const indicator = this.queue.get(renderingQueueId);
     indicator.draw = Indicators[indicator.id].draw;
 
@@ -60,11 +76,32 @@ export default class ComputedData extends EventEmitter {
     if (!this.sets[renderingQueueId]) {
       this.sets[renderingQueueId] = new ComputedSet({
         $state: this,
-        timeframe: dataset.timeframe,
+        timeframe,
       });
     }
 
     const set = this.sets[renderingQueueId];
+
+    // Check if set has requires lookback or lookforwardw
+    if (set.maxLookback) {
+      const last = +timestamps[timestamps.length - 1];
+      const start = last + timeframe;
+      const end = last + timeframe * set.maxLookback;
+      console.log(start, end);
+      timestamps = [
+        ...timestamps,
+        ...Utils.getAllTimestampsIn(start, end, timeframe),
+      ];
+    }
+    if (set.maxLookforward) {
+      const first = +timestamps[0];
+      const start = first - timeframe * set.maxLookforward;
+      const end = first - timeframe;
+      timestamps = [
+        ...Utils.getAllTimestampsIn(start, end, timeframe),
+        ...timestamps,
+      ];
+    }
 
     let iteratedTime = 0;
 
@@ -73,7 +110,7 @@ export default class ComputedData extends EventEmitter {
 
     const addSetItem = ((time, type, values) => {
       // If first plotted item at time, create fresh array
-      if (!set.data[time]) set.data[time] = [];
+      set.data[time] = [];
 
       // Add plot type and plot values to time
       set.data[time].push({ type, values });
@@ -95,14 +132,19 @@ export default class ComputedData extends EventEmitter {
       this.sets[renderingQueueId] = set;
     }).bind(this);
 
+    if (!this.computedState[renderingQueueId]) {
+      this.computedState[renderingQueueId] = {};
+    }
+
     const funcWraps = {};
     for (const funcName in ScriptFunctions) {
       funcWraps[funcName] = function () {
         return ScriptFunctions[funcName](
           {
+            set,
             addSetItem,
             time: iteratedTime,
-            timeframe: dataset.timeframe,
+            timeframe,
             data: dataset.data,
             globals,
             computedState: this.computedState[renderingQueueId],
