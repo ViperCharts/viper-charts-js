@@ -1,6 +1,7 @@
 import Utils from "../utils";
 import Indicators from "../components/indicators";
 import ScriptFunctions from "../viper_script/script_functions";
+import Constants from "../constants";
 
 import EventEmitter from "../events/event_emitter";
 
@@ -298,7 +299,18 @@ export default class ComputedData extends EventEmitter {
       allInstructions.main[renderingQueueId] = instructions.main;
     }
 
-    return { allInstructions, visibleRange };
+    const response = this.buildXAndYVisibleScales({
+      visibleRange,
+      timeframe,
+      chartDimensions,
+    });
+
+    return {
+      allInstructions,
+      visibleRange,
+      visibleScales: response.visibleScales,
+      pixelsPerElement: response.pixelsPerElement,
+    };
   }
 
   generateInstructions({
@@ -421,6 +433,49 @@ export default class ComputedData extends EventEmitter {
       }
     }
     this.maxDecimalPlaces = maxDecimalPlaces;
+  }
+
+  buildXAndYVisibleScales({ visibleRange, chartDimensions, timeframe }) {
+    // Calculate pixels per element using range
+    const items = (visibleRange.end - visibleRange.start) / timeframe;
+    const { width } = chartDimensions.main;
+    const ppe = width / items;
+    const pixelsPerElement = ppe;
+
+    const visibleScales = { x: [], y: [] };
+    let xTimeStep = 0;
+    // let yPriceStep = 0;
+
+    const minPixels = 100;
+
+    for (let i = Constants.TIMESCALES.indexOf(timeframe); i >= 0; i--) {
+      // Check if this timeframe fits between max and min pixel boundaries
+      const pixelsPerScale =
+        pixelsPerElement * (Constants.TIMESCALES[i] / timeframe);
+
+      if (pixelsPerScale >= minPixels) {
+        xTimeStep = Constants.TIMESCALES[i];
+        break;
+      }
+    }
+
+    // const yRange = range.max - range.min;
+    // const exponent = yRange.toExponential().split("e")[1];
+    // yPriceStep = Math.pow(10, exponent);
+
+    // Build timestamps that are on interval
+    const start = visibleRange.start - (visibleRange.start % xTimeStep);
+    for (let i = start; i < visibleRange.end; i += xTimeStep) {
+      visibleScales.x.push(i);
+    }
+
+    // TODO build y axis range
+    // const min = range.min - (range.min % yPriceStep);
+    // for (let i = min; i < range.max; i += yPriceStep) {
+    //   visibleScales.y.push(i);
+    // }
+
+    return { pixelsPerElement, visibleScales };
   }
 }
 

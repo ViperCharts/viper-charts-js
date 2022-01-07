@@ -116,36 +116,37 @@ class ComputedStateMessenger {
     // If already generating instructions, dont fill the call stack with useless calls
     if (this.isGeneratingAllInstrutions) {
       this.isRequestingToGenerateAllInstructions = true;
-      return {};
+      return { throwback: true };
     }
 
-    const { allInstructions, visibleRange } = await new Promise((resolve) => {
-      const id = this.$global.workers.addToResolveQueue(resolve);
+    const { allInstructions, visibleRange, visibleScales, pixelsPerElement } =
+      await new Promise((resolve) => {
+        const id = this.$global.workers.addToResolveQueue(resolve);
 
-      const chartDimensions =
-        this.$global.layout.chartDimensions[this.chart.id];
+        const chartDimensions =
+          this.$global.layout.chartDimensions[this.chart.id];
 
-      this.worker.postMessage({
-        type: "runComputedStateMethod",
-        data: {
-          method: "generateAllInstructions",
-          resolveId: id,
-          chartId: this.chart.id,
-          params: {
-            scaleType: this.chart.settings.scaleType,
-            requestedRange: this.chart.range,
-            timeframe: this.chart.timeframe,
-            chartDimensions: {
-              main: chartDimensions.main,
-              yScale: chartDimensions.yScale,
-              xScale: chartDimensions.xScale,
+        this.worker.postMessage({
+          type: "runComputedStateMethod",
+          data: {
+            method: "generateAllInstructions",
+            resolveId: id,
+            chartId: this.chart.id,
+            params: {
+              scaleType: this.chart.settings.scaleType,
+              requestedRange: this.chart.range,
+              timeframe: this.chart.timeframe,
+              chartDimensions: {
+                main: chartDimensions.main,
+                yScale: chartDimensions.yScale,
+                xScale: chartDimensions.xScale,
+              },
+              pixelsPerElement: this.chart.pixelsPerElement,
+              settings: this.chart.settings,
             },
-            pixelsPerElement: this.chart.pixelsPerElement,
-            settings: this.chart.settings,
           },
-        },
+        });
       });
-    });
 
     const { RE } = this.chart.subcharts.main.canvas;
     RE.instructions = allInstructions.main;
@@ -160,7 +161,7 @@ class ComputedStateMessenger {
       setTimeout(() => this.generateAllInstructions());
     }
 
-    return { allInstructions, visibleRange };
+    return { allInstructions, visibleRange, visibleScales, pixelsPerElement };
   }
 }
 
