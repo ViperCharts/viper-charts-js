@@ -81,10 +81,14 @@ export default {
 
   sma({}, { source, length }) {
     let total = 0;
+    let addedLength = 0;
     for (let i = 0; i < length; i++) {
-      total += this.getData(arguments[0], { lookback: i, source });
+      const e = this.getData(arguments[0], { lookback: i, source });
+      if (isNaN(e) || typeof e !== "number") continue;
+      addedLength++;
+      total += e;
     }
-    return total / length;
+    return total / addedLength;
   },
 
   declareGlobal({ globals }, { name, value }) {

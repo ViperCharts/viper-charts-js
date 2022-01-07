@@ -87,7 +87,6 @@ export default class ComputedData extends EventEmitter {
       const last = +timestamps[timestamps.length - 1];
       const start = last + timeframe;
       const end = last + timeframe * set.maxLookback;
-      console.log(start, end);
       timestamps = [
         ...timestamps,
         ...Utils.getAllTimestampsIn(start, end, timeframe),
@@ -109,6 +108,13 @@ export default class ComputedData extends EventEmitter {
     const globals = {};
 
     const addSetItem = ((time, type, values) => {
+      // If any of the values are not a number, (invalid calculation, ignore them)
+      if (
+        values.series.filter((e) => isNaN(e) || typeof e !== "number").length
+      ) {
+        return;
+      }
+
       // If first plotted item at time, create fresh array
       set.data[time] = [];
 
@@ -388,6 +394,7 @@ export default class ComputedData extends EventEmitter {
     for (const time of timestamps) {
       const item = data[time];
 
+      // If item does not exist, return
       if (!item) continue;
 
       instructions.main[time] = [];
