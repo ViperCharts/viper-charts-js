@@ -35,7 +35,18 @@ class ComputedSet {
 }
 
 class MainThreadMessenger {
-  constructor() {}
+  constructor({ chartId }) {
+    this.chartId = chartId;
+
+    this.state = {
+      maxDecimalPlaces: 0,
+    };
+  }
+
+  setState(updates) {
+    this.state = { ...this.state, ...updates };
+    self.postMessage({ type: "setState", chartId, state: this.state });
+  }
 
   addToRenderingOrder({}) {
     self.postMessage();
@@ -43,10 +54,11 @@ class MainThreadMessenger {
 }
 
 export default class ComputedData extends EventEmitter {
-  constructor() {
+  constructor({ chartId }) {
     super();
 
-    this.mainThreadMessenger = new MainThreadMessenger();
+    this.chartId = chartId;
+    this.mainThread = new MainThreadMessenger({ chartId });
     this.queue = new Map();
     this.sets = {};
     this.computedState = {};
@@ -384,13 +396,14 @@ export default class ComputedData extends EventEmitter {
       yScale: {},
       xScale: {},
     };
-    let maxWidth = 0;
 
     // Wrapper functions for getting coords using visible range
     const getXCoordByTimestamp = (ts) =>
       Utils.getXCoordByTimestamp(vr.start, vr.end, main.width, ts);
     const getYCoordByPrice = (p) =>
       Utils.getYCoordByPrice(vr.min, vr.max, main.height, p);
+
+    const yLabels = [];
 
     // Loop through each timestamp of desired range and generate instructions for each plot point
     for (const time of timestamps) {
@@ -414,7 +427,6 @@ export default class ComputedData extends EventEmitter {
             y: getYCoordByPrice(series[0]),
             color: values.colors.color,
             linewidth: values.linewidth,
-            ylabel: values.ylabel,
           });
         } else if (type === "box") {
           const y1 = getYCoordByPrice(series[0]);
@@ -443,7 +455,6 @@ export default class ComputedData extends EventEmitter {
             w: w,
             h: Math.abs(y4) - Math.abs(y1),
             color: values.colors.color,
-            ylabel: values.ylabel,
           });
 
           instructions.main[time].push({
@@ -458,22 +469,63 @@ export default class ComputedData extends EventEmitter {
       }
     }
 
-    // const width = maxWidth + 12;
-
-    // // Check if max text width is different than yscale layout width
-    // if (chartDimensions.yScale.width !== width && width > 50) {
-    //   chartDimensions.setYScaleWidth(width);
-    // }
-
-    // Reset yScale
-    // for (const id in this.instructions.yScale) {
-    //   this.$chart.subcharts.yScale.canvas.RE.removeFromRenderingOrder(id);
-    // }
-
-    // this.offsetX = 0;
-    // this.offsetY = 0;
+    instructions.yScale = this.generateYLabelInstructions({ dataset, data });
 
     return { instructions };
+  }
+
+  generateYLabelInstructions({ dataset, data }) {
+    const timestamps = Object.keys(data);
+    if (!timestamps.length) return;
+    const lastTime = timestamps[timestamps.length - 1];
+    const lastItem = data[lastTime];
+
+    const { type, values } = lastItem;
+
+    console.log(lastItem);
+
+    if (!values.ylabel) return;
+
+    // Get the appropraite value to plot depending on plot type
+    const value = values.series[{ line: 0, candle: 3 }[type]];
+
+    const y = getYCoordByPrice(value);
+    let textColor = Utils.isColorLight(values.colors.color) ? "#000" : "#FFF";
+
+    const symbol = isPercent ? (value >= 0 ? "+" : "-") : "";
+    const extra = isPercent ? "%" : "";
+
+    const val =
+      scaleType === "default"
+        ? parseFloat(value).toFixed(set.decimalPlaces)
+        : value;
+
+    const text = `${symbol}${val}${extra}`;
+    // const { ctx } = this.$chart.subcharts.yScale.canvas;
+    // const textWidth = Math.ceil(ctx.measureText(text).width);
+    const textWidth = text.length * 3;
+
+    if (textWidth > maxWidth) maxWidth = textWidth;
+
+    const id = Utils.uniqueId();
+    yScaleInstructions[id] = {
+      type: "text",
+      x: yScale.width / 2,
+      y,
+      color: textColor,
+      text,
+      font: "bold 10px Arial",
+    };
+
+    const id2 = Utils.uniqueId();
+    yScaleInstructions[id2] = {
+      type: "box",
+      x: 0,
+      y: y - 13,
+      w: yScale.width,
+      h: 20,
+      color: values.colors.color,
+    };
   }
 
   calculateMaxDecimalPlaces() {
@@ -529,60 +581,3 @@ export default class ComputedData extends EventEmitter {
     return { pixelsPerElement, visibleScales };
   }
 }
-
-// CALCUALTE Y LABEL INSTRUICTIONS TODO REFACTOR THIS GARBAGE
-
-// const times = Object.keys(data);
-
-//       if (!data[times[times.length - 1]]) continue;
-
-//       // Get last time item and check if each item at time has ylabel set to true
-//       for (const item of data[times[times.length - 1]]) {
-//         const { type, values } = item;
-//         if (values.ylabel === true) {
-//           const value = values.series[{ line: 0, candle: 3 }[type]];
-
-//           const y = getYCoordByPrice(value);
-//           let textColor = Utils.isColorLight(values.colors.color)
-//             ? "#000"
-//             : "#FFF";
-
-//           const symbol = isPercent ? (value >= 0 ? "+" : "-") : "";
-//           const extra = isPercent ? "%" : "";
-
-//           const val =
-//             scaleType === "default"
-//               ? parseFloat(value).toFixed(set.decimalPlaces)
-//               : value;
-
-//           const text = `${symbol}${val}${extra}`;
-//           // const { ctx } = this.$chart.subcharts.yScale.canvas;
-//           // const textWidth = Math.ceil(ctx.measureText(text).width);
-//           const textWidth = text.length * 3;
-
-//           if (textWidth > maxWidth) maxWidth = textWidth;
-
-//           const id = Utils.uniqueId();
-//           yScaleInstructions[id] = {
-//             type: "text",
-//             x: yScale.width / 2,
-//             y,
-//             color: textColor,
-//             text,
-//             font: "bold 10px Arial",
-//           };
-
-//           const id2 = Utils.uniqueId();
-//           yScaleInstructions[id2] = {
-//             type: "box",
-//             x: 0,
-//             y: y - 13,
-//             w: yScale.width,
-//             h: 20,
-//             color: values.colors.color,
-//           };
-
-//           // this.$chart.subcharts.yScale.canvas.RE.addToRenderingOrder(id, 1);
-//           // this.$chart.subcharts.yScale.canvas.RE.addToRenderingOrder(id2, 1);
-//         }
-//       }

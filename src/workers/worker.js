@@ -12,7 +12,9 @@ self.addEventListener("message", (e) => {
       id = data;
       break;
     case "addComputedState":
-      computedStates[data.chartId] = new ComputedData();
+      computedStates[data.chartId] = new ComputedData({
+        chartId: data.chartId,
+      });
       break;
     case "runComputedStateMethod":
       const res = computedStates[data.chartId][data.method](data.params);

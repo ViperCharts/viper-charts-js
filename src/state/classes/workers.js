@@ -7,9 +7,9 @@ class ComputedStateMessenger {
     this.chart = chart;
     this.worker = worker;
 
-    this.maxDecimalPlaces = 6;
-    this.min = Infinity;
-    this.max = -Infinity;
+    this.state = {
+      maxDecimalPlaces: 0,
+    };
 
     this.isRequestingToGenerateAllInstructions = false;
     this.isGeneratingAllInstrutions = false;
