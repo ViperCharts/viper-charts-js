@@ -137,6 +137,8 @@ class ComputedStateMessenger {
       return { throwback: true };
     }
 
+    this.isGeneratingAllInstrutions = true;
+
     const { allInstructions, visibleRange, visibleScales, pixelsPerElement } =
       await new Promise((resolve) => {
         const id = this.$global.workers.addToResolveQueue(resolve);
