@@ -251,7 +251,7 @@ export default class ChartState extends EventEmitter {
       });
 
       // Re-instantiate all subscribers
-      const subscribers = oldDataset.subscribers[this.id];
+      const subscribers = [...oldDataset.subscribers[this.id]];
       for (const renderingQueueId of subscribers) {
         dataset.addSubscriber(this.id, renderingQueueId);
         oldDataset.removeSubscriber(this.id, renderingQueueId);
@@ -266,7 +266,7 @@ export default class ChartState extends EventEmitter {
       });
     }
 
-    // Take all old datasets and re-subscribe based on active timeframe
+    // Update any synced charts to share timeframe
     if (this.settings.syncRange && movedId === this.id) {
       for (const chartId in this.$global.charts) {
         const chart = this.$global.charts[chartId];
