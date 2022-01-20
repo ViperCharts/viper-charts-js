@@ -2,12 +2,13 @@
 
 Viper Charts is an open-source charting library for plotting lines, candlesticks, moving averages, and more.
 
+**NOTE: This is still an early Beta build of the package. The API is subject to changes in the future. Please use for experimental purposes.**
+
 # Run Demo
 
 ```
 npm i
 npm run dev
-
 ```
 
 ## Usage
