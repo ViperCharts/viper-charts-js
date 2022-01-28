@@ -31,6 +31,7 @@ export default class ChartState extends EventEmitter {
     this.timeframe = 0;
     this.indicators = {};
     this.datasets = {};
+    this.range = range;
     this.computedState = this.$global.workers.createComputedState(this);
     this.visibleScales = { x: [], y: [] };
     this.subcharts = {

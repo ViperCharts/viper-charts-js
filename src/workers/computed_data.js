@@ -39,23 +39,7 @@ class MainThreadMessenger {
     this.chartId = chartId;
 
     this.state = {
-      id: "",
-      timeframe: 0,
       maxDecimalPlaces: 0,
-      visibleScales: [],
-      visibleRange: {
-        min: Infinity,
-        max: -Infinity,
-        start: 0,
-        end: 0,
-      },
-      defaultRangeBounds = undefined,
-      settings: {
-        syncRange: false,
-        syncWithCrosshair: "",
-        lockedYScale: true,
-        scaleType: "default",
-      },
     };
   }
 
@@ -375,6 +359,7 @@ export default class ComputedData extends EventEmitter {
       });
 
       allInstructions.main[renderingQueueId] = instructions.main;
+      allInstructions.yScale[renderingQueueId] = instructions.yScale;
     }
 
     const response = this.buildXAndYVisibleScales({
@@ -413,15 +398,11 @@ export default class ComputedData extends EventEmitter {
       xScale: {},
     };
 
-    console.log(this.queue.get(renderingQueueId));
-
     // Wrapper functions for getting coords using visible range
     const getXCoordByTimestamp = (ts) =>
       Utils.getXCoordByTimestamp(vr.start, vr.end, main.width, ts);
     const getYCoordByPrice = (p) =>
       Utils.getYCoordByPrice(vr.min, vr.max, main.height, p);
-
-    const yLabels = [];
 
     // Loop through each timestamp of desired range and generate instructions for each plot point
     for (const time of timestamps) {
@@ -487,12 +468,24 @@ export default class ComputedData extends EventEmitter {
       }
     }
 
-    instructions.yScale = this.generateYLabelInstructions({ data });
+    instructions.yScale = this.generateYLabelInstructions({
+      renderingQueueId,
+      data,
+      getYCoordByPrice,
+      chartDimensions,
+      scaleType,
+    });
 
     return { instructions };
   }
 
-  generateYLabelInstructions({ data }) {
+  generateYLabelInstructions({
+    renderingQueueId,
+    data,
+    getYCoordByPrice,
+    chartDimensions,
+    scaleType,
+  }) {
     const timestamps = Object.keys(data);
     if (!timestamps.length) return;
     const lastTime = timestamps[timestamps.length - 1];
@@ -500,7 +493,9 @@ export default class ComputedData extends EventEmitter {
 
     const { type, values } = lastItem[0];
 
-    console.log(values);
+    const isPercent = scaleType === "percent";
+
+    const set = this.sets[renderingQueueId];
 
     if (!values.ylabel) return;
 
@@ -521,29 +516,32 @@ export default class ComputedData extends EventEmitter {
     const text = `${symbol}${val}${extra}`;
     // const { ctx } = this.$chart.subcharts.yScale.canvas;
     // const textWidth = Math.ceil(ctx.measureText(text).width);
-    const textWidth = text.length * 3;
+    // const textWidth = text.length * 3;
 
-    if (textWidth > maxWidth) maxWidth = textWidth;
+    // if (textWidth > maxWidth) maxWidth = textWidth;
 
-    const id = Utils.uniqueId();
-    yScaleInstructions[id] = {
-      type: "text",
-      x: yScale.width / 2,
-      y,
-      color: textColor,
-      text,
-      font: "bold 10px Arial",
-    };
+    const { yScale } = chartDimensions;
 
-    const id2 = Utils.uniqueId();
-    yScaleInstructions[id2] = {
-      type: "box",
-      x: 0,
-      y: y - 13,
-      w: yScale.width,
-      h: 20,
-      color: values.colors.color,
-    };
+    const yScaleInstructions = [
+      {
+        type: "box",
+        x: 0,
+        y: y - 13,
+        w: yScale.width,
+        h: 20,
+        color: values.colors.color,
+      },
+      {
+        type: "text",
+        x: yScale.width / 2,
+        y,
+        color: textColor,
+        text,
+        font: "bold 10px Arial",
+      },
+    ];
+
+    return yScaleInstructions;
   }
 
   calculateMaxDecimalPlaces() {
