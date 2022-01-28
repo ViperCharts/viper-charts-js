@@ -1,5 +1,6 @@
 import EventEmitter from "../../events/event_emitter";
 import Utils from "../../utils";
+import MyWorker from "../../workers/worker.js?worker";
 
 class ComputedStateMessenger {
   constructor({ $global, chart, worker }) {
@@ -237,13 +238,15 @@ export default class WorkerState extends EventEmitter {
   }
 
   createWorker() {
-    const worker = new Worker("/src/workers/worker.js", { type: "module" });
+    // Vite native import Worker bundle https://vitejs.dev/guide/features.html#web-workers
+    const worker = new MyWorker();
 
     worker.onmessage = this.onWorkerMessage.bind(this);
     worker.onerror = this.onWorkerError.bind(this);
 
     const id = Utils.uniqueId();
 
+    console.log(worker);
     worker.postMessage({ type: "id", data: id });
 
     this.workers[id] = worker;
