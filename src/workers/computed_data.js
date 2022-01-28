@@ -39,7 +39,23 @@ class MainThreadMessenger {
     this.chartId = chartId;
 
     this.state = {
+      id: "",
+      timeframe: 0,
       maxDecimalPlaces: 0,
+      visibleScales: [],
+      visibleRange: {
+        min: Infinity,
+        max: -Infinity,
+        start: 0,
+        end: 0,
+      },
+      defaultRangeBounds = undefined,
+      settings: {
+        syncRange: false,
+        syncWithCrosshair: "",
+        lockedYScale: true,
+        scaleType: "default",
+      },
     };
   }
 
@@ -397,6 +413,8 @@ export default class ComputedData extends EventEmitter {
       xScale: {},
     };
 
+    console.log(this.queue.get(renderingQueueId));
+
     // Wrapper functions for getting coords using visible range
     const getXCoordByTimestamp = (ts) =>
       Utils.getXCoordByTimestamp(vr.start, vr.end, main.width, ts);
@@ -469,20 +487,20 @@ export default class ComputedData extends EventEmitter {
       }
     }
 
-    instructions.yScale = this.generateYLabelInstructions({ dataset, data });
+    instructions.yScale = this.generateYLabelInstructions({ data });
 
     return { instructions };
   }
 
-  generateYLabelInstructions({ dataset, data }) {
+  generateYLabelInstructions({ data }) {
     const timestamps = Object.keys(data);
     if (!timestamps.length) return;
     const lastTime = timestamps[timestamps.length - 1];
     const lastItem = data[lastTime];
 
-    const { type, values } = lastItem;
+    const { type, values } = lastItem[0];
 
-    console.log(lastItem);
+    console.log(values);
 
     if (!values.ylabel) return;
 
