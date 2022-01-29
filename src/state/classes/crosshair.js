@@ -71,6 +71,6 @@ export default class CrosshairState extends EventEmitter {
     const price = chart.range.min + rangeOffset;
 
     this.timestamp = timestamp;
-    this.price = Utils.toFixed(price, chart.computedState.maxDecimalPlaces);
+    this.price = Utils.toFixed(price, chart.maxDecimalPlaces);
   }
 }

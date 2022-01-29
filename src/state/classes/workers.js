@@ -1,16 +1,11 @@
 import EventEmitter from "../../events/event_emitter";
 import Utils from "../../utils";
-import MyWorker from "../../workers/worker.js?worker";
 
 class ComputedStateMessenger {
   constructor({ $global, chart, worker }) {
     this.$global = $global;
     this.chart = chart;
     this.worker = worker;
-
-    this.state = {
-      maxDecimalPlaces: 0,
-    };
 
     this.isRequestingToGenerateAllInstructions = false;
     this.isGeneratingAllInstrutions = false;
@@ -140,41 +135,43 @@ class ComputedStateMessenger {
 
     this.isGeneratingAllInstrutions = true;
 
-    const { allInstructions, visibleRange, visibleScales, pixelsPerElement } =
-      await new Promise((resolve) => {
-        const id = this.$global.workers.addToResolveQueue(resolve);
+    const {
+      allInstructions,
+      visibleRange,
+      visibleScales,
+      pixelsPerElement,
+      maxDecimalPlaces,
+    } = await new Promise((resolve) => {
+      const id = this.$global.workers.addToResolveQueue(resolve);
 
-        const chartDimensions =
-          this.$global.layout.chartDimensions[this.chart.id];
+      const chartDimensions =
+        this.$global.layout.chartDimensions[this.chart.id];
 
-        this.worker.postMessage({
-          type: "runComputedStateMethod",
-          data: {
-            method: "generateAllInstructions",
-            resolveId: id,
-            chartId: this.chart.id,
-            params: {
-              scaleType: this.chart.settings.scaleType,
-              requestedRange: this.chart.range,
-              timeframe: this.chart.timeframe,
-              chartDimensions: {
-                main: chartDimensions.main,
-                yScale: chartDimensions.yScale,
-                xScale: chartDimensions.xScale,
-              },
-              pixelsPerElement: this.chart.pixelsPerElement,
-              settings: this.chart.settings,
+      this.worker.postMessage({
+        type: "runComputedStateMethod",
+        data: {
+          method: "generateAllInstructions",
+          resolveId: id,
+          chartId: this.chart.id,
+          params: {
+            scaleType: this.chart.settings.scaleType,
+            requestedRange: this.chart.range,
+            timeframe: this.chart.timeframe,
+            chartDimensions: {
+              main: chartDimensions.main,
+              yScale: chartDimensions.yScale,
+              xScale: chartDimensions.xScale,
             },
+            pixelsPerElement: this.chart.pixelsPerElement,
+            settings: this.chart.settings,
           },
-        });
+        },
       });
+    });
 
-    const { RE } = this.chart.subcharts.main.canvas;
-    RE.instructions = allInstructions.main;
+    this.chart.subcharts.main.canvas.RE.instructions = allInstructions.main;
+    this.chart.subcharts.yScale.canvas.RE.instructions = allInstructions.yScale;
     this.isGeneratingAllInstrutions = false;
-
-    RE.offsetX = 0;
-    RE.offsetY = 0;
 
     // If another generation is requested, call again
     if (this.isRequestingToGenerateAllInstructions) {
@@ -182,7 +179,13 @@ class ComputedStateMessenger {
       setTimeout(() => this.generateAllInstructions());
     }
 
-    return { allInstructions, visibleRange, visibleScales, pixelsPerElement };
+    return {
+      allInstructions,
+      visibleRange,
+      visibleScales,
+      pixelsPerElement,
+      maxDecimalPlaces,
+    };
   }
 
   emptyAllSets() {
@@ -238,15 +241,13 @@ export default class WorkerState extends EventEmitter {
   }
 
   createWorker() {
-    // Vite native import Worker bundle https://vitejs.dev/guide/features.html#web-workers
-    const worker = new MyWorker();
+    const worker = new Worker("/src/workers/worker.js", { type: "module" });
 
     worker.onmessage = this.onWorkerMessage.bind(this);
     worker.onerror = this.onWorkerError.bind(this);
 
     const id = Utils.uniqueId();
 
-    console.log(worker);
     worker.postMessage({ type: "id", data: id });
 
     this.workers[id] = worker;

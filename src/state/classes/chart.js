@@ -32,6 +32,7 @@ export default class ChartState extends EventEmitter {
     this.indicators = {};
     this.datasets = {};
     this.range = range;
+    this.maxDecimalPlaces = 0;
     this.computedState = this.$global.workers.createComputedState(this);
     this.visibleScales = { x: [], y: [] };
     this.subcharts = {
@@ -371,8 +372,13 @@ export default class ChartState extends EventEmitter {
       }
     }
 
-    const { visibleRange, throwback, visibleScales, pixelsPerElement } =
-      await this.computedState.generateAllInstructions();
+    const {
+      visibleRange,
+      throwback,
+      visibleScales,
+      pixelsPerElement,
+      maxDecimalPlaces,
+    } = await this.computedState.generateAllInstructions();
 
     if (throwback) return;
 
@@ -383,6 +389,7 @@ export default class ChartState extends EventEmitter {
 
     this.pixelsPerElement = pixelsPerElement;
     this.visibleScales = visibleScales;
+    this.maxDecimalPlaces = maxDecimalPlaces;
 
     this.$global.crosshair.updateCrosshairTimeAndPrice(this);
 

@@ -53,6 +53,46 @@ export default class RenderingEngine {
     // Reset canvas
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    if (this.type === "yScale") {
+      const chartDimension =
+        this.$state.global.layout.chartDimensions[this.$state.chart.id];
+
+      // Draw background
+      this.canvas.drawBox("#080019", [
+        0,
+        0,
+        chartDimension.width,
+        chartDimension.height,
+      ]);
+
+      let maxWidth = 0;
+
+      // Loop through all yScale plot instructions and measure the width of all texts and get max width
+      for (const key in this.instructions) {
+        const [box, text] = this.instructions[key];
+
+        const { ctx } = this.canvas;
+        const textWidth = Math.ceil(ctx.measureText(text.text).width);
+        if (textWidth > maxWidth) maxWidth = textWidth;
+
+        // Draw the box and text
+        this.canvas.drawBox(box.color, [box.x, box.y, box.w, box.h]);
+        this.canvas.drawText(text.color, [text.x, text.y], text.text, {
+          font: text.font,
+        });
+      }
+
+      maxWidth = Math.max((maxWidth += 10), 50);
+
+      // Check if maxWidth is not equal to current width of yScale
+      if (maxWidth !== chartDimension.yScale.width) {
+        chartDimension.setYScaleWidth(maxWidth);
+        this.$state.chart.setVisibleRange({});
+      }
+
+      return;
+    }
+
     const ids = [...this.renderingOrder];
 
     const allInstructions = this.instructions;

@@ -359,7 +359,9 @@ export default class ComputedData extends EventEmitter {
       });
 
       allInstructions.main[renderingQueueId] = instructions.main;
-      allInstructions.yScale[renderingQueueId] = instructions.yScale;
+      if (instructions.yScale) {
+        allInstructions.yScale[renderingQueueId] = instructions.yScale;
+      }
     }
 
     const response = this.buildXAndYVisibleScales({
@@ -368,11 +370,14 @@ export default class ComputedData extends EventEmitter {
       chartDimensions,
     });
 
+    this.calculateMaxDecimalPlaces();
+
     return {
       allInstructions,
       visibleRange,
       visibleScales: response.visibleScales,
       pixelsPerElement: response.pixelsPerElement,
+      maxDecimalPlaces: this.maxDecimalPlaces,
     };
   }
 
@@ -514,12 +519,6 @@ export default class ComputedData extends EventEmitter {
         : value;
 
     const text = `${symbol}${val}${extra}`;
-    // const { ctx } = this.$chart.subcharts.yScale.canvas;
-    // const textWidth = Math.ceil(ctx.measureText(text).width);
-    // const textWidth = text.length * 3;
-
-    // if (textWidth > maxWidth) maxWidth = textWidth;
-
     const { yScale } = chartDimensions;
 
     const yScaleInstructions = [
@@ -546,7 +545,11 @@ export default class ComputedData extends EventEmitter {
 
   calculateMaxDecimalPlaces() {
     let maxDecimalPlaces = 0;
-    for (const { decimalPlaces } of Object.values(this.sets)) {
+    for (const id in this.sets) {
+      const indicator = this.queue.get(id);
+      if (!indicator.visible) continue;
+
+      const { decimalPlaces } = this.sets[id];
       if (decimalPlaces > maxDecimalPlaces) {
         maxDecimalPlaces = decimalPlaces;
       }
