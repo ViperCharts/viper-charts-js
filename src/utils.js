@@ -12,12 +12,21 @@ export default {
     return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
   },
 
+  /**
+   * Get all timestamps aligned to timeframe within start and end range
+   * @param {number} start Start unix time
+   * @param {number} end End unix time
+   * @param {number} timeframe Timeframe in ms
+   * @returns {number[]} Array of timestamps
+   */
   getAllTimestampsIn(start, end, timeframe) {
     start -= start % timeframe;
     end += timeframe - (end % timeframe);
-    return new Array((end - start) / timeframe)
-      .fill()
-      .map((_, i) => start + timeframe * i);
+    const intervals = (end - start) / timeframe;
+    if (intervals % 1 !== 0 || intervals === 0) {
+      return [];
+    }
+    return new Array(intervals).fill().map((_, i) => start + timeframe * i);
   },
 
   /**

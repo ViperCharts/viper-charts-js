@@ -3,6 +3,9 @@ import Indicators from "../components/indicators";
 import ScriptFunctions from "../viper_script/script_functions";
 import Constants from "../constants";
 
+import Calculations from "./calculations.js";
+import Generators from "./generators.js";
+
 import EventEmitter from "../events/event_emitter";
 
 class ComputedSet {
@@ -11,6 +14,10 @@ class ComputedSet {
 
     this.data = data;
     this.timeframe = timeframe;
+    this.min = Infinity;
+    this.max = -Infinity;
+    this.visibleMin = Infinity;
+    this.visibleMax = -Infinity;
     this.decimalPlaces = 0;
     this.maxLookback = 0;
     this.maxLookforward = 0;
@@ -62,8 +69,12 @@ export default class ComputedData extends EventEmitter {
     this.queue = new Map();
     this.sets = {};
     this.computedState = {};
+
     this.max = -Infinity;
     this.min = Infinity;
+    this.visibleRange = {};
+    this.chartDimensions = {};
+
     this.maxDecimalPlaces = 0;
     this.instructions = {
       main: {},
@@ -239,32 +250,6 @@ export default class ComputedData extends EventEmitter {
     this.emptySet({ renderingQueueId });
   }
 
-  /**
-   * Loop through all visible sets and get the min and max
-   */
-  getMinAndMax(start, end, timeframe) {
-    let max = -Infinity;
-    let min = Infinity;
-
-    const timestamps = Utils.getAllTimestampsIn(start, end, timeframe);
-
-    // Loop through all sets
-    for (const id in this.sets) {
-      const indicator = this.queue.get(id);
-
-      console.log(this.set);
-
-      // If indicator is not visible, dont count in calculation
-      if (!indicator.visible) {
-        continue;
-      }
-
-      // Loop through all data points and get
-      for (const timestamp of timestamps) {
-      }
-    }
-  }
-
   generateAllInstructions({
     scaleType,
     requestedRange,
@@ -273,303 +258,94 @@ export default class ComputedData extends EventEmitter {
     pixelsPerElement,
     settings,
   }) {
-    const isPercent = scaleType === "percent";
-    const isNormalized = scaleType === "normalized";
+    this.pixelsPerElement = pixelsPerElement;
 
-    // Calculate min and max of all sets in visible range that are visible
-    this.getMinAndMax(requestedRange.start, requestedRange.end, timeframe);
-
+    // Calculate max and min of all plotted sets
     const timestamps = Utils.getAllTimestampsIn(
       requestedRange.start,
       requestedRange.end,
       timeframe
     );
 
-    const renderingQueueIds = Object.keys(this.sets);
-    const data = {};
+    this.visibleRange = requestedRange;
+    this.chartDimensions = chartDimensions;
 
-    let max = -Infinity;
     let min = Infinity;
+    let max = -Infinity;
 
-    // Loop through all indicators to be rendered
-    for (const renderingQueueId of renderingQueueIds) {
-      const set = this.sets[renderingQueueId];
+    // Calculate min and max of all sets in visible range that are visible
+    for (const id in this.sets) {
+      // Check if indicator is visible
+      const indicator = this.queue.get(id);
 
-      const queueItem = this.queue.get(renderingQueueId);
+      if (!indicator.visible) continue;
 
-      data[renderingQueueId] = {};
+      const [setMin, setMax] = Calculations.getMinAndMax.bind(this)(
+        id,
+        timestamps
+      );
 
-      if (!queueItem.visible) continue;
-
-      for (const time of timestamps) {
-        let item = set.data[time];
-        if (!item) continue;
-
-        data[renderingQueueId][time] = JSON.parse(
-          JSON.stringify(set.data[time])
-        );
-        item = data[renderingQueueId][time];
-
-        for (let i = 0; i < item.length; i++) {
-          const { values } = item[i];
-
-          // If percent, loop through all instructions at and loop through every value for each instruction
-          // and compare it to starting value
-          if (isPercent) {
-            // Get the first set item of the visible range
-            const firstInstructions = set.data[timestamps[0]];
-
-            if (firstInstructions) {
-              const { series: firstSeries } = firstInstructions[i].values;
-
-              // TODO fix this so we dont compare EVERY value to start candle
-              values.series = values.series.map((val, j) => {
-                return Utils.toFixed(
-                  ((val - firstSeries[j]) / firstSeries[j]) * 100,
-                  2
-                );
-              });
-            }
-          }
-
-          // If a normalized chart, every value is compared relatively to its own max and min (visible range);
-          else if (isNormalized) {
-            const range = set.max - set.min;
-
-            values.series = values.series.map((val) =>
-              Utils.toFixed(((val - set.min) / range) * 100, 4)
-            );
-          }
-
-          const { series } = values;
-
-          // Compute max plotted visible data
-          for (const value of series) {
-            if (value > max) {
-              max = value;
-            }
-            if (value < min) {
-              min = value;
-            }
-          }
-        }
-      }
+      if (setMin < min) min = setMin;
+      if (setMax > max) max = setMax;
+      this.sets[id].visibleMin = setMin;
+      this.sets[id].visibleMax = setMax;
     }
 
-    this.max = max;
     this.min = min;
+    this.max = max;
 
-    const allInstructions = {
-      main: {},
-      yScale: {},
-      xScale: {},
-    };
-
-    const visibleRange = { ...requestedRange };
-
-    // If price / y scale is locked, set min and max y values
-    if (settings.lockedYScale) {
-      const ySpread5P = (max - min) * 0.05;
-      visibleRange.min = min - ySpread5P;
-      visibleRange.max = max + ySpread5P;
-    }
-
-    // Loop through all sets and generate instructions based on them
-    for (const renderingQueueId of renderingQueueIds) {
-      const { instructions } = this.generateInstructions({
-        data: data[renderingQueueId],
-        renderingQueueId,
-        timestamps,
-        scaleType,
-        visibleRange,
-        timeframe,
-        chartDimensions,
-        pixelsPerElement,
-      });
-
-      allInstructions.main[renderingQueueId] = instructions.main;
-      if (instructions.yScale) {
-        allInstructions.yScale[renderingQueueId] = instructions.yScale;
-      }
-    }
-
-    const response = this.buildXAndYVisibleScales({
-      visibleRange,
-      timeframe,
-      chartDimensions,
-    });
-
-    this.calculateMaxDecimalPlaces();
-
-    return {
-      allInstructions,
-      visibleRange,
-      visibleScales: response.visibleScales,
-      pixelsPerElement: response.pixelsPerElement,
-      maxDecimalPlaces: this.maxDecimalPlaces,
-    };
-  }
-
-  generateInstructions({
-    data,
-    renderingQueueId,
-    timestamps,
-    scaleType,
-    visibleRange,
-    timeframe,
-    chartDimensions,
-    pixelsPerElement,
-  }) {
-    const vr = visibleRange;
-
-    // TODO re-add min max calcs and bs
-
-    const { main } = chartDimensions;
+    // Calculate the visible range based on chart settings.
+    // Generaters will have access to this.visibleRange
+    this.visibleRange = Calculations.getVisibleRange.bind(this)(
+      requestedRange,
+      settings
+    );
 
     const instructions = {
-      main: {},
-      yScale: {},
-      xScale: {},
+      main: {
+        background: {},
+        grid: {},
+        layers: {
+          0: {},
+        },
+      },
+      yScale: {
+        background: {},
+        scales: [],
+        plots: {},
+        crosshair: {},
+      },
+      xScale: {
+        background: {},
+        scales: [],
+        crosshair: {},
+      },
     };
 
-    // Wrapper functions for getting coords using visible range
-    const getXCoordByTimestamp = (ts) =>
-      Utils.getXCoordByTimestamp(vr.start, vr.end, main.width, ts);
-    const getYCoordByPrice = (p) =>
-      Utils.getYCoordByPrice(vr.min, vr.max, main.height, p);
+    // Get array of x coords for each timestamp on x axis
+    const timestampXCoords = timestamps.map(
+      this.getXCoordByTimestamp.bind(this)
+    );
 
-    // Loop through each timestamp of desired range and generate instructions for each plot point
-    for (const time of timestamps) {
-      const item = data[time];
+    // Loop through all sets and generate main and yScale instructions for plots
+    for (const id in this.sets) {
+      const set = this.sets[id];
+      const indicator = this.queue.get(id);
 
-      // If item does not exist, return
-      if (!item) continue;
+      // If indicator is not visible, dont generate instrutions
+      if (!indicator.visible) continue;
 
-      instructions.main[time] = [];
+      // Generate main instructions for set depending on scale type
+      const mainLayerGenerate = Generators.main.layers[scaleType].bind(this);
+      instructions.main.layers[0][id] = mainLayerGenerate(
+        set,
+        timestamps,
+        timestampXCoords
+      );
 
-      const x = getXCoordByTimestamp(time);
-
-      for (let i = 0; i < item.length; i++) {
-        const { type, values } = item[i];
-        const { series } = values;
-
-        if (type === "line") {
-          instructions.main[time].push({
-            type: "line",
-            x,
-            y: getYCoordByPrice(series[0]),
-            color: values.colors.color,
-            linewidth: values.linewidth,
-          });
-        } else if (type === "box") {
-          const y1 = getYCoordByPrice(series[0]);
-          const y2 = getYCoordByPrice(series[1]);
-          const w = pixelsPerElement * series[3];
-
-          instructions.main[time].push({
-            type: "box",
-            x: x - w / 2,
-            y: y1,
-            w: w,
-            h: Math.abs(y2) - Math.abs(y1),
-            color: values.colors.color,
-          });
-        } else if (type === "candle") {
-          const y1 = getYCoordByPrice(series[0]);
-          const y2 = getYCoordByPrice(series[1]);
-          const y3 = getYCoordByPrice(series[2]);
-          const y4 = getYCoordByPrice(series[3]);
-          const w = pixelsPerElement * 0.9;
-
-          instructions.main[time].push({
-            type: "box",
-            x: x - w / 2,
-            y: y1,
-            w: w,
-            h: Math.abs(y4) - Math.abs(y1),
-            color: values.colors.color,
-          });
-
-          instructions.main[time].push({
-            type: "single-line",
-            x,
-            y: y2,
-            x2: x,
-            y2: y3,
-            color: values.colors.wickcolor,
-          });
-        }
-      }
+      const yScaleLayerGenerate = Generators.yScale.plots[scaleType].bind(this);
+      instructions.yScale.plots[id] = yScaleLayerGenerate(set, timestamps);
     }
-
-    instructions.yScale = this.generateYLabelInstructions({
-      renderingQueueId,
-      data,
-      getYCoordByPrice,
-      chartDimensions,
-      scaleType,
-    });
-
-    return { instructions };
-  }
-
-  generateYLabelInstructions({
-    renderingQueueId,
-    data,
-    getYCoordByPrice,
-    chartDimensions,
-    scaleType,
-  }) {
-    const timestamps = Object.keys(data);
-    if (!timestamps.length) return;
-    const lastTime = timestamps[timestamps.length - 1];
-    const lastItem = data[lastTime];
-
-    const { type, values } = lastItem[0];
-
-    const isPercent = scaleType === "percent";
-
-    const set = this.sets[renderingQueueId];
-
-    if (!values.ylabel) return;
-
-    // Get the appropraite value to plot depending on plot type
-    const value = values.series[{ line: 0, candle: 3 }[type]];
-
-    const y = getYCoordByPrice(value);
-    let textColor = Utils.isColorLight(values.colors.color) ? "#000" : "#FFF";
-
-    const symbol = isPercent ? (value >= 0 ? "+" : "-") : "";
-    const extra = isPercent ? "%" : "";
-
-    const val =
-      scaleType === "default"
-        ? parseFloat(value).toFixed(set.decimalPlaces)
-        : value;
-
-    const text = `${symbol}${val}${extra}`;
-    const { yScale } = chartDimensions;
-
-    const yScaleInstructions = [
-      {
-        type: "box",
-        x: 0,
-        y: y - 13,
-        w: yScale.width,
-        h: 20,
-        color: values.colors.color,
-      },
-      {
-        type: "text",
-        x: yScale.width / 2,
-        y,
-        color: textColor,
-        text,
-        font: "bold 10px Arial",
-      },
-    ];
-
-    return yScaleInstructions;
   }
 
   calculateMaxDecimalPlaces() {
@@ -627,5 +403,32 @@ export default class ComputedData extends EventEmitter {
     // }
 
     return { pixelsPerElement, visibleScales };
+  }
+
+  getTimestampByXCoord(x) {
+    return Utils.getTimestampByXCoord(
+      this.visibleRange.start,
+      this.visibleRange.end,
+      this.chartDimensions.main.width,
+      x
+    );
+  }
+
+  getXCoordByTimestamp(timestamp) {
+    return Utils.getXCoordByTimestamp(
+      this.visibleRange.start,
+      this.visibleRange.end,
+      this.chartDimensions.main.width,
+      timestamp
+    );
+  }
+
+  getYCoordByPrice(price) {
+    return Utils.getYCoordByPrice(
+      this.visibleRange.min,
+      this.visibleRange.max,
+      this.chartDimensions.main.height,
+      price
+    );
   }
 }
