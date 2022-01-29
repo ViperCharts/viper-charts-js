@@ -239,6 +239,32 @@ export default class ComputedData extends EventEmitter {
     this.emptySet({ renderingQueueId });
   }
 
+  /**
+   * Loop through all visible sets and get the min and max
+   */
+  getMinAndMax(start, end, timeframe) {
+    let max = -Infinity;
+    let min = Infinity;
+
+    const timestamps = Utils.getAllTimestampsIn(start, end, timeframe);
+
+    // Loop through all sets
+    for (const id in this.sets) {
+      const indicator = this.queue.get(id);
+
+      console.log(this.set);
+
+      // If indicator is not visible, dont count in calculation
+      if (!indicator.visible) {
+        continue;
+      }
+
+      // Loop through all data points and get
+      for (const timestamp of timestamps) {
+      }
+    }
+  }
+
   generateAllInstructions({
     scaleType,
     requestedRange,
@@ -249,6 +275,9 @@ export default class ComputedData extends EventEmitter {
   }) {
     const isPercent = scaleType === "percent";
     const isNormalized = scaleType === "normalized";
+
+    // Calculate min and max of all sets in visible range that are visible
+    this.getMinAndMax(requestedRange.start, requestedRange.end, timeframe);
 
     const timestamps = Utils.getAllTimestampsIn(
       requestedRange.start,
