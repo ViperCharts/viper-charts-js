@@ -1,6 +1,8 @@
 import EventEmitter from "../../events/event_emitter";
 import Utils from "../../utils";
 
+import MyWorker from "../../workers/worker.js?worker";
+
 class ComputedStateMessenger {
   constructor({ $global, chart, worker }) {
     this.$global = $global;
@@ -241,7 +243,7 @@ export default class WorkerState extends EventEmitter {
   }
 
   createWorker() {
-    const worker = new Worker("/src/workers/worker.js", { type: "module" });
+    const worker = new MyWorker();
 
     worker.onmessage = this.onWorkerMessage.bind(this);
     worker.onerror = this.onWorkerError.bind(this);
