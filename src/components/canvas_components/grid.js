@@ -10,6 +10,7 @@ export default class Grid extends Overlay {
   }
 
   draw() {
+    return;
     // Loop through all visible candles
     for (const time of this.$state.chart.visibleScales.x) {
       const x = this.$state.chart.getXCoordByTimestamp(time);

@@ -137,42 +137,37 @@ class ComputedStateMessenger {
 
     this.isGeneratingAllInstrutions = true;
 
-    const {
-      allInstructions,
-      visibleRange,
-      visibleScales,
-      pixelsPerElement,
-      maxDecimalPlaces,
-    } = await new Promise((resolve) => {
-      const id = this.$global.workers.addToResolveQueue(resolve);
+    const { instructions, visibleRange, pixelsPerElement, maxDecimalPlaces } =
+      await new Promise((resolve) => {
+        const id = this.$global.workers.addToResolveQueue(resolve);
 
-      const chartDimensions =
-        this.$global.layout.chartDimensions[this.chart.id];
+        const chartDimensions =
+          this.$global.layout.chartDimensions[this.chart.id];
 
-      this.worker.postMessage({
-        type: "runComputedStateMethod",
-        data: {
-          method: "generateAllInstructions",
-          resolveId: id,
-          chartId: this.chart.id,
-          params: {
-            scaleType: this.chart.settings.scaleType,
-            requestedRange: this.chart.range,
-            timeframe: this.chart.timeframe,
-            chartDimensions: {
-              main: chartDimensions.main,
-              yScale: chartDimensions.yScale,
-              xScale: chartDimensions.xScale,
+        this.worker.postMessage({
+          type: "runComputedStateMethod",
+          data: {
+            method: "generateAllInstructions",
+            resolveId: id,
+            chartId: this.chart.id,
+            params: {
+              scaleType: this.chart.settings.scaleType,
+              requestedRange: this.chart.range,
+              timeframe: this.chart.timeframe,
+              chartDimensions: {
+                main: chartDimensions.main,
+                yScale: chartDimensions.yScale,
+                xScale: chartDimensions.xScale,
+              },
+              pixelsPerElement: this.chart.pixelsPerElement,
+              settings: this.chart.settings,
             },
-            pixelsPerElement: this.chart.pixelsPerElement,
-            settings: this.chart.settings,
           },
-        },
+        });
       });
-    });
 
-    this.chart.subcharts.main.canvas.RE.instructions = allInstructions.main;
-    this.chart.subcharts.yScale.canvas.RE.instructions = allInstructions.yScale;
+    this.chart.subcharts.main.canvas.RE.instructions = instructions.main;
+    this.chart.subcharts.yScale.canvas.RE.instructions = instructions.yScale;
     this.isGeneratingAllInstrutions = false;
 
     // If another generation is requested, call again
@@ -182,9 +177,8 @@ class ComputedStateMessenger {
     }
 
     return {
-      allInstructions,
+      instructions,
       visibleRange,
-      visibleScales,
       pixelsPerElement,
       maxDecimalPlaces,
     };

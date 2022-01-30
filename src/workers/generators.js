@@ -1,3 +1,5 @@
+import Constants from "../constants";
+
 export default {
   main: {
     layers: {
@@ -134,7 +136,37 @@ export default {
         return instructions;
       },
     },
+
+    scales() {
+      return [];
+    },
   },
 
-  xScale: {},
+  xScale: {
+    scales() {
+      const scales = [];
+
+      const minPixels = 100;
+      let xTimeStep = 0;
+
+      for (let i = Constants.TIMESCALES.indexOf(this.timeframe); i >= 0; i--) {
+        // Check if this timeframe fits between max and min pixel boundaries
+        const pixelsPerScale =
+          this.pixelsPerElement * (Constants.TIMESCALES[i] / this.timeframe);
+
+        if (pixelsPerScale >= minPixels) {
+          xTimeStep = Constants.TIMESCALES[i];
+          break;
+        }
+      }
+
+      const start =
+        this.visibleRange.start - (this.visibleRange.start % xTimeStep);
+      for (let i = start; i < this.visibleRange.end; i += xTimeStep) {
+        scales.push(i);
+      }
+
+      return scales;
+    },
+  },
 };

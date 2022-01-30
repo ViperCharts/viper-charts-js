@@ -9,6 +9,7 @@ import TimeScale from "../../components/canvas_components/time_scale.js";
 import PriceScale from "../../components/canvas_components/price_scale.js";
 
 import EventEmitter from "../../events/event_emitter";
+import Instructions from "../../models/instructions.js";
 
 import _ from "lodash";
 
@@ -33,8 +34,8 @@ export default class ChartState extends EventEmitter {
     this.datasets = {};
     this.range = range;
     this.maxDecimalPlaces = 0;
+    this.instructions = Instructions;
     this.computedState = this.$global.workers.createComputedState(this);
-    this.visibleScales = { x: [], y: [] };
     this.subcharts = {
       main: undefined,
       xScale: undefined,

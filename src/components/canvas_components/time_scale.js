@@ -68,6 +68,7 @@ class TimeScaleOverlay extends Overlay {
    * Draw canvas function, this is a placeholder
    */
   draw() {
+    return;
     for (const time of this.$state.chart.visibleScales.x) {
       const d = new Date(time);
       this.canvas.drawTextAtPriceAndTime(

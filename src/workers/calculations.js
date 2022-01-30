@@ -38,4 +38,10 @@ export default {
 
     return requestedRange;
   },
+
+  calculatePixelsPerElement() {
+    const items =
+      (this.visibleRange.end - this.visibleRange.start) / this.timeframe;
+    return this.chartDimensions.main.width / items;
+  },
 };

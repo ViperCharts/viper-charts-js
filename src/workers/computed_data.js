@@ -1,7 +1,7 @@
 import Utils from "../utils";
 import Indicators from "../components/indicators";
 import ScriptFunctions from "../viper_script/script_functions";
-import Constants from "../constants";
+import Instructions from "../models/instructions.js";
 
 import Calculations from "./calculations.js";
 import Generators from "./generators.js";
@@ -76,11 +76,7 @@ export default class ComputedData extends EventEmitter {
     this.chartDimensions = {};
 
     this.maxDecimalPlaces = 0;
-    this.instructions = {
-      main: {},
-      yScale: {},
-      xScale: {},
-    };
+    this.instructions = Instructions;
 
     this.offsetX = 0;
     this.offsetY = 0;
@@ -301,26 +297,9 @@ export default class ComputedData extends EventEmitter {
       settings
     );
 
-    const instructions = {
-      main: {
-        background: {},
-        grid: {},
-        layers: {
-          0: {},
-        },
-      },
-      yScale: {
-        background: {},
-        scales: [],
-        plots: {},
-        crosshair: {},
-      },
-      xScale: {
-        background: {},
-        scales: [],
-        crosshair: {},
-      },
-    };
+    this.pixelsPerElement = Calculations.calculatePixelsPerElement.bind(this)();
+
+    const instructions = Instructions;
 
     // Get array of x coords for each timestamp on x axis
     const timestampXCoords = timestamps.map(
@@ -346,6 +325,15 @@ export default class ComputedData extends EventEmitter {
       const yScaleLayerGenerate = Generators.yScale.plots[scaleType].bind(this);
       instructions.yScale.plots[id] = yScaleLayerGenerate(set, timestamps);
     }
+
+    // Calculate x and y scales
+    instructions.yScale.scales = Generators.yScale.scales.bind(this)();
+    instructions.xScale.scales = Generators.xScale.scales.bind(this)();
+
+    console.log(instructions);
+
+    this.instructions = instructions;
+    return { instructions, visibleRange: this.visibleRange };
   }
 
   calculateMaxDecimalPlaces() {
@@ -360,49 +348,6 @@ export default class ComputedData extends EventEmitter {
       }
     }
     this.maxDecimalPlaces = maxDecimalPlaces;
-  }
-
-  buildXAndYVisibleScales({ visibleRange, chartDimensions, timeframe }) {
-    // Calculate pixels per element using range
-    const items = (visibleRange.end - visibleRange.start) / timeframe;
-    const { width } = chartDimensions.main;
-    const ppe = width / items;
-    const pixelsPerElement = ppe;
-
-    const visibleScales = { x: [], y: [] };
-    let xTimeStep = 0;
-    // let yPriceStep = 0;
-
-    const minPixels = 100;
-
-    for (let i = Constants.TIMESCALES.indexOf(timeframe); i >= 0; i--) {
-      // Check if this timeframe fits between max and min pixel boundaries
-      const pixelsPerScale =
-        pixelsPerElement * (Constants.TIMESCALES[i] / timeframe);
-
-      if (pixelsPerScale >= minPixels) {
-        xTimeStep = Constants.TIMESCALES[i];
-        break;
-      }
-    }
-
-    // const yRange = range.max - range.min;
-    // const exponent = yRange.toExponential().split("e")[1];
-    // yPriceStep = Math.pow(10, exponent);
-
-    // Build timestamps that are on interval
-    const start = visibleRange.start - (visibleRange.start % xTimeStep);
-    for (let i = start; i < visibleRange.end; i += xTimeStep) {
-      visibleScales.x.push(i);
-    }
-
-    // TODO build y axis range
-    // const min = range.min - (range.min % yPriceStep);
-    // for (let i = min; i < range.max; i += yPriceStep) {
-    //   visibleScales.y.push(i);
-    // }
-
-    return { pixelsPerElement, visibleScales };
   }
 
   getTimestampByXCoord(x) {
