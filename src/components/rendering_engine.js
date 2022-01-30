@@ -193,7 +193,6 @@ export default class RenderingEngine {
     const leftOffset = oldRange.start - newRange.start;
     const rightOffset = oldRange.end - newRange.end;
     if (leftOffset !== rightOffset) {
-      // console.log(rightOffset - leftOffset);
     }
 
     // Calculate percentage difference between widths

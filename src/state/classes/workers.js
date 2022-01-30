@@ -166,8 +166,7 @@ class ComputedStateMessenger {
         });
       });
 
-    this.chart.subcharts.main.canvas.RE.instructions = instructions.main;
-    this.chart.subcharts.yScale.canvas.RE.instructions = instructions.yScale;
+    this.chart.instructions = instructions;
     this.isGeneratingAllInstrutions = false;
 
     // If another generation is requested, call again

@@ -3,12 +3,29 @@ import Constants from "../constants";
 export default {
   main: {
     layers: {
-      default(set, timestamps, timestampXCoords) {
+      default(
+        set,
+        timestamps,
+        timestampXCoords,
+        pixelsPerElement,
+        visibleRange,
+        chartDimensions
+      ) {
         const instructions = {};
 
         // Get min and max yCoords for multiplication later
-        const minY = this.getYCoordByPrice(set.visibleMin);
-        const maxY = this.getYCoordByPrice(set.visibleMax);
+        const minY = Utils.getYCoordByPrice(
+          visibleRange.min,
+          visibleRange.max,
+          chartDimensions.main.height,
+          set.visibleMin
+        );
+        const maxY = Utils.getYCoordByPrice(
+          visibleRange.min,
+          visibleRange.max,
+          chartDimensions.main.height,
+          set.visibleMax
+        );
         const rangeY = maxY - minY;
         const range = set.visibleMax - set.visibleMin;
 
@@ -45,7 +62,7 @@ export default {
             } else if (type === "box") {
               const y1 = getY(series[0]);
               const y2 = getY(series[1]);
-              const w = this.pixelsPerElement * series[3];
+              const w = pixelsPerElement * series[3];
 
               instructions[time].push({
                 type: "box",
@@ -60,7 +77,7 @@ export default {
               const y2 = getY(series[1]);
               const y3 = getY(series[2]);
               const y4 = getY(series[3]);
-              const w = this.pixelsPerElement * 0.9;
+              const w = pixelsPerElement * 0.9;
 
               instructions[time].push({
                 type: "box",
@@ -89,7 +106,7 @@ export default {
 
   yScale: {
     plots: {
-      default(set, timestamps) {
+      default(set, timestamps, chartDimensions) {
         const instructions = [];
 
         // Find last plotted item and create instructions for placement
@@ -118,13 +135,13 @@ export default {
               type: "box",
               x: 0,
               y: y - 13,
-              w: this.chartDimensions.yScale.width,
+              w: chartDimensions.yScale.width,
               h: 20,
               color: values.colors.color,
             });
             instructions.push({
               type: "text",
-              x: this.chartDimensions.yScale.width / 2,
+              x: chartDimensions.yScale.width / 2,
               y,
               color: textColor,
               text,
@@ -143,16 +160,16 @@ export default {
   },
 
   xScale: {
-    scales() {
+    scales(pixelsPerElement, timeframe, visibleRange) {
       const scales = [];
 
       const minPixels = 100;
       let xTimeStep = 0;
 
-      for (let i = Constants.TIMESCALES.indexOf(this.timeframe); i >= 0; i--) {
+      for (let i = Constants.TIMESCALES.indexOf(timeframe); i >= 0; i--) {
         // Check if this timeframe fits between max and min pixel boundaries
         const pixelsPerScale =
-          this.pixelsPerElement * (Constants.TIMESCALES[i] / this.timeframe);
+          pixelsPerElement * (Constants.TIMESCALES[i] / timeframe);
 
         if (pixelsPerScale >= minPixels) {
           xTimeStep = Constants.TIMESCALES[i];
@@ -160,9 +177,8 @@ export default {
         }
       }
 
-      const start =
-        this.visibleRange.start - (this.visibleRange.start % xTimeStep);
-      for (let i = start; i < this.visibleRange.end; i += xTimeStep) {
+      const start = visibleRange.start - (visibleRange.start % xTimeStep);
+      for (let i = start; i < visibleRange.end; i += xTimeStep) {
         scales.push(i);
       }
 

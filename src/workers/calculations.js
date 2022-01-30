@@ -1,16 +1,12 @@
 export default {
   /**
    * Loop through all points of a set and get the min and max values
-   * @param {string} id
+   * @param {ComputedSet} set
    * @param {number[]} timestamps
    * @returns {number[]} Min and max
    */
-  getMinAndMax(id, timestamps) {
+  getMinAndMax(set, timestamps) {
     const values = [];
-
-    // Get the set
-    const set = this.sets[id];
-    if (!set) return values;
 
     // Add all values to array
     for (const time of timestamps) {
@@ -39,9 +35,7 @@ export default {
     return requestedRange;
   },
 
-  calculatePixelsPerElement() {
-    const items =
-      (this.visibleRange.end - this.visibleRange.start) / this.timeframe;
-    return this.chartDimensions.main.width / items;
+  calculatePixelsPerElement(start, end, timeframe, width) {
+    return width / ((end - start) / timeframe);
   },
 };

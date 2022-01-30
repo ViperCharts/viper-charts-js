@@ -72,11 +72,8 @@ export default class ComputedData extends EventEmitter {
 
     this.max = -Infinity;
     this.min = Infinity;
-    this.visibleRange = {};
-    this.chartDimensions = {};
 
     this.maxDecimalPlaces = 0;
-    this.instructions = Instructions;
 
     this.offsetX = 0;
     this.offsetY = 0;
@@ -254,17 +251,12 @@ export default class ComputedData extends EventEmitter {
     pixelsPerElement,
     settings,
   }) {
-    this.pixelsPerElement = pixelsPerElement;
-
     // Calculate max and min of all plotted sets
     const timestamps = Utils.getAllTimestampsIn(
       requestedRange.start,
       requestedRange.end,
       timeframe
     );
-
-    this.visibleRange = requestedRange;
-    this.chartDimensions = chartDimensions;
 
     let min = Infinity;
     let max = -Infinity;
@@ -276,8 +268,8 @@ export default class ComputedData extends EventEmitter {
 
       if (!indicator.visible) continue;
 
-      const [setMin, setMax] = Calculations.getMinAndMax.bind(this)(
-        id,
+      const [setMin, setMax] = Calculations.getMinAndMax(
+        this.sets[id],
         timestamps
       );
 
@@ -292,18 +284,29 @@ export default class ComputedData extends EventEmitter {
 
     // Calculate the visible range based on chart settings.
     // Generaters will have access to this.visibleRange
-    this.visibleRange = Calculations.getVisibleRange.bind(this)(
+    const visibleRange = Calculations.getVisibleRange.bind(this)(
       requestedRange,
       settings
     );
 
-    this.pixelsPerElement = Calculations.calculatePixelsPerElement.bind(this)();
+    pixelsPerElement = Calculations.calculatePixelsPerElement(
+      visibleRange.start,
+      visibleRange.end,
+      timeframe,
+      chartDimensions.main.width
+    );
 
+    // Build fresh instructions struct
     const instructions = Instructions;
 
     // Get array of x coords for each timestamp on x axis
-    const timestampXCoords = timestamps.map(
-      this.getXCoordByTimestamp.bind(this)
+    const timestampXCoords = timestamps.map((time) =>
+      Utils.getXCoordByTimestamp(
+        visibleRange.start,
+        visibleRange.end,
+        chartDimensions.main.width,
+        time
+      )
     );
 
     // Loop through all sets and generate main and yScale instructions for plots
@@ -315,25 +318,40 @@ export default class ComputedData extends EventEmitter {
       if (!indicator.visible) continue;
 
       // Generate main instructions for set depending on scale type
-      const mainLayerGenerate = Generators.main.layers[scaleType].bind(this);
+      const mainLayerGenerate = Generators.main.layers[scaleType];
       instructions.main.layers[0][id] = mainLayerGenerate(
         set,
         timestamps,
-        timestampXCoords
+        timestampXCoords,
+        pixelsPerElement,
+        visibleRange,
+        chartDimensions
       );
 
-      const yScaleLayerGenerate = Generators.yScale.plots[scaleType].bind(this);
-      instructions.yScale.plots[id] = yScaleLayerGenerate(set, timestamps);
+      const yScaleLayerGenerate = Generators.yScale.plots[scaleType];
+      instructions.yScale.plots[id] = yScaleLayerGenerate(
+        set,
+        timestamps,
+        pixelsPerElement,
+        chartDimensions
+      );
     }
 
     // Calculate x and y scales
-    instructions.yScale.scales = Generators.yScale.scales.bind(this)();
-    instructions.xScale.scales = Generators.xScale.scales.bind(this)();
-
-    console.log(instructions);
+    instructions.yScale.scales = Generators.yScale.scales();
+    instructions.xScale.scales = Generators.xScale.scales(
+      pixelsPerElement,
+      timeframe,
+      visibleRange
+    );
 
     this.instructions = instructions;
-    return { instructions, visibleRange: this.visibleRange };
+    return {
+      instructions,
+      visibleRange,
+      pixelsPerElement,
+      maxDecimalPlaces: this.maxDecimalPlaces,
+    };
   }
 
   calculateMaxDecimalPlaces() {
@@ -348,32 +366,5 @@ export default class ComputedData extends EventEmitter {
       }
     }
     this.maxDecimalPlaces = maxDecimalPlaces;
-  }
-
-  getTimestampByXCoord(x) {
-    return Utils.getTimestampByXCoord(
-      this.visibleRange.start,
-      this.visibleRange.end,
-      this.chartDimensions.main.width,
-      x
-    );
-  }
-
-  getXCoordByTimestamp(timestamp) {
-    return Utils.getXCoordByTimestamp(
-      this.visibleRange.start,
-      this.visibleRange.end,
-      this.chartDimensions.main.width,
-      timestamp
-    );
-  }
-
-  getYCoordByPrice(price) {
-    return Utils.getYCoordByPrice(
-      this.visibleRange.min,
-      this.visibleRange.max,
-      this.chartDimensions.main.height,
-      price
-    );
   }
 }

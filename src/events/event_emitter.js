@@ -20,7 +20,6 @@ export default class EventEmitter {
     if (!listener) return;
     const i = listener.indexOf(callback);
     if (i === -1) {
-      console.log("Error!!! " + eventName);
       return;
     }
     listener.splice(i, 1);
