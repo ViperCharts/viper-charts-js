@@ -33,7 +33,7 @@ export default class ChartState extends EventEmitter {
     this.indicators = {};
     this.datasets = {};
     this.range = range;
-    this.requestedRange = this.range;
+    this.renderedRange = range;
     this.maxDecimalPlaces = 0;
     this.instructions = Instructions;
     this.computedState = this.$global.workers.createComputedState(this);
@@ -379,9 +379,15 @@ export default class ChartState extends EventEmitter {
 
     if (throwback) return;
 
-    this.range = visibleRange;
     this.setPixelsPerElement(pixelsPerElement);
     this.maxDecimalPlaces = maxDecimalPlaces;
+
+    if (this.settings.lockedYScale) {
+      this.range.max = visibleRange.max;
+      this.range.min = visibleRange.min;
+    }
+
+    this.renderedRange = visibleRange;
 
     this.$global.crosshair.updateCrosshairTimeAndPrice(this);
 
@@ -469,8 +475,8 @@ export default class ChartState extends EventEmitter {
 
   getTimestampByXCoord(x) {
     return Utils.getTimestampByXCoord(
-      this.range.start,
-      this.range.end,
+      this.renderedRange.start,
+      this.renderedRange.end,
       this.$global.layout.chartDimensions[this.id].main.width,
       x
     );
@@ -478,8 +484,8 @@ export default class ChartState extends EventEmitter {
 
   getXCoordByTimestamp(timestamp) {
     return Utils.getXCoordByTimestamp(
-      this.range.start,
-      this.range.end,
+      this.renderedRange.start,
+      this.renderedRange.end,
       this.$global.layout.chartDimensions[this.id].main.width,
       timestamp
     );
@@ -487,8 +493,8 @@ export default class ChartState extends EventEmitter {
 
   getYCoordByPrice(price) {
     return Utils.getYCoordByPrice(
-      this.range.min,
-      this.range.max,
+      this.renderedRange.min,
+      this.renderedRange.max,
       this.$global.layout.chartDimensions[this.id].main.height,
       price
     );

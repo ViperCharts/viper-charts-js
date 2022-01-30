@@ -214,6 +214,12 @@ export default class ComputedData extends EventEmitter {
     const item = this.queue.get(renderingQueueId);
     item.visible = !item.visible;
     this.queue.set(renderingQueueId, item);
+
+    // If hiding indicator, delete main and yScale plot instructions
+    if (!item.visible) {
+      delete this.instructions.main.layers[0][renderingQueueId];
+      delete this.instructions.yScale.plots[renderingQueueId];
+    }
   }
 
   emptySet({ renderingQueueId }) {
@@ -241,6 +247,9 @@ export default class ComputedData extends EventEmitter {
 
     this.queue.delete(renderingQueueId);
     this.emptySet({ renderingQueueId });
+
+    delete this.instructions.main.layers[0][renderingQueueId];
+    delete this.instructions.yScale.plots[renderingQueueId];
   }
 
   generateAllInstructions({
