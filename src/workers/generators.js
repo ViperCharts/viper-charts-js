@@ -129,7 +129,7 @@ export default {
             const y = Utils.getYCoordByPrice(
               visibleRange.min,
               visibleRange.max,
-              visibleRange.height,
+              chartDimensions.yScale.height,
               value
             );
 
@@ -154,6 +154,9 @@ export default {
               font: "bold 10px Arial",
             });
           }
+
+          // Break after already built instructions for set
+          break;
         }
 
         return instructions;
