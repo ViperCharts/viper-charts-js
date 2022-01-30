@@ -332,8 +332,8 @@ export default class ComputedData extends EventEmitter {
       instructions.yScale.plots[id] = yScaleLayerGenerate(
         set,
         timestamps,
-        pixelsPerElement,
-        chartDimensions
+        chartDimensions,
+        visibleRange
       );
     }
 

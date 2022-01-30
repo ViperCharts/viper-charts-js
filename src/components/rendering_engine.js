@@ -1,3 +1,4 @@
+import instructions from "../models/instructions.js";
 import Utils from "../utils.js";
 import Canvas from "./canvas.js";
 
@@ -21,7 +22,6 @@ export default class RenderingEngine {
      * @type {Array<string>} id
      */
     this.renderingOrder = [];
-    this.instructions = {};
     this.lastFrameTime = -1;
 
     this.offsetX = 0;
@@ -50,6 +50,8 @@ export default class RenderingEngine {
    * This can be used for when user interacts with the window like resizing
    */
   draw() {
+    const instructions = this.$state.chart.instructions[this.type];
+
     // Reset canvas
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -68,8 +70,8 @@ export default class RenderingEngine {
       let maxWidth = 0;
 
       // Loop through all yScale plot instructions and measure the width of all texts and get max width
-      for (const key in this.instructions) {
-        const [box, text] = this.instructions[key];
+      for (const key in instructions.plots) {
+        const [box, text] = instructions[key];
 
         const { ctx } = this.canvas;
         const textWidth = Math.ceil(ctx.measureText(text.text).width);
@@ -95,80 +97,90 @@ export default class RenderingEngine {
 
     const ids = [...this.renderingOrder];
 
-    const allInstructions = this.instructions;
+    const allInstructions = instructions;
 
     // If no instructions
     if (!allInstructions || typeof allInstructions !== "object") {
       return;
     }
 
-    // Loop through all rendering ids
-    for (const id of ids) {
-      let item = this.overlayQueue.get(id);
+    if (this.type === "xScale") {
+      for (const id of ids) {
+        let item = this.overlayQueue.get(id);
 
-      // If overlay and not indicator
-      if (item) {
-        const { overlay } = item;
-        overlay.drawFunc.bind(overlay)();
-        continue;
-      }
-
-      // Else, is this an indicator?
-      const instructions = allInstructions[id];
-
-      // If no instructions
-      if (!instructions || typeof instructions !== "object") {
-        continue;
-      }
-
-      const times = Object.keys(instructions);
-
-      const parseInstruction = (a, i, j) => {
-        const { offsetX, offsetY, offsetW, offsetH } = this;
-
-        if (a.type === "line") {
-          if (i === undefined || j === undefined) return;
-          let b = instructions[times[i + 1]];
-          if (!b) return;
-          b = b[j];
-          this.canvas.drawLine(
-            a.color,
-            [a.x + offsetX, a.y + offsetY, b.x + offsetX, b.y + offsetY],
-            a.linewidth
-          );
-        } else if (a.type === "box") {
-          this.canvas.drawBox(a.color, [
-            a.x + offsetX,
-            a.y + offsetY,
-            a.w,
-            a.h,
-          ]);
-        } else if (a.type === "single-line") {
-          this.canvas.drawLine(a.color, [
-            a.x + offsetX,
-            a.y + offsetY,
-            a.x2 + offsetX,
-            a.y2 + offsetY,
-          ]);
-        } else if (a.type === "text") {
-          this.canvas.drawText(
-            a.color,
-            [a.x + offsetX, a.y + offsetY],
-            a.text,
-            { font: a.font }
-          );
+        // If overlay and not indicator
+        if (item) {
+          const { overlay } = item;
+          overlay.drawFunc.bind(overlay)();
         }
-      };
+      }
+    }
 
-      if (this.type === "main") {
-        for (let i = 0; i < times.length; i++) {
-          const instructionsForTime = instructions[times[i]];
-          for (let j = 0; j < instructionsForTime.length; j++) {
-            parseInstruction(instructionsForTime[j], i, j);
+    if (this.type === "main") {
+      // Loop through all rendering ids
+      for (const id of ids) {
+        let item = this.overlayQueue.get(id);
+
+        // If overlay and not indicator
+        if (item) {
+          const { overlay } = item;
+          overlay.drawFunc.bind(overlay)();
+          continue;
+        }
+
+        // Else, is this an indicator?
+        const layer = instructions.layers[0][id];
+        if (!layer) continue;
+
+        const times = Object.keys(layer);
+
+        const parseInstruction = (a, i, j) => {
+          const { offsetX, offsetY, offsetW, offsetH } = this;
+
+          if (a.type === "line") {
+            if (i === undefined || j === undefined) return;
+            let b = layer[times[i + 1]];
+            if (!b) return;
+            b = b[j];
+            this.canvas.drawLine(
+              a.color,
+              [a.x + offsetX, a.y + offsetY, b.x + offsetX, b.y + offsetY],
+              a.linewidth
+            );
+          } else if (a.type === "box") {
+            this.canvas.drawBox(a.color, [
+              a.x + offsetX,
+              a.y + offsetY,
+              a.w,
+              a.h,
+            ]);
+          } else if (a.type === "single-line") {
+            this.canvas.drawLine(a.color, [
+              a.x + offsetX,
+              a.y + offsetY,
+              a.x2 + offsetX,
+              a.y2 + offsetY,
+            ]);
+          } else if (a.type === "text") {
+            this.canvas.drawText(
+              a.color,
+              [a.x + offsetX, a.y + offsetY],
+              a.text,
+              { font: a.font }
+            );
           }
+        };
+
+        if (this.type === "main") {
+          for (let i = 0; i < times.length; i++) {
+            const instructionsForTime = layer[times[i]];
+            for (let j = 0; j < instructionsForTime.length; j++) {
+              parseInstruction(instructionsForTime[j], i, j);
+            }
+          }
+        } else {
+          parseInstruction(allInstructions[id]);
         }
-      } else {
-        parseInstruction(allInstructions[id]);
       }
     }
   }
@@ -180,7 +192,7 @@ export default class RenderingEngine {
 
   removeFromRenderingOrder(id) {
     const i = this.renderingOrder.indexOf(id);
-    delete this.instructions[id];
+    delete instructions[id];
     this.renderingOrder.splice(i, 1);
   }
 

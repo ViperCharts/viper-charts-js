@@ -1,4 +1,5 @@
 import Constants from "../constants";
+import Utils from "../utils.js";
 
 export default {
   main: {
@@ -106,7 +107,7 @@ export default {
 
   yScale: {
     plots: {
-      default(set, timestamps, chartDimensions) {
+      default(set, timestamps, chartDimensions, visibleRange) {
         const instructions = [];
 
         // Find last plotted item and create instructions for placement
@@ -125,7 +126,12 @@ export default {
 
             // Get the appropriate series array plot index depending on plot type
             const value = values.series[{ line: 0, candle: 0 }[type]];
-            const y = getYCoordByPrice(value);
+            const y = Utils.getYCoordByPrice(
+              visibleRange.min,
+              visibleRange.max,
+              visibleRange.height,
+              value
+            );
 
             const textColor = Utils.isColorLight(values.colors.color)
               ? "#000"
@@ -144,7 +150,7 @@ export default {
               x: chartDimensions.yScale.width / 2,
               y,
               color: textColor,
-              text,
+              text: `${value}`,
               font: "bold 10px Arial",
             });
           }
