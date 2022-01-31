@@ -304,6 +304,12 @@ export default class ComputedData extends EventEmitter {
         scaleMax = ((setMax - first) / first) * 100;
       }
 
+      // If normalizes chart, calcualte based on 0-100 range
+      if (settings.scaleType === "normalized") {
+        scaleMin = 0;
+        scaleMax = 100;
+      }
+
       this.sets[id].visibleScaleMin = scaleMin;
       this.sets[id].visibleScaleMax = scaleMax;
 
