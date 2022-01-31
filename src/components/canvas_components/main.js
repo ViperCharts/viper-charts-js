@@ -89,12 +89,10 @@ export default class Main {
     this.mousemoveListener = this.onMouseMove.bind(this);
     canvas.addEventListener("mousemove", this.mousemoveListener);
 
-    this.mouseLeaveListener = (() =>
-      (this.$state.global.crosshair.visible = false)).bind(this);
-    canvas.addEventListener("mouseleave", this.mouseleaveListener);
+    this.mouseLeaveListener = this.onMouseLeave.bind(this);
+    canvas.addEventListener("mouseleave", this.mouseLeaveListener);
 
-    this.mouseEnterListener = (() =>
-      (this.$state.global.crosshair.visible = true)).bind(this);
+    this.mouseEnterListener = this.onMouseEnter.bind(this);
     canvas.addEventListener("mouseenter", this.mouseEnterListener);
 
     this.canvas.setCanvasElement(canvas);
@@ -104,7 +102,7 @@ export default class Main {
     if (!canvas);
     canvas.removeEventListener("wheel", this.scrollListener);
     canvas.removeEventListener("mousemove", this.mousemoveListener);
-    canvas.removeEventListener("mouseleave", this.mouseleaveListener);
+    canvas.removeEventListener("mouseleave", this.mouseLeaveListener);
     canvas.removeEventListener("mouseenter", this.mouseEnterListener);
   }
 
@@ -146,6 +144,14 @@ export default class Main {
       e.offsetX,
       e.offsetY
     );
+  }
+
+  onMouseLeave(e) {
+    this.$state.global.crosshair.visible = false;
+  }
+
+  onMouseEnter() {
+    this.$state.global.crosshair.visible = true;
   }
 
   onWindowMouseMove({ movementX, movementY }) {
