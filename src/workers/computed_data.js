@@ -18,6 +18,8 @@ class ComputedSet {
     this.max = -Infinity;
     this.visibleMin = Infinity;
     this.visibleMax = -Infinity;
+    this.visibleScaleMin = Infinity;
+    this.visibleScaleMax = -Infinity;
     this.decimalPlaces = 0;
     this.maxLookback = 0;
     this.maxLookforward = 0;
@@ -284,15 +286,29 @@ export default class ComputedData extends EventEmitter {
 
       if (!indicator.visible) continue;
 
-      const [setMin, setMax] = Calculations.getMinAndMax(
+      let [setMin, setMax] = Calculations.getMinAndMax(
         this.sets[id],
         timestamps
       );
 
-      if (setMin < min) min = setMin;
-      if (setMax > max) max = setMax;
+      let scaleMin = setMin;
+      let scaleMax = setMax;
+
       this.sets[id].visibleMin = setMin;
       this.sets[id].visibleMax = setMax;
+
+      // If percentage chart, calculate scale based on first plotted value
+      if (settings.scaleType === "percent") {
+        const first = Calculations.getFirstValue(this.sets[id], timestamps);
+        scaleMin = ((setMin - first) / first) * 100;
+        scaleMax = ((setMax - first) / first) * 100;
+      }
+
+      this.sets[id].visibleScaleMin = scaleMin;
+      this.sets[id].visibleScaleMax = scaleMax;
+
+      if (scaleMin < min) min = scaleMin;
+      if (scaleMax > max) max = scaleMax;
     }
 
     this.min = min;
