@@ -1,6 +1,5 @@
 import Canvas from "../canvas.js";
 import Background from "./background.js";
-import PriceSelected from "./price_selected.js";
 
 // TODO rename to PriceScale
 export default class TimeScale {
@@ -23,13 +22,6 @@ export default class TimeScale {
       cursor: "n-resize",
       position: "right",
     });
-
-    new Background({
-      $state: this.$state,
-      canvas: this.canvas,
-      color: "#080019",
-    });
-    new PriceSelected({ $state: this.$state, canvas: this.canvas });
 
     this.resizeChartLayoutListener = (({ yScale }) => {
       this.canvas.setHeight(yScale.height);

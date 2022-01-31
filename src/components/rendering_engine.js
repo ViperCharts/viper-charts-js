@@ -92,6 +92,19 @@ export default class RenderingEngine {
         this.$state.chart.setVisibleRange({});
       }
 
+      const p = this.$state.global.crosshair.price;
+      const { y } =
+        this.$state.global.crosshair.crosshairs[this.$state.chart.id];
+
+      if (this.$state.global.crosshair.visible) {
+        const { width } =
+          this.$state.global.layout.chartDimensions[this.$state.chart.id]
+            .yScale;
+
+        this.canvas.drawBox("#424242", [0, y - 10, width, 20]);
+        this.canvas.drawText("#fff", [width / 2, y + 3], p);
+      }
+
       return;
     }
 
