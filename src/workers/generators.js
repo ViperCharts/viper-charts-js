@@ -450,8 +450,6 @@ export default {
               2
             );
 
-            console.log(value);
-
             // Get the appropriate series array plot index depending on plot type
             const y = Utils.getYCoordByPrice(
               visibleRange.min,
