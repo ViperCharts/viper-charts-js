@@ -42,7 +42,6 @@ export default {
         title: "MA20",
         color: this.color,
         linewidth: 2,
-        ylabel: true,
       });
     },
   },
