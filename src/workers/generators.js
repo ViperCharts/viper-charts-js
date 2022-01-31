@@ -70,7 +70,7 @@ export default {
                 x: x - w / 2,
                 y: y1,
                 w,
-                h: Math.abs(y2) - Math.abs(y1),
+                h: y2 - y1,
                 color: values.colors.color,
               });
             } else if (type === "candle") {
@@ -85,7 +85,7 @@ export default {
                 x: x - w / 2,
                 y: y1,
                 w,
-                h: Math.abs(y4) - Math.abs(y1),
+                h: y4 - y1,
                 color: values.colors.color,
               });
               instructions[time].push({
