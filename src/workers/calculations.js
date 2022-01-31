@@ -24,12 +24,12 @@ export default {
     return [Math.min(...values), Math.max(...values)];
   },
 
-  getVisibleRange(requestedRange, settings) {
+  getVisibleRange(requestedRange, settings, min, max) {
     // If scale is locked, set min and max to min and max of all sets (visible range)
     if (settings.lockedYScale) {
-      const ySpread5P = (this.max - this.min) * 0.05;
-      requestedRange.min = this.min - ySpread5P;
-      requestedRange.max = this.max + ySpread5P;
+      const ySpread5P = (max - min) * 0.05;
+      requestedRange.min = min - ySpread5P;
+      requestedRange.max = max + ySpread5P;
     }
 
     return requestedRange;

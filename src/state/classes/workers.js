@@ -166,7 +166,12 @@ class ComputedStateMessenger {
         });
       });
 
-    this.chart.instructions = instructions;
+    this.chart.onGenerateAllInstructions({
+      instructions,
+      visibleRange,
+      pixelsPerElement,
+      maxDecimalPlaces,
+    });
     this.isGeneratingAllInstrutions = false;
 
     // If another generation is requested, call again
@@ -174,13 +179,6 @@ class ComputedStateMessenger {
       this.isRequestingToGenerateAllInstructions = false;
       setTimeout(() => this.generateAllInstructions());
     }
-
-    return {
-      instructions,
-      visibleRange,
-      pixelsPerElement,
-      maxDecimalPlaces,
-    };
   }
 
   emptyAllSets() {

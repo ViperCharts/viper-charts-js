@@ -302,7 +302,9 @@ export default class ComputedData extends EventEmitter {
     // Generaters will have access to this.visibleRange
     const visibleRange = Calculations.getVisibleRange.bind(this)(
       requestedRange,
-      settings
+      settings,
+      min,
+      max
     );
 
     pixelsPerElement = Calculations.calculatePixelsPerElement(
