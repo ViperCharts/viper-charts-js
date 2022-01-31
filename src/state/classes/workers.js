@@ -292,9 +292,12 @@ export default class WorkerState extends EventEmitter {
   }
 
   onWorkerMessage(e) {
-    const { type, chartId, resolveId, res } = e.data;
+    const { type, data, resolveId, res } = e.data;
 
     switch (type) {
+      case "updateInstructions":
+        this.$global.charts[data.chartId].instructions = data.instructions;
+        break;
       case "resolve":
         this.resolveQueue[resolveId](res);
         delete this.resolveQueue[resolveId];

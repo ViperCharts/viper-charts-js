@@ -55,8 +55,11 @@ class MainThreadMessenger {
     self.postMessage({ type: "setState", chartId, state: this.state });
   }
 
-  addToRenderingOrder({}) {
-    self.postMessage();
+  updateInstructions(instructions) {
+    self.postMessage({
+      type: "updateInstructions",
+      data: { chartId: this.chartId, instructions },
+    });
   }
 }
 
@@ -219,12 +222,16 @@ export default class ComputedData extends EventEmitter {
     if (!item.visible) {
       delete this.instructions.main.layers[0][renderingQueueId];
       delete this.instructions.yScale.plots[renderingQueueId];
+      this.mainThread.updateInstructions(this.instructions);
     }
   }
 
   emptySet({ renderingQueueId }) {
     delete this.sets[renderingQueueId];
     delete this.computedState[renderingQueueId];
+    delete this.instructions.main.layers[0][renderingQueueId];
+    delete this.instructions.yScale.plots[renderingQueueId];
+    this.mainThread.updateInstructions(this.instructions);
   }
 
   emptyAllSets() {

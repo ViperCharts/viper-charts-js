@@ -412,7 +412,6 @@ export default class ChartState extends EventEmitter {
     const { width } = this.$global.layout.chartDimensions[this.id].main;
     let { start, end } = this.range;
 
-    // If no current visible range
     if (!start || !end) {
       // End timestamp based on last element
       let endTimestamp;
