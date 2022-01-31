@@ -71,9 +71,12 @@ export default class RenderingEngine {
 
       // Loop through all yScale plot instructions and measure the width of all texts and get max width
       for (const key in instructions.plots) {
-        const [box, text] = instructions.plots[key];
+        // If no instructions for set, continue
+        if (!instructions.plots[key].length) continue;
 
+        const [box, text] = instructions.plots[key];
         const { ctx } = this.canvas;
+
         const textWidth = Math.ceil(ctx.measureText(text.text).width);
         if (textWidth > maxWidth) maxWidth = textWidth;
 
