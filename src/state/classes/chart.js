@@ -515,7 +515,10 @@ export default class ChartState extends EventEmitter {
   }
 
   setScaleType(type) {
-    this.updateSettings({ scaleType: type });
+    this.updateSettings({
+      scaleType: type,
+      lockedYScale: true,
+    });
     this.setInitialVisibleRange();
   }
 

@@ -299,7 +299,7 @@ export default {
               ? "#000"
               : "#FFF";
 
-            const a = value >= 0 ? "+" : "-";
+            const a = value >= 0 ? "+" : "";
 
             instructions.push({
               type: "box",
