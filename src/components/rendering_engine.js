@@ -202,7 +202,7 @@ export default class RenderingEngine {
       // Render all label plots
       for (const id of ids) {
         const plot = instructions.plots[id];
-        if (!plot) continue;
+        if (!plot || !plot.length) continue;
         const [box, text] = plot;
 
         // Draw the box and text
