@@ -198,6 +198,19 @@ export default class RenderingEngine {
           parseInstruction(allInstructions[id]);
         }
       }
+
+      // Render all label plots
+      for (const id of ids) {
+        const plot = instructions.plots[id];
+        if (!plot) continue;
+        const [box, text] = plot;
+
+        // Draw the box and text
+        this.canvas.drawBox(box.color, [box.x, box.y, box.w, box.h]);
+        this.canvas.drawText(text.color, [text.x, text.y], text.text, {
+          font: text.font,
+        });
+      }
     }
   }
 

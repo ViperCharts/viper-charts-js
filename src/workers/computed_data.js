@@ -220,18 +220,29 @@ export default class ComputedData extends EventEmitter {
     item.visible = !item.visible;
     this.queue.set(renderingQueueId, item);
 
+    // Re calculate max decimal places when sets have changed
+    this.calculateMaxDecimalPlaces();
+
     // If hiding indicator, delete main and yScale plot instructions
     if (!item.visible) {
       delete this.instructions.main.layers[0][renderingQueueId];
+      delete this.instructions.main.plots[renderingQueueId];
       delete this.instructions.yScale.plots[renderingQueueId];
       this.mainThread.updateInstructions(this.instructions);
     }
   }
 
   emptySet({ renderingQueueId }) {
+    // Delete set info
     delete this.sets[renderingQueueId];
     delete this.computedState[renderingQueueId];
+
+    // Re calculate max decimal places when sets have changed
+    this.calculateMaxDecimalPlaces();
+
+    // Delete instructions
     delete this.instructions.main.layers[0][renderingQueueId];
+    delete this.instructions.main.plots[renderingQueueId];
     delete this.instructions.yScale.plots[renderingQueueId];
     this.mainThread.updateInstructions(this.instructions);
   }
@@ -369,12 +380,16 @@ export default class ComputedData extends EventEmitter {
       );
 
       const yScaleLayerGenerate = Generators.yScale.plots[scaleType];
-      instructions.yScale.plots[id] = yScaleLayerGenerate(
+      const [yScale, main] = yScaleLayerGenerate(
         set,
         timestamps,
+        indicator,
         chartDimensions,
         visibleRange
       );
+
+      instructions.yScale.plots[id] = yScale;
+      instructions.main.plots[id] = main;
     }
 
     // Calculate x and y scales
@@ -386,11 +401,18 @@ export default class ComputedData extends EventEmitter {
     );
 
     this.instructions = instructions;
+
+    // TODO this is a temporary implementation
+    let maxDecimalPlaces = this.maxDecimalPlaces;
+    if (settings.scaleType !== "default") {
+      maxDecimalPlaces = 2;
+    }
+
     return {
       instructions,
       visibleRange,
       pixelsPerElement,
-      maxDecimalPlaces: this.maxDecimalPlaces,
+      maxDecimalPlaces,
     };
   }
 

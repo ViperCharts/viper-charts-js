@@ -5,6 +5,7 @@ export default {
     layers: {
       0: {},
     },
+    plots: {},
   },
   yScale: {
     background: {},

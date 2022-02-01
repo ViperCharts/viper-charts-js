@@ -307,8 +307,9 @@ export default {
 
   yScale: {
     plots: {
-      default(set, timestamps, chartDimensions, visibleRange) {
-        const instructions = [];
+      default(set, timestamps, indicator, chartDimensions, visibleRange) {
+        const yScaleInstructions = [];
+        const mainInstructions = [];
 
         // Find last plotted item and create instructions for placement
         for (let i = timestamps.length - 1; i >= 0; i--) {
@@ -339,7 +340,7 @@ export default {
               ? "#000"
               : "#FFF";
 
-            instructions.push({
+            yScaleInstructions.push({
               type: "box",
               x: 0,
               y: y - 13,
@@ -347,12 +348,32 @@ export default {
               h: 20,
               color: values.colors.color,
             });
-            instructions.push({
+            yScaleInstructions.push({
               type: "text",
               x: chartDimensions.yScale.width / 2,
               y,
               color: textColor,
               text: `${value}`,
+              font: "bold 10px Arial",
+            });
+
+            const text = `${indicator.datasetId}`;
+            const textWidth = text.length * 7;
+
+            mainInstructions.push({
+              type: "box",
+              x: chartDimensions.main.width - textWidth,
+              y: y - 13,
+              w: textWidth,
+              h: 20,
+              color: values.colors.color,
+            });
+            mainInstructions.push({
+              type: "text",
+              x: chartDimensions.main.width - textWidth / 2,
+              y,
+              color: textColor,
+              text,
               font: "bold 10px Arial",
             });
           }
@@ -361,11 +382,12 @@ export default {
           break;
         }
 
-        return instructions;
+        return [yScaleInstructions, mainInstructions];
       },
 
-      percent(set, timestamps, chartDimensions, visibleRange) {
-        const instructions = [];
+      percent(set, timestamps, indicator, chartDimensions, visibleRange) {
+        const yScaleInstructions = [];
+        const mainInstructions = [];
 
         // Find last plotted item and create instructions for placement
         for (let i = timestamps.length - 1; i >= 0; i--) {
@@ -400,7 +422,7 @@ export default {
 
             const a = value >= 0 ? "+" : "";
 
-            instructions.push({
+            yScaleInstructions.push({
               type: "box",
               x: 0,
               y: y - 13,
@@ -408,12 +430,32 @@ export default {
               h: 20,
               color: values.colors.color,
             });
-            instructions.push({
+            yScaleInstructions.push({
               type: "text",
               x: chartDimensions.yScale.width / 2,
               y,
               color: textColor,
               text: `${a}${Utils.toFixed(value, 2)}%`,
+              font: "bold 10px Arial",
+            });
+
+            const text = `${indicator.datasetId}`;
+            const textWidth = text.length * 7;
+
+            mainInstructions.push({
+              type: "box",
+              x: chartDimensions.main.width - textWidth,
+              y: y - 13,
+              w: textWidth,
+              h: 20,
+              color: values.colors.color,
+            });
+            mainInstructions.push({
+              type: "text",
+              x: chartDimensions.main.width - textWidth / 2,
+              y,
+              color: textColor,
+              text,
               font: "bold 10px Arial",
             });
           }
@@ -422,11 +464,12 @@ export default {
           break;
         }
 
-        return instructions;
+        return [yScaleInstructions, mainInstructions];
       },
 
-      normalized(set, timestamps, chartDimensions, visibleRange) {
-        const instructions = [];
+      normalized(set, timestamps, indicator, chartDimensions, visibleRange) {
+        const yScaleInstructions = [];
+        const mainInstructions = [];
 
         // Find last plotted item and create instructions for placement
         for (let i = timestamps.length - 1; i >= 0; i--) {
@@ -462,7 +505,7 @@ export default {
               ? "#000"
               : "#FFF";
 
-            instructions.push({
+            yScaleInstructions.push({
               type: "box",
               x: 0,
               y: y - 13,
@@ -470,12 +513,32 @@ export default {
               h: 20,
               color: values.colors.color,
             });
-            instructions.push({
+            yScaleInstructions.push({
               type: "text",
               x: chartDimensions.yScale.width / 2,
               y,
               color: textColor,
               text: `${value}`,
+              font: "bold 10px Arial",
+            });
+
+            const text = `${indicator.datasetId}`;
+            const textWidth = text.length * 7;
+
+            mainInstructions.push({
+              type: "box",
+              x: chartDimensions.main.width - textWidth,
+              y: y - 13,
+              w: textWidth,
+              h: 20,
+              color: values.colors.color,
+            });
+            mainInstructions.push({
+              type: "text",
+              x: chartDimensions.main.width - textWidth / 2,
+              y,
+              color: textColor,
+              text,
               font: "bold 10px Arial",
             });
           }
@@ -484,7 +547,7 @@ export default {
           break;
         }
 
-        return instructions;
+        return [yScaleInstructions, mainInstructions];
       },
     },
 
