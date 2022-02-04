@@ -50,7 +50,7 @@ export default {
       const chart = this.$global.charts[this.$global.selectedChartId];
 
       // Create a datsaet group
-      const group = chart.createDatasetGroup([searchResult]);
+      const group = chart.createDatasetGroup([searchResult], { visible: true });
 
       // Add the indicator to dataset group
       for (let i = 0; i < 5; i++) {

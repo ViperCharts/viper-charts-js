@@ -144,8 +144,9 @@ export default class ChartState extends EventEmitter {
   /**
    * Create new dataset group
    * @param {Array} datasets Array of dataset sources and names
+   * @param {*} options
    */
-  createDatasetGroup(datasets) {
+  createDatasetGroup(datasets, { visible = true, synced = {} }) {
     const id = Utils.uniqueId();
 
     // Get all the datasets
@@ -159,10 +160,10 @@ export default class ChartState extends EventEmitter {
 
     this.datasetGroups[id] = {
       id,
-      visible: true,
+      visible,
       datasets,
       indicators: {},
-      synced: {},
+      synced,
     };
 
     // Update chart UI
@@ -246,7 +247,10 @@ export default class ChartState extends EventEmitter {
       end: this.range.end,
     });
 
-    this.$global.settings.onChartIndicatorsChange(this.id, this.indicators);
+    this.$global.settings.onChartDatasetGroupsChange(
+      this.id,
+      this.datasetGroups
+    );
 
     // If first new dataset, reset range according to data
     this.setInitialVisibleRange();
@@ -354,6 +358,11 @@ export default class ChartState extends EventEmitter {
     // Update chart UI
     this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
 
+    this.$global.settings.onChartDatasetGroupsChange(
+      this.id,
+      this.datasetGroups
+    );
+
     if (indicator.visible) {
       const dataset = this.datasets[indicator.datasetId];
       const timestamps = Object.keys(dataset.data);
@@ -388,7 +397,10 @@ export default class ChartState extends EventEmitter {
     this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
 
     // Update settings store
-    // TODO
+    this.$global.settings.onChartDatasetGroupsChange(
+      this.id,
+      this.datasetGroups
+    );
   }
 
   /**
@@ -413,7 +425,10 @@ export default class ChartState extends EventEmitter {
 
     this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
 
-    this.$global.settings.onChartIndicatorsChange(this.id, this.indicators);
+    this.$global.settings.onChartDatasetGroupsChange(
+      this.id,
+      this.datasetGroups
+    );
   }
 
   /**
