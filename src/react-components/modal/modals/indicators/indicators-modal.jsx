@@ -53,9 +53,11 @@ export default {
       const group = chart.createDatasetGroup([searchResult]);
 
       // Add the indicator to dataset group
-      chart.addIndicator(this.state.selectedIndicatorId, group.id, {
-        visible: true,
-      });
+      for (let i = 0; i < 5; i++) {
+        chart.addIndicator(this.state.selectedIndicatorId, group.id, {
+          visible: true,
+        });
+      }
     }
 
     onSearchInput({ target }) {

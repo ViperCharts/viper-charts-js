@@ -12,7 +12,7 @@ export default class Indicator extends React.Component {
   }
 
   toggleVisibility() {
-    this.chart.toggleVisibility(
+    this.chart.toggleIndicatorVisibility(
       this.props.datasetGroupId,
       this.props.renderingQueueId
     );

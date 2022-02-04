@@ -159,6 +159,7 @@ export default class ChartState extends EventEmitter {
 
     this.datasetGroups[id] = {
       id,
+      visible: true,
       datasets,
       indicators: {},
       synced: {},
@@ -318,20 +319,46 @@ export default class ChartState extends EventEmitter {
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, { timeframe });
   }
 
-  async toggleVisibility(renderingQueueId) {
-    await this.computedState.toggleVisibility({ renderingQueueId });
+  /**
+   * Toggle all indicators in a dataset
+   * @param {string} datasetGroupId
+   */
+  toggleDatasetGroupVisibility(datasetGroupId) {
+    const group = this.datasetGroups[datasetGroupId];
 
-    const visible = !this.indicators[renderingQueueId].visible;
-    this.indicators[renderingQueueId].visible = visible;
-    this.$global.ui.charts[this.id].updateIndicator(renderingQueueId, {
-      visible,
+    // Toggle datasetGroup visibility and then apply the value to all indicators in group
+    group.visible = !group.visible;
+    this.datasetGroups[group.id] = group;
+
+    // Update chart UI
+    this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
+
+    Object.keys(group.indicators).forEach((id) => {
+      this.toggleIndicatorVisibility(group.id, id, group.visible);
+    });
+  }
+
+  toggleIndicatorVisibility(datasetGroupId, renderingQueueId, visible) {
+    // Get the dataset group
+    const group = this.datasetGroups[datasetGroupId];
+    const indicator = group.indicators[renderingQueueId];
+
+    indicator.visible = visible === undefined ? !indicator.visible : visible;
+    this.computedState.setVisibility({
+      renderingQueueId,
+      visible: indicator.visible,
     });
 
-    if (visible) {
-      // If dataset already exists, get all times and calculate them
-      const dataset =
-        this.datasets[this.indicators[renderingQueueId].datasetId];
+    group.indicators[renderingQueueId] = indicator;
+
+    // Update chart UI
+    this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
+
+    if (indicator.visible) {
+      const dataset = this.datasets[indicator.datasetId];
       const timestamps = Object.keys(dataset.data);
+
+      // If dataset already exists, get all times and calculate them
       if (timestamps.length) {
         this.computedState.calculateOneSet({
           renderingQueueId,
@@ -347,23 +374,46 @@ export default class ChartState extends EventEmitter {
     }
   }
 
-  removeIndicator(datsetGroupId, indicatorId) {
-    const indicator = this.indicators[id];
-    this.computedState.removeFromQueue({ renderingQueueId: id });
-    delete this.indicators[id];
+  /**
+   * Remove dataset group and all child indicators
+   * @param {string} datasetGroupId
+   */
+  removeDatasetGroup(datasetGroupId) {
+    Object.keys(this.datasetGroups[datasetGroupId].indicators).forEach((id) => {
+      this.removeIndicator(datasetGroupId, id);
+    });
+    delete this.datasetGroups[datasetGroupId];
+
+    // Update chart UI
+    this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
+
+    // Update settings store
+    // TODO
+  }
+
+  /**
+   * Remove indicator from dataset and from all other references
+   * @param {string} datsetGroupId
+   * @param {string} renderingQueueId
+   */
+  removeIndicator(datsetGroupId, renderingQueueId) {
+    // Get the dataset group
+    const group = this.datasetGroups[datsetGroupId];
+    const indicator = group.indicators[renderingQueueId];
+
+    this.computedState.removeFromQueue({ renderingQueueId });
+    delete group.indicators[renderingQueueId];
 
     // Remove dataset listener and dataset if no more listeners;
     const dataset = this.datasets[indicator.datasetId];
-    const subscribers = dataset.removeSubscriber(this.id, id);
+    const subscribers = dataset.removeSubscriber(this.id, renderingQueueId);
     if (!subscribers.length) {
       delete this.datasets[dataset.getTimeframeAgnosticId()];
     }
 
-    this.$global.ui.charts[this.id].removeIndicator(id);
+    this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
 
     this.$global.settings.onChartIndicatorsChange(this.id, this.indicators);
-
-    this.setVisibleRange({});
   }
 
   /**

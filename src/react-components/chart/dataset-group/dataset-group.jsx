@@ -14,11 +14,11 @@ export default class DatsetGroup extends React.Component {
   }
 
   toggleVisibility() {
-    this.chart.toggleVisibility(this.props.renderingQueueId);
+    this.chart.toggleDatasetGroupVisibility(this.props.datasetGroup.id);
   }
 
   remove() {
-    this.chart.removeDatasetGroup(this.props.renderingQueueId);
+    this.chart.removeDatasetGroup(this.props.datasetGroup.id);
   }
 
   render() {
@@ -26,8 +26,6 @@ export default class DatsetGroup extends React.Component {
     const v = datasetGroup.visible;
     const dataset = datasetGroup.datasets[0];
     const indicatorIds = Object.keys(datasetGroup.indicators);
-
-    console.log(datasetGroup);
 
     return (
       <div className={`dataset-group v-noselect ${v ? "" : "invisible"}`}>
