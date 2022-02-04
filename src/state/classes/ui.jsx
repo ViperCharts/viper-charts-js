@@ -45,7 +45,9 @@ class App extends React.Component {
     this.setState(() => (this.state.modal = modal));
   }
 
-  setContextMenu(id, pos, data) {
+  setContextMenu(e, id, data = {}) {
+    const pos = [e.clientX, e.clientY];
+
     this.setState(() => {
       this.state.contextmenu = { id, pos: [0, 0], data };
     });

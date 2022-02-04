@@ -65,18 +65,5 @@ export default class EventsState extends EventEmitter {
 
   onContextMenu(e) {
     e.preventDefault();
-    let { context_menu_id, context_menu_data } = e.path[0].attributes;
-    if (!context_menu_id) return;
-
-    if (context_menu_data) {
-      context_menu_data = JSON.parse(context_menu_data.value);
-    }
-
-    const { clientX: x, clientY: y } = e;
-    this.$global.ui.app.setContextMenu(
-      context_menu_id.value,
-      [x, y],
-      context_menu_data
-    );
   }
 }
