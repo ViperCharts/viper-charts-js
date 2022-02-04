@@ -7,6 +7,12 @@
   font-size: 12px;
 }
 
+.dataset-group-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .dataset-group-controls {
   display: flex;
   align-items: center;

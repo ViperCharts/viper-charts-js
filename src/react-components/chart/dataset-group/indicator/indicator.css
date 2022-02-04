@@ -22,7 +22,13 @@
   font-size: 10px;
 }
 
-.indicator button {
+.indicator-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.indicator-controls button {
   background: transparent;
   border: 0;
   padding: 0;
@@ -31,6 +37,6 @@
   cursor: pointer;
 }
 
-.indicator > button > i {
+.indicator-controls > button > i {
   transform: scale(-0.55);
 }

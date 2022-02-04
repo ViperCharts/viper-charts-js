@@ -9,6 +9,10 @@ export default class Indicator extends React.Component {
     this.$global = props.$global;
 
     this.chart = this.$global.charts[props.chartId];
+
+    this.state = {
+      isMouseOver: false,
+    };
   }
 
   toggleVisibility() {
@@ -29,15 +33,27 @@ export default class Indicator extends React.Component {
     const { indicator } = this.props;
     const v = indicator.visible;
 
+    const mo = this.state.isMouseOver;
+
     return (
-      <div className={`indicator v-noselect ${v ? "" : "invisible"}`}>
+      <div
+        onMouseOver={() => this.setState({ isMouseOver: true })}
+        onMouseOut={() => this.setState({ isMouseOver: false })}
+        className={`indicator v-noselect ${v ? "" : "invisible"}`}
+      >
         <span className="indicator-title">{indicator.name}</span>
-        <button onClick={this.toggleVisibility.bind(this)}>
-          {v ? <i className="gg-eye"></i> : <i className="gg-eye-alt"></i>}
-        </button>
-        <button onClick={this.remove.bind(this)}>
-          <i className="gg-close"></i>
-        </button>
+
+        <div
+          className="indicator-controls"
+          style={{ visibility: mo ? "visible" : "hidden" }}
+        >
+          <button onClick={this.toggleVisibility.bind(this)}>
+            {v ? <i className="gg-eye"></i> : <i className="gg-eye-alt"></i>}
+          </button>
+          <button onClick={this.remove.bind(this)}>
+            <i className="gg-close"></i>
+          </button>
+        </div>
       </div>
     );
   }

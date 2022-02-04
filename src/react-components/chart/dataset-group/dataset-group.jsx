@@ -11,6 +11,10 @@ export default class DatsetGroup extends React.Component {
     this.$global = props.$global;
 
     this.chart = this.$global.charts[props.chartId];
+
+    this.state = {
+      isMouseOver: false,
+    };
   }
 
   toggleVisibility() {
@@ -27,18 +31,30 @@ export default class DatsetGroup extends React.Component {
     const dataset = datasetGroup.datasets[0];
     const indicatorIds = Object.keys(datasetGroup.indicators);
 
+    const mo = this.state.isMouseOver;
+
     return (
-      <div className={`dataset-group v-noselect ${v ? "" : "invisible"}`}>
-        <div className="dataset-group-controls">
+      <div
+        onMouseOver={() => this.setState({ isMouseOver: true })}
+        onMouseOut={() => this.setState({ isMouseOver: false })}
+        className={`dataset-group v-noselect ${v ? "" : "invisible"}`}
+      >
+        <div className="dataset-group-info">
           <div className="dataset-group-title">
             {`${dataset.source}:${dataset.name}`}
           </div>
-          <button onClick={this.toggleVisibility.bind(this)}>
-            {v ? <i className="gg-eye"></i> : <i className="gg-eye-alt"></i>}
-          </button>
-          <button onClick={this.remove.bind(this)}>
-            <i className="gg-close"></i>
-          </button>
+
+          <div
+            className="dataset-group-controls"
+            style={{ visibility: mo ? "visible" : "hidden" }}
+          >
+            <button onClick={this.toggleVisibility.bind(this)}>
+              {v ? <i className="gg-eye"></i> : <i className="gg-eye-alt"></i>}
+            </button>
+            <button onClick={this.remove.bind(this)}>
+              <i className="gg-close"></i>
+            </button>
+          </div>
         </div>
 
         {indicatorIds.map((id) => (
