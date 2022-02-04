@@ -30,8 +30,8 @@ export default class ChartState extends EventEmitter {
 
     this.id = id;
     this.timeframe = 0;
-    this.indicators = {};
     this.datasets = {};
+    this.datasetGroups = {};
     this.range = range;
     this.renderedRange = range;
     this.maxDecimalPlaces = 0;
@@ -107,8 +107,8 @@ export default class ChartState extends EventEmitter {
     this.subcharts.yScale.destroy();
     this.subcharts.xScale.destroy();
 
-    // Delete all indicators
-    Object.keys(this.indicators).map(this.removeIndicator.bind(this));
+    // Delete all dataset groups and their corresponding indicators
+    // Object.keys(this.datasetGroups).map(this.removeIndicator.bind(this));
 
     // Delete from layout
     this.$global.layout.removeChart(this.id);
@@ -142,14 +142,47 @@ export default class ChartState extends EventEmitter {
   }
 
   /**
+   * Create new dataset group
+   * @param {Array} datasets Array of dataset sources and names
+   */
+  createDatasetGroup(datasets) {
+    const id = Utils.uniqueId();
+
+    // Get all the datasets
+    datasets.map(({ source, name }) =>
+      this.$global.data.addOrGetDataset({
+        source,
+        name,
+        timeframe: this.timeframe,
+      })
+    );
+
+    this.datasetGroups[id] = {
+      id,
+      datasets,
+      indicators: {},
+      synced: {},
+    };
+
+    // Update chart UI
+    this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
+
+    return this.datasetGroups[id];
+  }
+
+  /**
    * Add an indicator to this chart by id or by object
    * @param {string|indicator} indicator The indicator to add
    * @param {*} options
    */
-  async addIndicator(indicator, { source, name, visible = true }) {
+  async addIndicator(indicator, datasetGroupId, { visible = true }) {
     if (typeof indicator === "string") {
       indicator = Indicators[indicator];
     }
+
+    // Get the dataset group
+    const group = this.datasetGroups[datasetGroupId];
+    const { source, name } = group.datasets[0];
 
     // Get or create dataset if doesn't exist
     const dataset = this.$global.data.addOrGetDataset({
@@ -199,10 +232,11 @@ export default class ChartState extends EventEmitter {
     dataset.addSubscriber(this.id, renderingQueueId);
     this.datasets[localId] = dataset;
 
-    this.indicators[renderingQueueId] = indicator;
+    group.indicators[renderingQueueId] = indicator;
+    this.datasetGroups[group.id] = group;
 
-    // Add indicator to UI state
-    this.$global.ui.charts[this.id].addIndicator(renderingQueueId, indicator);
+    // Update chart UI
+    this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
 
     // Request data points for dataset
     this.$global.data.requestDataPoints({
@@ -313,7 +347,7 @@ export default class ChartState extends EventEmitter {
     }
   }
 
-  removeIndicator(id) {
+  removeIndicator(datsetGroupId, indicatorId) {
     const indicator = this.indicators[id];
     this.computedState.removeFromQueue({ renderingQueueId: id });
     delete this.indicators[id];

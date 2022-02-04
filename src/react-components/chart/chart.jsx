@@ -1,6 +1,6 @@
 import React from "react";
 
-import Indicator from "./indicator/indicator";
+import DatasetGroup from "./dataset-group/dataset-group.jsx";
 import ChartSettings from "./chart-settings/chart-settings";
 
 import "./chart.css";
@@ -18,7 +18,7 @@ export default class Chart extends React.Component {
     this.state = {
       id: this.props.id,
       name: this.chart.name,
-      indicators: this.chart.indicators,
+      datasetGroups: this.chart.datasetGroups,
 
       isFocused: this.$global.selectedChartId === this.props.id,
     };
@@ -75,22 +75,8 @@ export default class Chart extends React.Component {
     this.chart.removeEventListener("set-name", this.setChartNameListener);
   }
 
-  addIndicator(renderingQueueId, indicator) {
-    const indicators = this.state.indicators;
-    indicators[renderingQueueId] = indicator;
-    this.setState(() => (this.state.indicators = indicators));
-  }
-
-  updateIndicator(renderingQueueId, updates) {
-    const indicators = this.state.indicators;
-    Object.assign(indicators[renderingQueueId], updates);
-    this.setState(() => (this.state.indicators = indicators));
-  }
-
-  removeIndicator(renderingQueueId) {
-    const indicators = this.state.indicators;
-    delete indicators[renderingQueueId];
-    this.setState(() => (this.state.indicators = indicators));
+  updateDatasetGroups(datasetGroups) {
+    this.setState({ datasetGroups });
   }
 
   /**
@@ -122,7 +108,7 @@ export default class Chart extends React.Component {
           <div className="overlay">
             <div className="top-left">
               <div className="chart-name">{this.state.name}</div>
-              <div className="indicator-list">{this.renderIndicators()}</div>
+              <div className="indicator-list">{this.renderDatasetGroups()}</div>
             </div>
             <div className="top-right">
               <ChartSettings $global={this.$global} chartId={this.state.id} />
@@ -161,18 +147,16 @@ export default class Chart extends React.Component {
     ) : null;
   }
 
-  renderIndicators() {
-    const keys = Object.keys(this.state.indicators);
+  renderDatasetGroups() {
+    const keys = Object.keys(this.state.datasetGroups);
     if (!keys.length) return;
-    const indicators = keys.map((key) => (
-      <Indicator
+    return keys.map((key) => (
+      <DatasetGroup
         $global={this.$global}
         chartId={this.state.id}
-        indicator={this.state.indicators[key]}
-        renderingQueueId={key}
+        datasetGroup={this.state.datasetGroups[key]}
         key={key}
       />
     ));
-    return indicators;
   }
 }

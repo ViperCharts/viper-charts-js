@@ -12,11 +12,17 @@ export default class Indicator extends React.Component {
   }
 
   toggleVisibility() {
-    this.chart.toggleVisibility(this.props.renderingQueueId);
+    this.chart.toggleVisibility(
+      this.props.datasetGroupId,
+      this.props.renderingQueueId
+    );
   }
 
   remove() {
-    this.chart.removeIndicator(this.props.renderingQueueId);
+    this.chart.removeIndicator(
+      this.props.datasetGroupId,
+      this.props.renderingQueueId
+    );
   }
 
   render() {
@@ -26,12 +32,7 @@ export default class Indicator extends React.Component {
 
     return (
       <div className={`indicator v-noselect ${v ? "" : "invisible"}`}>
-        <span className="indicator-title">
-          <div className="indicator-subtitle">
-            {`${dataset.source} ${dataset.name}`}
-          </div>
-          {indicator.name}
-        </span>
+        <span className="indicator-title">{indicator.name}</span>
         <button onClick={this.toggleVisibility.bind(this)}>
           {v ? <i className="gg-eye"></i> : <i className="gg-eye-alt"></i>}
         </button>

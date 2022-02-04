@@ -155,15 +155,18 @@ export default class TopBar extends React.Component {
     return (
       <div className="top-bar">
         <button className="top-bar-item">🐍</button>
+
         {isIndicatorsButton ? (
           <button
             onClick={this.showIndicatorsModal.bind(this)}
             className="top-bar-item"
           >
-            Indicators
+            Data & Indicators
           </button>
         ) : null}
+
         {this.renderTimeframes()}
+
         <div className="top-bar-seperator"></div>
 
         {this.state.globalSettings.gridEdit ? (

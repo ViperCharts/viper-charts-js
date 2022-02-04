@@ -1,0 +1,37 @@
+.dataset-group {
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 2px 4px;
+  pointer-events: all;
+  font-size: 12px;
+}
+
+.dataset-group-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dataset-group:hover {
+  border: 1px solid rgb(213, 213, 213, 0.5);
+}
+
+.dataset-group {
+  color: rgb(214, 213, 213);
+  font-weight: bold;
+}
+
+.dataset-group-controls button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  margin-left: 6px;
+  color: rgb(172, 172, 172);
+  cursor: pointer;
+}
+
+.dataset-group-controls > button > i {
+  transform: scale(-0.65);
+}

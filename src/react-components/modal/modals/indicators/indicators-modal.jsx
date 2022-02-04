@@ -32,7 +32,7 @@ export default {
     }
 
     componentDidMount() {
-      this.updateSearchResults();
+      this.updateSearchResults(this.state.search);
     }
 
     componentWillUnmount() {
@@ -48,7 +48,14 @@ export default {
      */
     addIndicator(searchResult) {
       const chart = this.$global.charts[this.$global.selectedChartId];
-      chart.addIndicator(this.state.selectedIndicatorId, searchResult);
+
+      // Create a datsaet group
+      const group = chart.createDatasetGroup([searchResult]);
+
+      // Add the indicator to dataset group
+      chart.addIndicator(this.state.selectedIndicatorId, group.id, {
+        visible: true,
+      });
     }
 
     onSearchInput({ target }) {
