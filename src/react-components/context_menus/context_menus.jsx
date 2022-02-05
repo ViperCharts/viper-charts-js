@@ -63,4 +63,37 @@ const contextMenus = {
       );
     }
   },
+
+  datasetGroup: class DatasetGroupContextMenu extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+
+    render() {
+      const { chart, datasetGroup } = this.props;
+
+      return (
+        <div>
+          <button>Change Dataset</button>
+          <button>Add Indicator</button>
+        </div>
+      );
+    }
+  },
+
+  indicator: class IndicatorContextMenu extends React.Component {
+    constructor(props) {
+      super(props);
+    }
+
+    render() {
+      const { chart, indicator } = this.props;
+
+      return (
+        <div>
+          <button>Change Indicator</button>
+        </div>
+      );
+    }
+  },
 };

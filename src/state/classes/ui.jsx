@@ -46,6 +46,8 @@ class App extends React.Component {
   }
 
   setContextMenu(e, id, data = {}) {
+    console.log(e);
+    e.stopPropagation();
     const pos = [e.clientX, e.clientY];
 
     this.setState(() => {

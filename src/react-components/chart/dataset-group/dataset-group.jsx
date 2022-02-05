@@ -37,9 +37,9 @@ export default class DatsetGroup extends React.Component {
       <div
         onMouseOver={() => this.setState({ isMouseOver: true })}
         onMouseOut={() => this.setState({ isMouseOver: false })}
-        onContextMenuCapture={(e) =>
-          this.$global.ui.app.setContextMenu(e, "yScale", {
-            chartId: this.chart.id,
+        onContextMenu={(e) =>
+          this.$global.ui.app.setContextMenu(e, "datasetGroup", {
+            chartId: this.chart,
             datasetGroupId: datasetGroup.id,
           })
         }

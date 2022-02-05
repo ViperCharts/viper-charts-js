@@ -39,6 +39,12 @@ export default class Indicator extends React.Component {
       <div
         onMouseOver={() => this.setState({ isMouseOver: true })}
         onMouseOut={() => this.setState({ isMouseOver: false })}
+        onContextMenu={(e) =>
+          this.$global.ui.app.setContextMenu(e, "indicator", {
+            chart: this.chart,
+            indicator,
+          })
+        }
         className={`indicator v-noselect ${v ? "" : "invisible"}`}
       >
         <span className="indicator-title">{indicator.name}</span>
