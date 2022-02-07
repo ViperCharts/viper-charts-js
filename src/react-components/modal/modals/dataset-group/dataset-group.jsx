@@ -3,7 +3,7 @@ import React from "react";
 import "./dataset-group.css";
 
 export default {
-  title: "Create Datset Group",
+  title: "Create Dataset Group",
   width: 100,
   height: 100,
   component: class DatasetGroupModal extends React.Component {
