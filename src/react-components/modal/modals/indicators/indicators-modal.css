@@ -1,11 +1,3 @@
-.indicators-modal button {
-  outline: 0;
-  background: rgb(75, 75, 75);
-  border: 0;
-  color: rgb(160, 160, 160);
-  cursor: pointer;
-}
-
 .source {
   width: 100%;
 }
@@ -23,21 +15,6 @@
 .indicators-modal button.indicator-button__selected {
   background: rgb(160, 160, 160);
   color: rgb(75, 75, 75);
-}
-
-.markets-search-box input {
-  width: 100%;
-  padding: 4px 8px;
-  border-radius: 2px;
-  background: rgb(75, 75, 75);
-  border: 0;
-  color: rgb(160, 160, 160);
-  font-size: 24px;
-}
-
-.datasets {
-  margin: 2px 0;
-  margin-top: 12px;
 }
 
 button.dataset {

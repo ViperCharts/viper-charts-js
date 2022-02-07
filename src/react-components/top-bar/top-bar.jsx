@@ -137,8 +137,8 @@ export default class TopBar extends React.Component {
     this.setState({ timeframeLabels });
   }
 
-  showIndicatorsModal() {
-    this.$global.ui.app.setModal("indicators");
+  showAddDataModal() {
+    this.$global.ui.app.setModal("add-data");
   }
 
   setTimeframe(timeframe) {
@@ -158,10 +158,11 @@ export default class TopBar extends React.Component {
 
         {isIndicatorsButton ? (
           <button
-            onClick={this.showIndicatorsModal.bind(this)}
+            onClick={this.showAddDataModal.bind(this)}
             className="top-bar-item"
           >
-            Data & Indicators
+            <i className="gg-add"></i>
+            Plot Data
           </button>
         ) : null}
 

@@ -20,6 +20,7 @@ class App extends React.Component {
     this.state = {
       charts: {},
       modal: "",
+      modalData: {},
       contextmenu: {
         id: "",
         pos: [0, 0],
@@ -41,13 +42,13 @@ class App extends React.Component {
     this.setState(() => (this.state.charts = charts));
   }
 
-  setModal(modal) {
-    this.setState(() => (this.state.modal = modal));
+  setModal(modal, modalData = {}) {
+    this.setState({ modal, modalData });
   }
 
   setContextMenu(e, id, data = {}) {
-    console.log(e);
     e.stopPropagation();
+    e.preventDefault();
     const pos = [e.clientX, e.clientY];
 
     this.setState(() => {
@@ -71,7 +72,7 @@ class App extends React.Component {
 
   closeContextMenu() {
     this.setState(() => {
-      this.state.contextmenu = { id: "", pos: [] };
+      this.state.contextmenu = { id: "", pos: [], data: {} };
     });
     this.forceUpdate();
   }

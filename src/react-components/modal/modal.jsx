@@ -1,6 +1,8 @@
 import React from "react";
 
+import AddDataModal from "./modals/add-data/add-data";
 import IndicatorsModal from "./modals/indicators/indicators-modal";
+import DatasetGroupModal from "./modals/dataset-group/dataset-group";
 
 import "./modal.css";
 
@@ -34,7 +36,10 @@ export default class Modal extends React.Component {
             </button>
           </div>
           <div className="modal-body">
-            <Component $global={this.$global} />
+            <Component
+              $global={this.$global}
+              data={this.$global.ui.app.state.modalData}
+            />
           </div>
         </div>
       </div>
@@ -43,10 +48,12 @@ export default class Modal extends React.Component {
 }
 
 function getModal(id) {
-  let Modal;
-
   switch (id) {
     case "indicators":
       return IndicatorsModal;
+    case "add-data":
+      return AddDataModal;
+    case "dataset-group":
+      return DatasetGroupModal;
   }
 }

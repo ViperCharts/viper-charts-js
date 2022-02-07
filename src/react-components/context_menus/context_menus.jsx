@@ -70,12 +70,20 @@ const contextMenus = {
     }
 
     render() {
-      const { chart, datasetGroup } = this.props;
+      const { datasetGroupId } = this.props.data;
 
       return (
         <div>
           <button>Change Dataset</button>
-          <button>Add Indicator</button>
+          <button
+            onClick={() => {
+              this.props.$global.ui.app.setModal("indicators", {
+                datasetGroupId,
+              });
+            }}
+          >
+            Add Indicator
+          </button>
         </div>
       );
     }
