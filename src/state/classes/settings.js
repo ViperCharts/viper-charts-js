@@ -37,17 +37,29 @@ export default class SettingsState extends EventEmitter {
           const chart = this.$global.charts[chartId];
 
           // If indicators is defined, loop through and add all indicators when initialized state
-          if (typeof state.indicators === "object") {
+          if (typeof state.datasetGroups === "object") {
             chart.addEventListener("init", () => {
               chart.setVisibleRange(state.range);
 
-              for (const indicator of Object.values(state.indicators)) {
-                const [source, name] = indicator.datasetId.split(":");
-                chart.addIndicator(Indicators[indicator.id], {
-                  source,
-                  name,
-                  visible: indicator.visible,
+              for (const {
+                datasets,
+                visible,
+                synced,
+                indicators,
+              } of Object.values(state.datasetGroups)) {
+                const group = chart.createDatasetGroup(datasets, {
+                  visible,
+                  synced,
                 });
+
+                for (const indicator of Object.values(indicators)) {
+                  const [source, name] = indicator.datasetId.split(":");
+                  chart.addIndicator(Indicators[indicator.id], group.id, {
+                    source,
+                    name,
+                    visible: indicator.visible,
+                  });
+                }
               }
             });
           }
@@ -75,7 +87,7 @@ export default class SettingsState extends EventEmitter {
         max: 0,
       },
       pixelsPerElement: 0,
-      indicators: [],
+      datasetGroups: {},
       settings: {},
       ...state,
     };
@@ -106,13 +118,13 @@ export default class SettingsState extends EventEmitter {
     this.$global.api.onSaveViperSettings(this.settings);
   }
 
-  onChartIndicatorsChange(id, indicators) {
+  onChartDatasetGroupsChange(id, datasetGroups) {
     const chart = this.settings.charts[id];
     if (!chart) {
       console.error(`Chart id ${id} not found in Viper settings state`);
       return;
     }
-    chart.indicators = indicators;
+    chart.datasetGroups = datasetGroups;
     this.$global.api.onSaveViperSettings(this.settings);
   }
 

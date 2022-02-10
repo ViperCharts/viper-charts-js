@@ -1,7 +1,17 @@
-#app {
+.viper {
   width: 100vw;
   height: 100vh;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  color: rgb(160, 160, 160);
 }
 
 .v-noselect {
@@ -16,4 +26,19 @@
 
 .react-resizable-handle {
   z-index: 1000;
+}
+
+.grouped-list-item {
+  outline: 0;
+  background: rgb(75, 75, 75);
+  border: 0;
+  color: rgb(160, 160, 160);
+  cursor: pointer;
+  padding: 12px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  font-weight: bold;
+  display: block;
+  width: 100%;
+  text-align: left;
 }

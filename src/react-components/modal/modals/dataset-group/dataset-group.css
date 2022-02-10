@@ -1,0 +1,20 @@
+.markets-search-box input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 2px;
+  background: rgb(75, 75, 75);
+  border: 0;
+  color: rgb(160, 160, 160);
+  font-size: 24px;
+  border-radius: 4px;
+}
+
+.datasets {
+  margin: 2px 0;
+  margin-top: 12px;
+}
+
+.dataset-soruce,
+.dataset-name {
+  margin: 0;
+}

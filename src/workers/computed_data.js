@@ -210,14 +210,14 @@ export default class ComputedData extends EventEmitter {
     return { renderingQueueId: id };
   }
 
-  toggleVisibility({ renderingQueueId }) {
+  setVisibility({ renderingQueueId, visible }) {
     if (!this.queue.has(renderingQueueId)) {
       console.error(`${renderingQueueId} was not found in rendering queue`);
       return;
     }
 
     const item = this.queue.get(renderingQueueId);
-    item.visible = !item.visible;
+    item.visible = visible;
     this.queue.set(renderingQueueId, item);
 
     // Re calculate max decimal places when sets have changed

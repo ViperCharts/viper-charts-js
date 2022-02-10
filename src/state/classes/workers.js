@@ -48,17 +48,17 @@ class ComputedStateMessenger {
     return { renderingQueueId };
   }
 
-  async toggleVisibility({ renderingQueueId }) {
+  async setVisibility({ renderingQueueId, visible }) {
     await new Promise((resolve) => {
       const id = this.$global.workers.addToResolveQueue(resolve);
 
       this.worker.postMessage({
         type: "runComputedStateMethod",
         data: {
-          method: "toggleVisibility",
+          method: "setVisibility",
           resolveId: id,
           chartId: this.chart.id,
-          params: { renderingQueueId },
+          params: { renderingQueueId, visible },
         },
       });
     });

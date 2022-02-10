@@ -1,11 +1,9 @@
 .indicator {
   display: flex;
   align-items: center;
-  justify-content: center;
   border-radius: 4px;
   border: 1px solid transparent;
   cursor: pointer;
-  padding: 2px 4px;
   pointer-events: all;
   font-size: 12px;
 }
@@ -20,23 +18,25 @@
 
 .indicator-title {
   color: rgb(172, 172, 172);
+  margin: 0px 4px;
+  font-size: 10px;
 }
 
-.indicator-subtitle {
-  font-size: 8px;
-  opacity: 0.8;
+.indicator-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.indicator button {
+.indicator-controls button {
   background: transparent;
   border: 0;
   padding: 0;
   margin: 0;
-  margin-left: 6px;
   color: rgb(172, 172, 172);
   cursor: pointer;
 }
 
-.indicator > button > i {
-  transform: scale(-0.65);
+.indicator-controls > button > i {
+  transform: scale(-0.55);
 }
