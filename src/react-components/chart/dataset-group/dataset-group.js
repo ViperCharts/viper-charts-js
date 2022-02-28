@@ -1,6 +1,6 @@
 import React from "react";
 
-import Indicator from "./indicator/indicator.jsx";
+import Indicator from "./indicator/indicator";
 
 import "./dataset-group.css";
 

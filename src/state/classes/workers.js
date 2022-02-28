@@ -1,7 +1,7 @@
 import EventEmitter from "../../events/event_emitter";
 import Utils from "../../utils";
 
-import MyWorker from "../../workers/worker.js?worker";
+import MyWorker from "worker-loader!../../workers/worker";
 
 class ComputedStateMessenger {
   constructor({ $global, chart, worker }) {
@@ -234,7 +234,14 @@ export default class WorkerState extends EventEmitter {
   }
 
   createWorker() {
-    const worker = new MyWorker();
+    let worker;
+    if (process.env.NODE_ENV === "production") {
+      worker = new Worker(
+        "https://vipermainspace.fra1.digitaloceanspaces.com/public/viper.worker.js"
+      );
+    } else {
+      worker = new MyWorker({ type: "module" });
+    }
 
     worker.onmessage = this.onWorkerMessage.bind(this);
     worker.onerror = this.onWorkerError.bind(this);

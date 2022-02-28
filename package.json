@@ -1,36 +1,47 @@
 {
-  "name": "@viper-charts/viper-charts",
-  "description": "Charting library",
-  "homepage": "https://github.com/vipercharts/viper-charts-js",
-  "version": "0.0.12",
-  "lockfileVersion": 1,
-  "hasInstallScript": true,
-  "main": "dist/viper.js",
+  "name": "vipercharts",
+  "version": "1.0.4",
+  "description": "A free and open-source cross market charting platform",
+  "main": "dist/viper.bundle.js",
+  "keywords": [
+    "viper",
+    "charts",
+    "crypto",
+    "bitcoin",
+    "charting platform"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "prepublish": "rm -rf dist && tsc && babel src/ --out-dir dist --copy-files",
-    "serve": "vite preview"
+    "start": "webpack serve --open --config webpack.dev.js",
+    "build": "rm -rf dist/* && webpack --config webpack.prod.js"
+  },
+  "author": "Tryston Perry",
+  "bugs": {
+    "url": "https://github.com/ViperCharts/viper-charts-js/issues",
+    "email": "vipercharts@protonmail.com"
+  },
+  "license": "CC0",
+  "devDependencies": {
+    "@babel/core": "^7.17.5",
+    "@babel/node": "^7.16.8",
+    "@babel/plugin-proposal-class-properties": "^7.16.7",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-react": "^7.16.7",
+    "babel-loader": "^8.2.3",
+    "css-loader": "^6.6.0",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "5.5.0",
+    "image-webpack-loader": "^8.1.0",
+    "node-sass": "^7.0.1",
+    "regenerator-runtime": "^0.13.9",
+    "sass-loader": "^12.6.0",
+    "style-loader": "^3.3.1",
+    "webpack": "5.69.1",
+    "webpack-cli": "4.9.2",
+    "webpack-dev-server": "4.7.4",
+    "webpack-merge": "^5.8.0",
+    "worker-loader": "^3.0.8"
   },
   "dependencies": {
-    "@types/react": "^17.0.24",
-    "@types/react-dom": "^17.0.9",
-    "@vitejs/plugin-react": "^1.0.1",
-    "lodash": "^4.17.21",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "typescript": "^4.4.3",
-    "vite-plugin-react-css-modules": "^1.0.0"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.16.0",
-    "@babel/core": "^7.16.5",
-    "@babel/preset-env": "^7.16.5",
-    "@babel/preset-react": "^7.16.5",
-    "@vitejs/plugin-react-refresh": "^1.3.6",
-    "vite": "^2.5.4"
-  },
-  "peerDependencies": {
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },

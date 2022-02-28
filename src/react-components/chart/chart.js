@@ -1,6 +1,6 @@
 import React from "react";
 
-import DatasetGroup from "./dataset-group/dataset-group.jsx";
+import DatasetGroup from "./dataset-group/dataset-group";
 import ChartSettings from "./chart-settings/chart-settings";
 
 import "./chart.css";

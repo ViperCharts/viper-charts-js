@@ -1,6 +1,6 @@
 import React from "react";
 
-import Chart from "../../react-components/chart/chart";
+import Chart from "../chart/chart";
 
 import Utils from "../../utils";
 
