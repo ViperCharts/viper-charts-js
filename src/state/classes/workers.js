@@ -236,8 +236,9 @@ export default class WorkerState extends EventEmitter {
   createWorker() {
     let worker;
     if (process.env.NODE_ENV === "production") {
+      // Load built production worker from static host. This is because its impossible to import Worker code directly in built NPM module
       worker = new Worker(
-        "https://vipermainspace.fra1.digitaloceanspaces.com/public/viper.worker.js"
+        "https://cdn.jsdelivr.net/gh/ViperCharts/viper-charts-js@master/dist/viper.bundle.worker.js"
       );
     } else {
       worker = new MyWorker({ type: "module" });
