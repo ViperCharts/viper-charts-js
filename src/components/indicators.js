@@ -2,6 +2,7 @@ export default {
   "price-line": {
     id: "price-line",
     name: "Price Line",
+    types: ["ohlc"],
     draw({ close, plot }) {
       plot({
         value: close,
@@ -16,6 +17,7 @@ export default {
   candlestick: {
     id: "candlestick",
     name: "Candlestick",
+    types: ["ohlc"],
     draw({ open, high, low, close, plotCandle }) {
       const color = close >= open ? "#C4FF49" : "#FE3A64";
       plotCandle({
@@ -34,6 +36,7 @@ export default {
   sma: {
     id: "sma",
     name: "SMA",
+    types: ["ohlc"],
     draw({ plot, sma }) {
       const ma20 = sma({ source: "close", length: 20 });
 
@@ -49,6 +52,7 @@ export default {
   "ma-slope": {
     id: "ma-slope",
     name: "MA Slope",
+    types: ["ohlc"],
     draw({ plot, sma, setVar, getVar }) {
       const ma20 = sma({ source: "close", length: 20 });
       setVar({ name: "ma20", value: ma20 });
@@ -68,6 +72,7 @@ export default {
   "volume-bar": {
     id: "volume-bar",
     name: "Volume",
+    types: ["volume"],
     draw({ open, close, volume, plotVolume }) {
       const isUp = close >= open;
       const color = isUp ? this.upColor : this.downColor;
