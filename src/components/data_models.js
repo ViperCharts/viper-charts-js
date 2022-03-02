@@ -1,15 +1,46 @@
 export default {
+  /**
+   * Price open, high, low, and close
+   */
   ohlc: {
-    open: Number,
-    high: Number,
-    low: Number,
-    close: Number,
+    open: "number",
+    high: "number",
+    low: "number",
+    close: "number",
   },
+
+  /**
+   * Volume
+   */
   volume: {
-    volume: Number,
+    volume: "number",
   },
+
+  /**
+   * Price open, high, low, close, and volume
+   * inherits ohlc and volume
+   */
+  ohlcv: {
+    open: "number",
+    high: "number",
+    low: "number",
+    close: "number",
+    volume: "number",
+  },
+
+  /**
+   * Buy and sell volume
+   */
   volumeBySide: {
-    buyVolume: Number,
-    sellVolume: Number,
+    buyVolume: "number",
+    sellVolume: "number",
+  },
+
+  /**
+   * Heatmap of historical orderbook
+   */
+  orderbookHeatmap: {
+    spread: "number",
+    prices: "object[string]number",
   },
 };

@@ -151,8 +151,7 @@ export default class DataState extends EventEmitter {
       }
     }
 
-    // Get array of timestamps that are already in data store and check if
-
+    // If no unloaded data, or start and end time are not valid, don't add request
     if (requestedPoint[0] === Infinity || requestedPoint[1] === -Infinity) {
       return;
     }
