@@ -1,4 +1,6 @@
 export default {
+  value: "number",
+
   /**
    * Price open, high, low, and close
    */
@@ -12,21 +14,7 @@ export default {
   /**
    * Volume
    */
-  volume: {
-    volume: "number",
-  },
-
-  /**
-   * Price open, high, low, close, and volume
-   * inherits ohlc and volume
-   */
-  ohlcv: {
-    open: "number",
-    high: "number",
-    low: "number",
-    close: "number",
-    volume: "number",
-  },
+  volume: "number",
 
   /**
    * Buy and sell volume

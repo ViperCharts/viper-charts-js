@@ -2,7 +2,7 @@ import Constants from "../../constants.js";
 
 import Utils from "../../utils.js";
 
-import Indicators from "../../components/indicators.js";
+import PlotTypes from "../../components/plot_types.js";
 
 import Main from "../../components/canvas_components/main.js";
 import TimeScale from "../../components/canvas_components/time_scale.js";
@@ -150,10 +150,10 @@ export default class ChartState extends EventEmitter {
     const id = Utils.uniqueId();
 
     // Get all the datasets
-    datasets.map(({ source, name }) =>
+    datasets.map((dataset) =>
       this.$global.data.addOrGetDataset({
-        source,
-        name,
+        source: dataset.source,
+        name: dataset.name,
         timeframe: this.timeframe,
       })
     );
@@ -177,9 +177,10 @@ export default class ChartState extends EventEmitter {
    * @param {string|indicator} indicator The indicator to add
    * @param {*} options
    */
-  async addIndicator(indicator, datasetGroupId, { visible = true }) {
+  async addIndicator(indicator, datasetGroupId, model, { visible = true }) {
+    // If indicator passed was a string, assume its indicator id
     if (typeof indicator === "string") {
-      indicator = Indicators[indicator];
+      indicator = PlotTypes.getIndicatorById(indicator);
     }
 
     // Get the dataset group
@@ -201,6 +202,7 @@ export default class ChartState extends EventEmitter {
       ...indicator,
       visible,
       datasetId: localId,
+      model,
       color,
     };
 
@@ -231,7 +233,7 @@ export default class ChartState extends EventEmitter {
     }
 
     // Subscribe to dataset updates
-    dataset.addSubscriber(this.id, renderingQueueId);
+    dataset.addSubscriber(this.id, renderingQueueId, [model.id]);
     this.datasets[localId] = dataset;
 
     group.indicators[renderingQueueId] = indicator;

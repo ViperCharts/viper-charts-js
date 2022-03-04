@@ -1,6 +1,8 @@
 import React from "react";
 
-import indicators from "../../../../components/indicators";
+import candlestickSvg from "../../../../static/plot_types/bases/candlestick.svg";
+
+import PlotTypes from "../../../../components/plot_types";
 
 import "./indicators-modal.css";
 
@@ -13,35 +15,82 @@ export default {
       super(props);
 
       this.$global = props.$global;
+
+      this.chart = this.$global.charts[this.$global.selectedChartId];
+      this.group = this.chart.datasetGroups[props.data.datasetGroupId];
+
+      this.state = {
+        model: this.group.datasets[0].models[0],
+      };
+    }
+
+    setModel(model) {
+      this.setState({ model });
     }
 
     addIndicator(indicatorId) {
-      const chart = this.$global.charts[this.$global.selectedChartId];
-      console.log(this.props.data);
-      const group = chart.datasetGroups[this.props.data.datasetGroupId];
-
       // Add the indicator to dataset group
-      chart.addIndicator(indicatorId, group.id, {
+      this.chart.addIndicator(indicatorId, this.group.id, this.state.model, {
         visible: true,
       });
     }
 
+    isIndicatorSupported({ dependencies }) {
+      return this.state.model.model === dependencies[0];
+    }
+
     render() {
       return (
+        // Display horizontal grid of dataModels from source
         <div className="indicators-modal">
-          {Object.keys(indicators).map((id) => {
-            const indicator = indicators[id];
-
-            return (
+          <div className="dataset-models">
+            {this.group.datasets[0].models.map((model) => (
               <button
-                onClick={() => this.addIndicator(id)}
-                key={id}
-                className="grouped-list-item"
+                onClick={() => this.setModel(model)}
+                key={model.id}
+                className={`button ${
+                  model.id === this.state.model.id ? "button-selected" : ""
+                }`}
+                style={{ padding: "6px", marginRight: "6px" }}
               >
-                {indicator.name}
+                {model.name}
               </button>
-            );
-          })}
+            ))}
+          </div>
+
+          <div style={{ margin: "12px 0px" }}>
+            <span>Bases</span>
+            {Object.values(PlotTypes.bases)
+              .filter(this.isIndicatorSupported.bind(this))
+              .map((indicator) => {
+                return (
+                  <button
+                    onClick={() => this.addIndicator(indicator.id)}
+                    key={indicator.id}
+                    className="grouped-list-item"
+                  >
+                    {indicator.name}
+                  </button>
+                );
+              })}
+          </div>
+
+          <div>
+            <span>Indicators</span>
+            {Object.values(PlotTypes.indicators)
+              .filter(this.isIndicatorSupported.bind(this))
+              .map((indicator) => {
+                return (
+                  <button
+                    onClick={() => this.addIndicator(indicator.id)}
+                    key={indicator.id}
+                    className="grouped-list-item"
+                  >
+                    {indicator.name}
+                  </button>
+                );
+              })}
+          </div>
         </div>
       );
     }

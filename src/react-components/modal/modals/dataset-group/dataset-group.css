@@ -14,7 +14,10 @@
   margin-top: 12px;
 }
 
-.dataset-soruce,
 .dataset-name {
   margin: 0;
+}
+
+.dataset-name > * {
+  margin-left: 0.5rem;
 }

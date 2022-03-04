@@ -3,7 +3,7 @@ import GlobalState from "./state/global.js";
 import EventEmitter from "./events/event_emitter";
 
 import Constants from "./constants";
-import Indicators from "./components/indicators.js";
+import PlotTypes from "./components/plot_types.js";
 
 // type DatasetSource = {
 //   source: string; // Dataset source (ex: COINBASE, FTX)
@@ -73,7 +73,7 @@ export default class Viper extends EventEmitter {
     this.$global.settings.setSettings(settings);
 
     this.Constants = Constants;
-    this.Indicators = Indicators;
+    this.PlotTypes = PlotTypes;
   }
 
   /**

@@ -3,7 +3,7 @@ import React from "react";
 import "./dataset-group.css";
 
 export default {
-  title: "Create Dataset Group",
+  title: "Add Dataset",
   width: 100,
   height: 100,
   component: class DatasetGroupModal extends React.Component {
@@ -67,12 +67,14 @@ export default {
 
         for (const dataset of source) {
           const { name } = dataset;
-          const id = `${sourceId}:${name}`.toLowerCase();
+
+          const dataModelsStr = dataset.models.map((m) => m.name).join(", ");
+          const id = `${sourceId} ${name} ${dataModelsStr}`.toLowerCase();
 
           if (search.length === 0 || regex.test(id)) {
             results.push({
-              ...dataset,
-              source: sourceId,
+              dataset,
+              dataModelsStr,
             });
           }
         }
@@ -93,14 +95,17 @@ export default {
             />
           </div>
           <div className="datasets">
-            {this.state.searchResults.map((result) => (
+            {this.state.searchResults.map(({ dataset, dataModelsStr }) => (
               <button
-                onClick={() => this.addDatsetGroup(result)}
+                onClick={() => this.addDatsetGroup(dataset)}
                 className="dataset grouped-list-item"
-                key={`${result.source}:${result.name}`}
+                key={`${dataset.source}:${dataset.name}`}
               >
-                <small className="dataset-source">{result.source}</small>
-                <h3 className="dataset-name">{result.name}</h3>
+                <h3 className="dataset-name">
+                  {dataset.source}
+                  <span style={{ opacity: "0.75" }}>{dataset.name}</span>
+                </h3>
+                <i style={{ opacity: "0.5" }}>{dataModelsStr}</i>
               </button>
             ))}
           </div>

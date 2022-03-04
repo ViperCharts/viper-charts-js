@@ -1,3 +1,19 @@
 .viper * {
   box-sizing: border-box;
 }
+
+.viper .button {
+  background: rgb(75, 75, 75);
+  border: 0;
+  color: rgb(160, 160, 160);
+  cursor: pointer;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.viper .button-selected {
+  background: rgb(160, 160, 160);
+  color: rgb(75, 75, 75);
+}

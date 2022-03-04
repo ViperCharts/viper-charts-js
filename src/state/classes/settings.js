@@ -1,6 +1,6 @@
 import EventEmitter from "../../events/event_emitter";
 
-import Indicators from "../../components/indicators";
+import PlotTypes from "../../components/plot_types";
 
 export default class SettingsState extends EventEmitter {
   constructor({ $global }) {
@@ -54,11 +54,16 @@ export default class SettingsState extends EventEmitter {
 
                 for (const indicator of Object.values(indicators)) {
                   const [source, name] = indicator.datasetId.split(":");
-                  chart.addIndicator(Indicators[indicator.id], group.id, {
-                    source,
-                    name,
-                    visible: indicator.visible,
-                  });
+                  chart.addIndicator(
+                    PlotTypes.getIndicatorById(indicator.id),
+                    group.id,
+                    indicator.model,
+                    {
+                      source,
+                      name,
+                      visible: indicator.visible,
+                    }
+                  );
                 }
               }
             });

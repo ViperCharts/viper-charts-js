@@ -1,5 +1,5 @@
 import Utils from "../utils";
-import Indicators from "../components/indicators";
+import PlotTypes from "../components/plot_types.js";
 import ScriptFunctions from "../viper_script/script_functions";
 import Instructions from "../models/instructions.js";
 
@@ -85,10 +85,11 @@ export default class ComputedData extends EventEmitter {
   }
 
   calculateOneSet({ renderingQueueId, timestamps, dataset }) {
+    console.log(timestamps, dataset);
     const { timeframe } = dataset;
 
     const indicator = this.queue.get(renderingQueueId);
-    indicator.draw = Indicators[indicator.id].draw;
+    indicator.draw = PlotTypes.getIndicatorById(indicator.id).draw;
 
     // If indicator is set to invisible, dont calculate data
     if (!indicator.visible) return;
@@ -189,11 +190,11 @@ export default class ComputedData extends EventEmitter {
       delete set.data[iteratedTime];
 
       const point = dataset.data[iteratedTime];
-
       if (point === undefined || point === null) continue;
+      const data = point[indicator.model.id];
 
       indicator.draw({
-        ...point,
+        ...data,
         ...funcWraps,
       });
     }

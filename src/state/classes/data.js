@@ -11,6 +11,7 @@ class Dataset extends EventEmitter {
     this.timeframe = timeframe;
     this.data = data;
     this.subscribers = {};
+    this.dependencies = new Set();
   }
 
   getId() {
@@ -23,14 +24,24 @@ class Dataset extends EventEmitter {
 
   /**
    * Update the data and call all subscribers that updates were applied
-   * @param {object} dataset
-   * @param {object} updates
+   * @param {object} updates Object[time]{ ...values }
+   * @param {string} model Model id (eg: price, volume, openInterest)
    */
-  updateDataset(updates) {
+  updateDataset(updates, model) {
     // Apply updates
-    Object.assign(this.data, updates);
+    for (const time in updates) {
+      if (!this.data[time]) {
+        this.data[time] = {
+          [model]: updates[time],
+        };
+        continue;
+      }
+
+      Object.assign(this.data[time][model], updates[time]);
+    }
 
     const timestamps = Object.keys(updates).sort((a, b) => a - b);
+    console.log(timestamps);
 
     // Update all listeners to re-render this particular element
     for (const chartId in this.subscribers) {
@@ -41,7 +52,7 @@ class Dataset extends EventEmitter {
 
       // Calculate all indicator data for new time additions
       const indicatorIdArray = this.subscribers[chartId];
-      for (const renderingQueueId of indicatorIdArray) {
+      for (const renderingQueueId in indicatorIdArray) {
         chart.computedState.calculateOneSet({
           renderingQueueId,
           timestamps,
@@ -56,13 +67,17 @@ class Dataset extends EventEmitter {
     }
   }
 
-  addSubscriber(chartId, renderingQueueId) {
+  addSubscriber(chartId, renderingQueueId, dependencies) {
     let subscribers = this.subscribers[chartId];
     if (!subscribers) {
-      subscribers = [renderingQueueId];
-    } else {
-      subscribers.push(renderingQueueId);
+      subscribers = {};
     }
+    subscribers[renderingQueueId] = dependencies;
+
+    console.log(subscribers);
+
+    // Add to cached dependencies set
+    dependencies.forEach((d) => this.dependencies.add(d));
 
     this.subscribers[chartId] = subscribers;
   }
@@ -70,16 +85,15 @@ class Dataset extends EventEmitter {
   removeSubscriber(chartId, renderingQueueId) {
     const subscribers = this.subscribers[chartId];
 
-    if (!subscribers || !subscribers.length) {
+    if (!subscribers) {
       console.error("No subscribers from chart or subscribers active.");
       return;
     }
 
-    const i = subscribers.indexOf(renderingQueueId);
-    subscribers.splice(i, 1);
+    delete subscribers[renderingQueueId];
 
     // If no more subscribers to this chart, remove this chart
-    if (subscribers.length === 0) {
+    if (Object.keys(subscribers).length === 0) {
       delete this.subscribers[chartId];
     }
 
@@ -88,7 +102,19 @@ class Dataset extends EventEmitter {
       delete this.$global.data.datasets[this.getId()];
     }
 
-    return this.subscribers[chartId] || [];
+    // Rebuild dependency set
+    this.dependencies.clear();
+    for (const chartId in this.subscribers) {
+      const subscriber = this.subscribers[chartId];
+      for (const id in subscriber) {
+        const dependencies = subscriber[id];
+        for (const dependency of dependencies) {
+          this.dependencies.add(dependency);
+        }
+      }
+    }
+
+    return this.subscribers[chartId] || {};
   }
 }
 
@@ -196,6 +222,7 @@ export default class DataState extends EventEmitter {
           id,
           source,
           name,
+          dataModels: Array.from(dataset.dependencies.keys()),
           timeframe,
           start: leftBound,
           end,
@@ -208,14 +235,14 @@ export default class DataState extends EventEmitter {
     // Sort by latest timestamps
     requests = requests.sort((a, b) => b.end - a.end);
 
-    const callback = (id, updates = {}) => {
+    const callback = (id, updates = {}, model) => {
       const dataset = this.datasets[id];
 
       // If dataset was deleted since request was fired
       if (!dataset) return;
 
       // Update data
-      dataset.updateDataset.bind(dataset)(updates);
+      dataset.updateDataset.bind(dataset)(updates, model);
     };
 
     this.$global.api.onRequestHistoricalData({
