@@ -31,4 +31,12 @@ export default {
     spread: "number",
     prices: "object[string]number",
   },
+
+  /**
+   * Executed volume by side
+   */
+  footprint: {
+    spread: "number",
+    prices: "object[string]{ buy: number, sell: number }",
+  },
 };

@@ -28,14 +28,28 @@ export default {
       this.setState({ model });
     }
 
-    addIndicator(indicatorId) {
+    addIndicator(indicatorId, offchart = false) {
+      let chart = this.chart;
+
+      if (offchart) {
+        chart = this.$global.createChart({
+          pixelsPerElement: chart.pixelsPerElement,
+          range: chart.range,
+          settings: {
+            syncRange: true,
+          },
+        });
+      }
+
       // Add the indicator to dataset group
-      this.chart.addIndicator(indicatorId, this.group.id, this.state.model, {
+      chart.addIndicator(indicatorId, this.group.id, this.state.model, {
         visible: true,
       });
     }
 
     isIndicatorSupported({ dependencies }) {
+      if (dependencies[0] === "value" && this.state.model.model === "ohlc")
+        return true;
       return this.state.model.model === dependencies[0];
     }
 
@@ -64,13 +78,22 @@ export default {
               .filter(this.isIndicatorSupported.bind(this))
               .map((indicator) => {
                 return (
-                  <button
-                    onClick={() => this.addIndicator(indicator.id)}
+                  <div
+                    className="indicator-list-item grouped-list-item"
                     key={indicator.id}
-                    className="grouped-list-item"
                   >
-                    {indicator.name}
-                  </button>
+                    <button
+                      onClick={() => this.addIndicator(indicator.id)}
+                      className="add-indicator-btn-main"
+                    >
+                      {indicator.name}
+                    </button>
+                    <button
+                      onClick={() => this.addIndicator(indicator.id, true)}
+                    >
+                      Off Chart
+                    </button>
+                  </div>
                 );
               })}
           </div>

@@ -47,7 +47,8 @@ export default class Indicator extends React.Component {
         }
         className={`indicator v-noselect ${v ? "" : "invisible"}`}
       >
-        <span className="indicator-title">{indicator.name}</span>
+        <span className="indicator-model">{indicator.model.name}</span>
+        <span className="indicator-name">{indicator.name}</span>
 
         <div
           className="indicator-controls"

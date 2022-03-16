@@ -18,6 +18,7 @@ export default class TopBar extends React.Component {
         Constants.MINUTE5,
         Constants.MINUTE15,
         Constants.HOUR,
+        Constants.HOUR4,
         Constants.DAY,
       ],
       timeframeLabels: {},

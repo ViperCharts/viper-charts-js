@@ -12,10 +12,23 @@ export default {
     });
   },
 
-  plotBox({ addSetItem, time }, { top, bottom, width, title, color = "#FFF" }) {
-    addSetItem(time, "box", {
-      series: [top, bottom, width],
+  plotBox(
+    { addSetItem, time },
+    {
+      top,
+      bottom,
+      width,
+      center = false,
       title,
+      color = "#FFF",
+      ylabel = false,
+    }
+  ) {
+    addSetItem(time, "box", {
+      series: [top, bottom],
+      width,
+      title,
+      center,
       colors: { color },
       ylabel,
     });

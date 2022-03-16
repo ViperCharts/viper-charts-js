@@ -85,7 +85,6 @@ export default class ComputedData extends EventEmitter {
   }
 
   calculateOneSet({ renderingQueueId, timestamps, dataset }) {
-    console.log(timestamps, dataset);
     const { timeframe } = dataset;
 
     const indicator = this.queue.get(renderingQueueId);
@@ -138,7 +137,9 @@ export default class ComputedData extends EventEmitter {
       }
 
       // If first plotted item at time, create fresh array
-      set.data[time] = [];
+      if (!set.data[time]) {
+        set.data[time] = [];
+      }
 
       // Add plot type and plot values to time
       set.data[time].push({ type, values });
@@ -191,11 +192,23 @@ export default class ComputedData extends EventEmitter {
 
       const point = dataset.data[iteratedTime];
       if (point === undefined || point === null) continue;
-      const data = point[indicator.model.id];
+      let data = point[indicator.model.id];
+
+      if (
+        indicator.dependencies[0] === "value" &&
+        indicator.model.model === "ohlc"
+      ) {
+        if (point[indicator.model.id] === undefined) continue;
+        data = { value: point[indicator.model.id].close };
+      }
 
       indicator.draw({
         ...data,
         ...funcWraps,
+        times: {
+          iteratedTime,
+          timeframe,
+        },
       });
     }
   }

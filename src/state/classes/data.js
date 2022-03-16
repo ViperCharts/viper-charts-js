@@ -28,20 +28,28 @@ class Dataset extends EventEmitter {
    * @param {string} model Model id (eg: price, volume, openInterest)
    */
   updateDataset(updates, model) {
+    let timestamps = new Set();
+
     // Apply updates
-    for (const time in updates) {
+    for (const key in updates) {
+      let time = key;
+
+      if (typeof time === "string") {
+        time = new Date(time).getTime();
+        timestamps.add(time);
+      }
+
       if (!this.data[time]) {
         this.data[time] = {
-          [model]: updates[time],
+          [model]: updates[key],
         };
         continue;
       }
 
-      Object.assign(this.data[time][model], updates[time]);
+      this.data[time][model] = updates[key];
     }
 
-    const timestamps = Object.keys(updates).sort((a, b) => a - b);
-    console.log(timestamps);
+    timestamps = Array.from(timestamps.keys()).sort((a, b) => a - b);
 
     // Update all listeners to re-render this particular element
     for (const chartId in this.subscribers) {
@@ -51,8 +59,7 @@ class Dataset extends EventEmitter {
       chart.setVisibleRange();
 
       // Calculate all indicator data for new time additions
-      const indicatorIdArray = this.subscribers[chartId];
-      for (const renderingQueueId in indicatorIdArray) {
+      for (const renderingQueueId in this.subscribers[chartId]) {
         chart.computedState.calculateOneSet({
           renderingQueueId,
           timestamps,
@@ -73,8 +80,6 @@ class Dataset extends EventEmitter {
       subscribers = {};
     }
     subscribers[renderingQueueId] = dependencies;
-
-    console.log(subscribers);
 
     // Add to cached dependencies set
     dependencies.forEach((d) => this.dependencies.add(d));
@@ -198,6 +203,7 @@ export default class DataState extends EventEmitter {
     // Loop through all requested timestamps and mark their dataset data points as fetched
     for (const id of datasetIds) {
       const [start, end] = allRequestedPoints[id];
+      console.log(new Date(end));
       const dataset = this.datasets[id];
       const { timeframe } = dataset;
 

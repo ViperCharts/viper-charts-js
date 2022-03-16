@@ -41,3 +41,7 @@ p {
   width: 100%;
   text-align: left;
 }
+
+.grouped-list-item:hover {
+  background: rgb(78, 78, 78);
+}

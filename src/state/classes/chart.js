@@ -294,10 +294,10 @@ export default class ChartState extends EventEmitter {
       });
 
       // Re-instantiate all subscribers
-      const subscribers = [...oldDataset.subscribers[this.id]];
-      for (const renderingQueueId of subscribers) {
-        dataset.addSubscriber(this.id, renderingQueueId);
-        oldDataset.removeSubscriber(this.id, renderingQueueId);
+      const subscribers = { ...oldDataset.subscribers[this.id] };
+      for (const id in subscribers) {
+        dataset.addSubscriber(this.id, id, subscribers[id]);
+        oldDataset.removeSubscriber(this.id, id);
       }
 
       this.datasets[dataset.getTimeframeAgnosticId()] = dataset;
@@ -520,12 +520,20 @@ export default class ChartState extends EventEmitter {
 
     // End timestamp based on last element
     let endTimestamp;
-    if (!this.datasets.length) {
-      endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
-    } else {
+
+    if (this.datasets.length) {
       const id = `${this.datasets[0]}:${this.timeframe}`;
       const { data } = this.$global.data.datasets[id];
       endTimestamp = data[data.length - 1].time;
+    }
+
+    // Safety fallback
+    if (
+      endTimestamp === undefined ||
+      start === undefined ||
+      end === undefined
+    ) {
+      endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
     }
 
     end = endTimestamp + this.timeframe * 5;

@@ -62,13 +62,15 @@ export default {
                 linewidth: values.linewidth,
               });
             } else if (type === "box") {
+              // If center is true, add offset to time
+              const offset = values.center ? pixelsPerElement / 2 : 0;
               const y1 = getY(series[0]);
               const y2 = getY(series[1]);
-              const w = pixelsPerElement * series[3];
+              const w = pixelsPerElement * values.width;
 
               instructions[time].push({
                 type: "box",
-                x: x - w / 2,
+                x: x - offset,
                 y: y1,
                 w,
                 h: y2 - y1,

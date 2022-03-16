@@ -35,10 +35,14 @@ let Viper;
       end,
     } of requests) {
       for (const dataModel of dataModels) {
+        let path = "timeseries/get";
+
+        if (dataModel === "footprint") {
+          path = "footprint/get";
+        }
+
         const res = await fetch(
-          `http://localhost:3001/api/timeseries/get?source=${source}&ticker=${name}&dataModel=${dataModel}&timeframe=${
-            timeframe / 60000
-          }&start=${start}&end=${end}`
+          `http://localhost:3001/api/${path}?source=${source}&ticker=${name}&dataModel=${dataModel}&timeframe=${timeframe}&start=${start}&end=${end}`
         );
 
         if (!res.ok) {

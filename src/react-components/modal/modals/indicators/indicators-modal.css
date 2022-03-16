@@ -1,3 +1,29 @@
 .dataset-models {
   display: flex;
+  flex-wrap: wrap;
+}
+
+.indicator-list-item {
+  display: flex;
+  align-items: center;
+  padding: 0 !important;
+}
+
+.indicator-list-item > button {
+  text-align: left;
+  cursor: pointer;
+  background: rgb(75, 75, 75);
+  border: 0;
+  color: rgb(160, 160, 160);
+  padding: 12px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.indicator-list-item > button:hover {
+  background: rgb(78, 78, 78);
+}
+
+.indicator-list-item .add-indicator-btn-main {
+  flex-grow: 1;
 }

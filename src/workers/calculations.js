@@ -1,3 +1,5 @@
+import Utils from "../utils.js";
+
 export default {
   /**
    * Loop through all points of a set and get the min and max values
@@ -21,7 +23,7 @@ export default {
       }
     }
 
-    return [Math.min(...values), Math.max(...values)];
+    return Utils.getMinAndMax(values);
   },
 
   /**

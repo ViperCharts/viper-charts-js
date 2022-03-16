@@ -65,68 +65,15 @@ export default class Grid extends React.Component {
     this.setState({ boxes: loop(layout) });
   }
 
-  addBoxToSide(box, side) {
-    const box1 = {
-      id: Utils.uniqueId(),
-      top: 0,
-      left: 0,
-      width: 100,
-      height: 100,
-      chartId: box.chartId,
-      children: [],
-    };
-    const box2 = {
-      side,
-      id: Utils.uniqueId(),
-      top: 0,
-      left: 0,
-      width: 100,
-      height: 100,
-      children: [],
-    };
+  addBoxToSide(boxId, side) {
+    const chart = this.$global.charts[this.$global.selectedChartId];
+
+    const { box2 } = this.$global.layout.addChartBoxToSide(boxId, side, 50, {
+      timeframe: chart.timeframe,
+      range: chart.range,
+      pixelsPerEleemnt: chart.pixelsPerEleemnt,
+    });
     this.boxRefs[box2.id] = React.createRef();
-
-    if (side === "left") {
-      box1.side = "right";
-      box1.left = 50;
-      box1.width = 50;
-      box2.width = 50;
-    }
-
-    if (side === "top") {
-      box1.side = "bottom";
-      box1.top = 50;
-      box1.height = 50;
-      box2.height = 50;
-    }
-
-    if (side === "right") {
-      box1.side = "left";
-      box2.left = 50;
-      box1.width = 50;
-      box2.width = 50;
-    }
-
-    if (side === "bottom") {
-      box1.side = "top";
-      box2.top = 50;
-      box1.height = 50;
-      box2.height = 50;
-    }
-
-    const { id } = this.$global.createChart();
-    box2.chartId = id;
-    delete box.chartId;
-
-    const { boxes } = this.state;
-
-    if (side === "top" || side === "left") {
-      box.children = [box2, box1];
-    } else {
-      box.children = [box1, box2];
-    }
-
-    this.$global.layout.setLayout(boxes);
   }
 
   onClickBreakpoint(box) {
@@ -230,19 +177,19 @@ export default class Grid extends React.Component {
         {this.$global.ui.isGridEditMode ? (
           <div className="grid-box-controls">
             <div
-              onClick={() => this.addBoxToSide(box, "left")}
+              onClick={() => this.addBoxToSide(box.id, "left")}
               className="grid-box-controls-left"
             ></div>
             <div
-              onClick={() => this.addBoxToSide(box, "top")}
+              onClick={() => this.addBoxToSide(box.id, "top")}
               className="grid-box-controls-top"
             ></div>
             <div
-              onClick={() => this.addBoxToSide(box, "right")}
+              onClick={() => this.addBoxToSide(box.id, "right")}
               className="grid-box-controls-right"
             ></div>
             <div
-              onClick={() => this.addBoxToSide(box, "bottom")}
+              onClick={() => this.addBoxToSide(box.id, "bottom")}
               className="grid-box-controls-bottom"
             ></div>
           </div>

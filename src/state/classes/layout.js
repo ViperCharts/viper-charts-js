@@ -88,6 +88,80 @@ export default class LayoutState extends EventEmitter {
     this.setLayout(layout);
   }
 
+  addChartBoxToSide(boxId, side, newSidePercent = 50, chartState = {}) {
+    // Find the box by id
+    const loop = (box, id) => {
+      if (box.id === id) return box;
+      for (const child of box.children) {
+        const box = loop(child, id);
+        if (box) return box;
+      }
+    };
+
+    const box = loop(this.layout[0], boxId);
+    if (!box) {
+      console.error(`No box of ${boxId} found in layout config`);
+      return;
+    }
+
+    const box1 = {
+      id: Utils.uniqueId(),
+      top: 0,
+      left: 0,
+      width: 100,
+      height: 100,
+      chartId: box.chartId,
+      children: [],
+    };
+    const box2 = {
+      side,
+      id: Utils.uniqueId(),
+      top: 0,
+      left: 0,
+      width: 100,
+      height: 100,
+      children: [],
+    };
+
+    const oldSidePercent = 100 - newSidePercent;
+
+    if (side === "left") {
+      box1.side = "right";
+      box1.left = oldSidePercent;
+      box1.width = oldSidePercent;
+      box2.width = newSidePercent;
+    } else if (side === "top") {
+      box1.side = "bottom";
+      box1.top = oldSidePercent;
+      box1.height = oldSidePercent;
+      box2.height = newSidePercent;
+    } else if (side === "right") {
+      box1.side = "left";
+      box2.left = newSidePercent;
+      box1.width = oldSidePercent;
+      box2.width = newSidePercent;
+    } else if (side === "bottom") {
+      box1.side = "top";
+      box2.top = newSidePercent;
+      box1.height = oldSidePercent;
+      box2.height = newSidePercent;
+    }
+
+    const { id } = this.$global.createChart(chartState);
+    box2.chartId = id;
+    delete box.chartId;
+
+    if (side === "top" || side === "left") {
+      box.children = [box2, box1];
+    } else {
+      box.children = [box1, box2];
+    }
+
+    this.setLayout(this.layout);
+
+    return { box, box1, box2 };
+  }
+
   setLayout(layout) {
     this.layout = layout;
     this.fireEvent("set-layout", this.layout);
