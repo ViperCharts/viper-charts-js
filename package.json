@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "start": "webpack serve --config webpack.dev.js",
-    "build": "rm -rf dist/* && webpack --config webpack.prod.js"
+    "build": "rm -rf dist/* && webpack --config webpack.prod.js",
+    "build-static": "rm -rf dist/* && webpack --config webpack.static.js"
   },
   "author": "Tryston Perry",
   "bugs": {

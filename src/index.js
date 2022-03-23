@@ -4,7 +4,9 @@ import ViperCharts from "./viper";
 let Viper;
 
 (async () => {
-  const res = await fetch("http://localhost:3001/api/markets/get");
+  const res = await fetch(
+    "https://api.staging.vipercharts.com/api/markets/get"
+  );
   if (!res.ok) {
     alert("An error occurred when fetching available markets.");
     return;
@@ -42,7 +44,7 @@ let Viper;
         }
 
         const res = await fetch(
-          `http://localhost:3001/api/${path}?source=${source}&ticker=${name}&dataModel=${dataModel}&timeframe=${timeframe}&start=${start}&end=${end}`
+          `https://api.staging.vipercharts.com/api/${path}?source=${source}&ticker=${name}&dataModel=${dataModel}&timeframe=${timeframe}&start=${start}&end=${end}`
         );
 
         if (!res.ok) {
