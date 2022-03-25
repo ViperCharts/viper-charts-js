@@ -250,7 +250,8 @@ export default class DataState extends EventEmitter {
       const { source, name, timeframe } = dataset;
 
       // Loop from end to start timeframe on timeframe * 300 interval to batch requests to max of 300 data points per
-      for (let i = (end - start) / (timeframe * 300); i > 0; i--) {
+      let i = start === end ? 1 : (end - start) / (timeframe * 300);
+      for (; i > 0; i--) {
         const leftBound = i <= 1 ? start : end - timeframe * 300;
 
         requests.push({
