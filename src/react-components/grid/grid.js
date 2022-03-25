@@ -71,7 +71,7 @@ export default class Grid extends React.Component {
     const { box2 } = this.$global.layout.addChartBoxToSide(boxId, side, 50, {
       timeframe: chart.timeframe,
       range: chart.range,
-      pixelsPerEleemnt: chart.pixelsPerEleemnt,
+      pixelsPerElement: chart.pixelsPerElement,
     });
     this.boxRefs[box2.id] = React.createRef();
   }
