@@ -264,7 +264,7 @@ export default class DataState extends EventEmitter {
           end,
         });
 
-        end -= timeframe * 100;
+        end -= timeframe * 300;
       }
     }
 
