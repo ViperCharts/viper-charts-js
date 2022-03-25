@@ -107,6 +107,8 @@ class Dataset extends EventEmitter {
       delete this.$global.data.datasets[this.getId()];
     }
 
+    const oldDependencies = Array.from(this.dependencies.keys());
+
     // Rebuild dependency set
     this.dependencies.clear();
     for (const chartId in this.subscribers) {
@@ -115,6 +117,15 @@ class Dataset extends EventEmitter {
         const dependencies = subscriber[id];
         for (const dependency of dependencies) {
           this.dependencies.add(dependency);
+        }
+      }
+    }
+
+    // Check if a dependency was removed, if so remove from data store
+    for (const old of oldDependencies) {
+      if (!this.dependencies.has(old)) {
+        for (const time in this.data) {
+          delete this.data[time][old];
         }
       }
     }
