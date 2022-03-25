@@ -195,10 +195,16 @@ export default class ComputedData extends EventEmitter {
       let data = point[indicator.model.id];
 
       if (
+        point[indicator.model.id] === undefined ||
+        point[indicator.model.id] === null
+      ) {
+        continue;
+      }
+
+      if (
         indicator.dependencies[0] === "value" &&
         indicator.model.model === "ohlc"
       ) {
-        if (point[indicator.model.id] === undefined) continue;
         data = { value: point[indicator.model.id].close };
       }
 
