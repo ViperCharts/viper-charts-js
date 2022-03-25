@@ -163,17 +163,33 @@ export default class DataState extends EventEmitter {
     const id = dataset.getId();
     const now = Date.now();
 
-    const requestedPoint = [Infinity, -Infinity];
+    const requestedPoint = [Infinity, -Infinity, new Set()];
+    const dependencies = Array.from(dataset.dependencies.keys());
 
     // Loop through each requested timestamp and check if any are not found
     for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
       // Check if greater than now
       if (timestamp > now) break;
 
+      const missingData = [];
+
       // Check if in data state
-      if (dataset.data[timestamp] !== undefined) continue;
+      if (dataset.data[timestamp] === undefined) {
+        missingData = dependencies;
+        dataset.data[timestamp] = {};
+      } else {
+        // Check all models for missing data
+        for (const d of dependencies) {
+          if (dataset.data[timestamp][d] === undefined) {
+            missingData.push(d);
+          }
+        }
+      }
+
+      if (!missingData.length) continue;
 
       // Add to state
+      missingData.forEach((m) => requestedPoint[2].add(m));
       if (timestamp < requestedPoint[0]) {
         requestedPoint[0] = timestamp;
       }
@@ -187,6 +203,7 @@ export default class DataState extends EventEmitter {
       return;
     }
 
+    requestedPoint[2] = Array.from(requestedPoint[2].keys());
     this.allRequestedPoints[id] = requestedPoint;
   }
 
@@ -202,21 +219,22 @@ export default class DataState extends EventEmitter {
 
     // Loop through all requested timestamps and mark their dataset data points as fetched
     for (const id of datasetIds) {
-      const [start, end] = allRequestedPoints[id];
-      console.log(new Date(end));
+      const [start, end, dataModels] = allRequestedPoints[id];
       const dataset = this.datasets[id];
       const { timeframe } = dataset;
 
       // This is so data does not get requested again
       for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
-        dataset.data[timestamp] = null;
+        for (const dataModel of dataModels) {
+          dataset.data[timestamp][dataModel] = null;
+        }
       }
     }
 
     // Build array with requested sources, names, timeframes, and start & end times
     let requests = [];
     for (const id of datasetIds) {
-      let [start, end] = allRequestedPoints[id];
+      let [start, end, dataModels] = allRequestedPoints[id];
       const dataset = this.datasets[id];
       const { source, name, timeframe } = dataset;
 
@@ -228,7 +246,7 @@ export default class DataState extends EventEmitter {
           id,
           source,
           name,
-          dataModels: Array.from(dataset.dependencies.keys()),
+          dataModels,
           timeframe,
           start: leftBound,
           end,
