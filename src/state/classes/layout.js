@@ -88,19 +88,29 @@ export default class LayoutState extends EventEmitter {
     this.setLayout(layout);
   }
 
-  addChartBoxToSide(boxId, side, newSidePercent = 50, chartState = {}) {
+  /**
+   * Box or chart id
+   * @param {string} id Box id or chart id
+   * @param {string} side
+   * @param {number} newSidePercent
+   * @param {object} chartState
+   * @returns
+   */
+  addChartBoxToSide(id, side, newSidePercent = 50, chartState = {}) {
     // Find the box by id
-    const loop = (box, id) => {
-      if (box.id === id) return box;
+    const loop = (box) => {
+      if (box.id === id || box.chartId === id) return box;
       for (const child of box.children) {
-        const box = loop(child, id);
+        const box = loop(child);
         if (box) return box;
       }
     };
 
-    const box = loop(this.layout[0], boxId);
+    const box = loop(this.layout[0]);
     if (!box) {
-      console.error(`No box of ${boxId} found in layout config`);
+      console.error(
+        `No box with box id of chart id of ${id} found in layout config`
+      );
       return;
     }
 
@@ -137,18 +147,18 @@ export default class LayoutState extends EventEmitter {
       box2.height = newSidePercent;
     } else if (side === "right") {
       box1.side = "left";
-      box2.left = newSidePercent;
+      box2.left = oldSidePercent;
       box1.width = oldSidePercent;
       box2.width = newSidePercent;
     } else if (side === "bottom") {
       box1.side = "top";
-      box2.top = newSidePercent;
+      box2.top = oldSidePercent;
       box1.height = oldSidePercent;
       box2.height = newSidePercent;
     }
 
-    const { id } = this.$global.createChart(chartState);
-    box2.chartId = id;
+    const chart = this.$global.createChart(chartState);
+    box2.chartId = chart.id;
     delete box.chartId;
 
     if (side === "top" || side === "left") {
@@ -159,7 +169,7 @@ export default class LayoutState extends EventEmitter {
 
     this.setLayout(this.layout);
 
-    return { box, box1, box2 };
+    return { box, box1, box2, chart };
   }
 
   setLayout(layout) {

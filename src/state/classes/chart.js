@@ -166,6 +166,8 @@ export default class ChartState extends EventEmitter {
       synced,
     };
 
+    console.log(this.$global.ui.charts, this.id);
+
     // Update chart UI
     this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
 
