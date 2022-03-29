@@ -13,6 +13,9 @@ export default class Main {
     this.scrollListener = null;
     this.mousemoveListener = null;
     this.mouseleaveListener = null;
+
+    // Layer being updated on visible range change
+    this.layerToMove = -1;
   }
 
   init() {
@@ -112,14 +115,15 @@ export default class Main {
    */
   onScroll(e) {
     e.preventDefault();
+    const { deltaX, deltaY, layerY } = e;
 
     // If horizontal scroll, move range
-    if (e.deltaX !== 0) {
+    if (deltaX !== 0) {
       const { pixelsPerElement: ppe, timeframe } = this.$state.chart;
       const { width } =
         this.$state.global.layout.chartDimensions[this.$state.chart.id].main;
 
-      const d = e.deltaX;
+      const d = deltaX;
       const change =
         (d > 0 ? d * 100 : -d * -100) * (width / ppe) * (timeframe / 60000);
 
@@ -127,12 +131,14 @@ export default class Main {
       start += change;
       end += change;
 
-      this.$state.chart.setVisibleRange({ start, end });
+      this.getLayerToMove(layerY);
+
+      this.$state.chart.setVisibleRange(this.layerToMove, { start, end });
     }
 
     // If vertical scroll
-    if (e.deltaY !== 0) {
-      const d = e.deltaY;
+    else if (deltaY !== 0) {
+      const d = deltaY;
       const change = -(d > 0 ? -d * -50 : d * 50);
       this.$state.chart.resizeXRange(change, this.canvas.width);
     }
@@ -154,9 +160,19 @@ export default class Main {
     this.$state.global.crosshair.visible = true;
   }
 
-  onWindowMouseMove({ movementX, movementY }) {
+  onWindowMouseMove({ movementX, movementY, layerY }) {
     // If mouse down on child canvas
-    if (!this.canvas.isMouseDown) return;
+    if (!this.canvas.isMouseDown) {
+      this.layerToMove = -1;
+      return;
+    }
+
+    const { id } = this.$state.chart;
+    const { layers } = this.$state.global.layout.chartDimensions[id].main;
+
+    if (this.layerToMove === -1) {
+      this.getLayerToMove(layerY);
+    }
 
     let { start, end, min, max } = this.$state.chart.range;
 
@@ -170,13 +186,35 @@ export default class Main {
     if (!this.$state.chart.settings.lockedYScale && movementY !== 0) {
       const yInView = max - min;
       // Pixels per tick
-      const ppt = yInView / this.canvas.height;
+      const ppt = yInView / layers[this.layerToMove].height;
       const y = movementY;
       const movement = y * ppt;
       min += movement;
       max += movement;
     }
 
-    this.$state.chart.setVisibleRange({ start, end, min, max });
+    this.$state.chart.setVisibleRange(0, { start, end, min, max });
+  }
+
+  getLayerToMove(yCoord) {
+    const { id } = this.$state.chart;
+    const { layers } = this.$state.global.layout.chartDimensions[id].main;
+
+    for (let i = 0; i <= Object.keys(layers); i++) {
+      const l1 = layers[i];
+      const l2 = layers[i + 1];
+
+      // If no next layer, current layer
+      if (!l2) {
+        this.layerToMove = i;
+        return;
+      }
+
+      // If between top and bottom of layer in question
+      if (yCoord >= l1.top && yCoord <= l2.top) {
+        this.layerToMove = i;
+        return;
+      }
+    }
   }
 }

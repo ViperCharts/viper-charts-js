@@ -42,6 +42,12 @@ export default class ChartState extends EventEmitter {
       xScale: undefined,
       yScale: undefined,
     };
+    this.overlays = {
+      0: {
+        heightPerc: 50,
+        range: { min: Infinity, max: -Infinity },
+      },
+    };
     this.settings = {
       syncRange: false,
       syncWithCrosshair: "",
@@ -166,8 +172,6 @@ export default class ChartState extends EventEmitter {
       synced,
     };
 
-    console.log(this.$global.ui.charts, this.id);
-
     // Update chart UI
     this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
 
@@ -179,7 +183,12 @@ export default class ChartState extends EventEmitter {
    * @param {string|indicator} indicator The indicator to add
    * @param {*} options
    */
-  async addIndicator(indicator, datasetGroupId, model, { visible = true }) {
+  async addIndicator(
+    indicator,
+    datasetGroupId,
+    model,
+    { visible = true, layerId = 0 }
+  ) {
     // If indicator passed was a string, assume its indicator id
     if (typeof indicator === "string") {
       indicator = PlotTypes.getIndicatorById(indicator);
@@ -206,6 +215,7 @@ export default class ChartState extends EventEmitter {
       datasetId: localId,
       model,
       color,
+      layerId,
     };
 
     // Add to the rendering queue on computed state and rendering engine
@@ -444,7 +454,7 @@ export default class ChartState extends EventEmitter {
    * @param {number} newRange.max Max value for price axis
    * @param {string} movedId The chart id of the chart that initialzed the move
    */
-  async setVisibleRange(newRange = {}, movedId = this.id) {
+  async setVisibleRange(layerId = 0, newRange = {}, movedId = this.id) {
     const {
       start = this.range.start,
       end = this.range.end,

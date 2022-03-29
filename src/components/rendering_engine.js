@@ -51,20 +51,19 @@ export default class RenderingEngine {
    */
   draw() {
     const instructions = this.$state.chart.instructions[this.type];
+    const chartDimensions =
+      this.$state.global.layout.chartDimensions[this.$state.chart.id];
 
     // Reset canvas
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     if (this.type === "yScale") {
-      const chartDimension =
-        this.$state.global.layout.chartDimensions[this.$state.chart.id];
-
       // Draw background
       this.canvas.drawBox("#080019", [
         0,
         0,
-        chartDimension.width,
-        chartDimension.height,
+        chartDimensions.yScale.width,
+        chartDimensions.yScale.height,
       ]);
 
       let maxWidth = 0;
@@ -72,9 +71,10 @@ export default class RenderingEngine {
       // Loop through all yScale plot instructions and measure the width of all texts and get max width
       for (const key in instructions.plots) {
         // If no instructions for set, continue
-        if (!instructions.plots[key].length) continue;
-
-        const [box, text] = instructions.plots[key];
+        if (!instructions.plots[key]) continue;
+        const { layerId, values } = instructions.plots[key];
+        if (!values || !values.length) continue;
+        const [box, text] = values;
         const { ctx } = this.canvas;
 
         const textWidth = Math.ceil(ctx.measureText(text.text).width);
@@ -90,8 +90,8 @@ export default class RenderingEngine {
       maxWidth = Math.max((maxWidth += 10), 50);
 
       // Check if maxWidth is not equal to current width of yScale
-      if (maxWidth !== chartDimension.yScale.width) {
-        chartDimension.setYScaleWidth(maxWidth);
+      if (maxWidth !== chartDimensions.yScale.width) {
+        chartDimensions.setYScaleWidth(maxWidth);
         this.$state.chart.setVisibleRange({});
       }
 
@@ -100,9 +100,7 @@ export default class RenderingEngine {
         this.$state.global.crosshair.crosshairs[this.$state.chart.id];
 
       if (this.$state.global.crosshair.visible) {
-        const { width } =
-          this.$state.global.layout.chartDimensions[this.$state.chart.id]
-            .yScale;
+        const { width } = chartDimensions.yScale;
 
         this.canvas.drawBox("#424242", [0, y - 10, width, 20]);
         this.canvas.drawText("#fff", [width / 2, y + 3], p);
@@ -144,18 +142,19 @@ export default class RenderingEngine {
           continue;
         }
 
-        // Else, is this an indicator?
-        const layer = instructions.layers[0][id];
-        if (!layer) continue;
+        // Else, maybe this is an indicator.
+        if (!instructions.values[id]) continue;
+        const { layerId, values } = instructions.values[id];
+        if (!values) continue;
 
-        const times = Object.keys(layer);
+        const times = Object.keys(values);
 
         const parseInstruction = (a, i, j) => {
           const { offsetX, offsetY, offsetW, offsetH } = this;
 
           if (a.type === "line") {
             if (i === undefined || j === undefined) return;
-            let b = layer[times[i + 1]];
+            let b = values[times[i + 1]];
             if (!b) return;
             b = b[j];
             this.canvas.drawLine(
@@ -189,7 +188,7 @@ export default class RenderingEngine {
 
         if (this.type === "main") {
           for (let i = 0; i < times.length; i++) {
-            const instructionsForTime = layer[times[i]];
+            const instructionsForTime = values[times[i]];
             for (let j = 0; j < instructionsForTime.length; j++) {
               parseInstruction(instructionsForTime[j], i, j);
             }
@@ -201,15 +200,28 @@ export default class RenderingEngine {
 
       // Render all label plots
       for (const id of ids) {
-        const plot = instructions.plots[id];
-        if (!plot || !plot.length) continue;
-        const [box, text] = plot;
+        if (!instructions.plots[id]) continue;
+        const { layerId, values } = instructions.plots[id];
+        if (!values || !values.length) continue;
+        const [box, text] = values;
 
         // Draw the box and text
         this.canvas.drawBox(box.color, [box.x, box.y, box.w, box.h]);
         this.canvas.drawText(text.color, [text.x, text.y], text.text, {
           font: text.font,
         });
+      }
+
+      this.canvas.drawBox("#2E2E2E", [0, 0, chartDimensions.main.width, 2]);
+
+      for (const layerId in chartDimensions.main.layers) {
+        const { top, height } = chartDimensions.main.layers[layerId];
+        this.canvas.drawBox("#2E2E2E", [
+          0,
+          top + height - 2,
+          chartDimensions.main.width,
+          4,
+        ]);
       }
     }
   }

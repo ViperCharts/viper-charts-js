@@ -4,10 +4,11 @@ import Calculations from "./calculations.js";
 
 export default {
   main: {
-    layers: {
+    values: {
       default(
         set,
         timestamps,
+        indicator,
         timestampXCoords,
         pixelsPerElement,
         visibleRange,
@@ -19,22 +20,29 @@ export default {
         const minY = Utils.getYCoordByPrice(
           visibleRange.min,
           visibleRange.max,
-          chartDimensions.main.height,
+          chartDimensions.main.layers[indicator.layerId].height,
           set.visibleMin
         );
         const maxY = Utils.getYCoordByPrice(
           visibleRange.min,
           visibleRange.max,
-          chartDimensions.main.height,
+          chartDimensions.main.layers[indicator.layerId].height,
           set.visibleMax
         );
         const rangeY = maxY - minY;
         const range = set.visibleMax - set.visibleMin;
 
         const { data } = set;
+        const { top, height } = chartDimensions.main.layers[indicator.layerId];
 
         const getY = (val) =>
-          Math.floor(((val - set.visibleMin) / range) * rangeY + minY);
+          Math.max(
+            top,
+            Math.min(
+              Math.floor(((val - set.visibleMin) / range) * rangeY + minY),
+              height
+            )
+          );
 
         // Loop through all set times and generate plot values
         for (let i = 0; i < timestamps.length; i++) {
@@ -109,6 +117,7 @@ export default {
       percent(
         set,
         timestamps,
+        indicator,
         timestampXCoords,
         pixelsPerElement,
         visibleRange,
@@ -209,6 +218,7 @@ export default {
       normalized(
         set,
         timestamps,
+        indicator,
         timestampXCoords,
         pixelsPerElement,
         visibleRange,
@@ -334,7 +344,7 @@ export default {
             const y = Utils.getYCoordByPrice(
               visibleRange.min,
               visibleRange.max,
-              chartDimensions.yScale.height,
+              chartDimensions.main.layers[indicator.layerId].height,
               value
             );
 

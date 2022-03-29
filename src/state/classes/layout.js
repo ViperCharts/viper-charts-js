@@ -33,9 +33,20 @@ class ChartDimension {
     this.main = {
       width: width - this.yScale.width,
       height: height - this.xScale.height,
+      layers: {},
     };
     this.xScale.width = width - this.yScale.width;
     this.yScale.height = height - this.xScale.height;
+
+    const { overlays } = this.$global.charts[this.id];
+    let top = 0;
+    for (const id in overlays) {
+      this.main.layers[id] = {
+        top,
+        height: this.main.height * (overlays[id].heightPerc / 100),
+      };
+      top += this.main.layers[id].height;
+    }
   }
 
   setYScaleWidth(width) {

@@ -206,7 +206,7 @@ export default class Grid extends React.Component {
         >
           <div className="grid">
             {box.chartId ? (
-              <div style={{ padding: "2px", width: "100%", height: "100%" }}>
+              <div style={{ width: "100%", height: "100%" }}>
                 <Chart $global={this.$global} id={box.chartId} />
               </div>
             ) : null}

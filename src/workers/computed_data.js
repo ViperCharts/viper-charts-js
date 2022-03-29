@@ -389,15 +389,19 @@ export default class ComputedData extends EventEmitter {
       if (!indicator.visible) continue;
 
       // Generate main instructions for set depending on scale type
-      const mainLayerGenerate = Generators.main.layers[scaleType];
-      instructions.main.layers[0][id] = mainLayerGenerate(
-        set,
-        timestamps,
-        timestampXCoords,
-        pixelsPerElement,
-        visibleRange,
-        chartDimensions
-      );
+      const mainLayerGenerate = Generators.main.values[scaleType];
+      instructions.main.values[id] = {
+        layerId: indicator.layerId,
+        values: mainLayerGenerate(
+          set,
+          timestamps,
+          indicator,
+          timestampXCoords,
+          pixelsPerElement,
+          visibleRange,
+          chartDimensions
+        ),
+      };
 
       const yScaleLayerGenerate = Generators.yScale.plots[scaleType];
       const [yScale, main] = yScaleLayerGenerate(
@@ -408,8 +412,14 @@ export default class ComputedData extends EventEmitter {
         visibleRange
       );
 
-      instructions.yScale.plots[id] = yScale;
-      instructions.main.plots[id] = main;
+      instructions.yScale.plots[id] = {
+        layerId: indicator.layerId,
+        values: yScale,
+      };
+      instructions.main.plots[id] = {
+        layerId: indicator.layerId,
+        values: main,
+      };
     }
 
     // Calculate x and y scales
