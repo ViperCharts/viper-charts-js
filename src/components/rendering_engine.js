@@ -22,12 +22,6 @@ export default class RenderingEngine {
      * @type {Array<string>} id
      */
     this.renderingOrder = [];
-    this.lastFrameTime = -1;
-
-    this.offsetX = 0;
-    this.offsetY = 0;
-    this.offsetH = 1;
-    this.offsetW = 1;
 
     this.initDraw();
   }
@@ -37,10 +31,6 @@ export default class RenderingEngine {
   }
 
   recursiveDraw() {
-    const t0 = this.lastFrameTime;
-    const t1 = performance.now();
-    const fps = Math.floor(t0 < 0 ? 0 : 1000 / (t1 - t0));
-    this.lastFrameTime = t1;
     this.draw();
     requestAnimationFrame(this.recursiveDraw.bind(this));
   }
@@ -150,39 +140,18 @@ export default class RenderingEngine {
         const times = Object.keys(values);
 
         const parseInstruction = (a, i, j) => {
-          const { offsetX, offsetY, offsetW, offsetH } = this;
-
           if (a.type === "line") {
             if (i === undefined || j === undefined) return;
             let b = values[times[i + 1]];
             if (!b) return;
             b = b[j];
-            this.canvas.drawLine(
-              a.color,
-              [a.x + offsetX, a.y + offsetY, b.x + offsetX, b.y + offsetY],
-              a.linewidth
-            );
+            this.canvas.drawLine(a.color, [a.x, a.y, b.x, b.y], a.linewidth);
           } else if (a.type === "box") {
-            this.canvas.drawBox(a.color, [
-              a.x + offsetX,
-              a.y + offsetY,
-              a.w,
-              a.h,
-            ]);
+            this.canvas.drawBox(a.color, [a.x, a.y, a.w, a.h]);
           } else if (a.type === "single-line") {
-            this.canvas.drawLine(a.color, [
-              a.x + offsetX,
-              a.y + offsetY,
-              a.x2 + offsetX,
-              a.y2 + offsetY,
-            ]);
+            this.canvas.drawLine(a.color, [a.x, a.y, a.x2, a.y2]);
           } else if (a.type === "text") {
-            this.canvas.drawText(
-              a.color,
-              [a.x + offsetX, a.y + offsetY],
-              a.text,
-              { font: a.font }
-            );
+            this.canvas.drawText(a.color, [a.x, a.y], a.text, { font: a.font });
           }
         };
 
@@ -212,16 +181,16 @@ export default class RenderingEngine {
         });
       }
 
-      this.canvas.drawBox("#2E2E2E", [0, 0, chartDimensions.main.width, 2]);
+      // Border left, top, right
+      const { width, height, layers } = chartDimensions.main;
+      this.canvas.drawBox("#2E2E2E", [0, 0, 2, height]);
+      this.canvas.drawBox("#2E2E2E", [0, 0, width, 2]);
+      this.canvas.drawBox("#2E2E2E", [width - 2, 0, 2, height]);
 
-      for (const layerId in chartDimensions.main.layers) {
-        const { top, height } = chartDimensions.main.layers[layerId];
-        this.canvas.drawBox("#2E2E2E", [
-          0,
-          top + height - 2,
-          chartDimensions.main.width,
-          4,
-        ]);
+      // Border breakpoints / bottom
+      for (const layerId in layers) {
+        const { top, height } = layers[layerId];
+        this.canvas.drawBox("#2E2E2E", [0, top + height - 2, width, 4]);
       }
     }
   }

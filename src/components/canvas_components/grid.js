@@ -4,7 +4,7 @@ export default class Grid extends Overlay {
   constructor({ $state, canvas }) {
     super({ canvas, $state });
 
-    this.color = "#434343";
+    this.color = "#43434377";
 
     this.init(this.draw.bind(this));
   }

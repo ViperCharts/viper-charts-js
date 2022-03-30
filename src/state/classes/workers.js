@@ -137,7 +137,7 @@ class ComputedStateMessenger {
 
     this.isGeneratingAllInstrutions = true;
 
-    const { instructions, visibleRange, pixelsPerElement, maxDecimalPlaces } =
+    const { instructions, visibleRanges, pixelsPerElement, maxDecimalPlaces } =
       await new Promise((resolve) => {
         const id = this.$global.workers.addToResolveQueue(resolve);
 
@@ -168,7 +168,7 @@ class ComputedStateMessenger {
 
     this.chart.onGenerateAllInstructions({
       instructions,
-      visibleRange,
+      visibleRanges,
       pixelsPerElement,
       maxDecimalPlaces,
     });

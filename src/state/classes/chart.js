@@ -18,7 +18,13 @@ export default class ChartState extends EventEmitter {
     $global,
     id = Utils.uniqueId(),
     name = "",
-    range = {},
+    ranges = {
+      0: {
+        heightPerc: 50,
+        range: { min: Infinity, max: -Infinity },
+        lockedYScale: true,
+      },
+    },
     pixelsPerElement = 10,
     timeframe = Constants.HOUR,
     settings = {},
@@ -32,8 +38,6 @@ export default class ChartState extends EventEmitter {
     this.timeframe = 0;
     this.datasets = {};
     this.datasetGroups = {};
-    this.range = range;
-    this.renderedRange = range;
     this.maxDecimalPlaces = 0;
     this.instructions = Instructions;
     this.computedState = this.$global.workers.createComputedState(this);
@@ -42,12 +46,8 @@ export default class ChartState extends EventEmitter {
       xScale: undefined,
       yScale: undefined,
     };
-    this.overlays = {
-      0: {
-        heightPerc: 50,
-        range: { min: Infinity, max: -Infinity },
-      },
-    };
+    this.ranges = ranges;
+    this.renderedRanges = ranges;
     this.settings = {
       syncRange: false,
       syncWithCrosshair: "",
@@ -447,6 +447,7 @@ export default class ChartState extends EventEmitter {
 
   /**
    * Set the visible range of the chart
+   * @param {number|array[]} layerId
    * @param {object} newRange Visible range boundaries
    * @param {number} newRange.start Start unix timestamp for time axis
    * @param {number} newRange.end End unix timestamp for time axis
@@ -492,7 +493,7 @@ export default class ChartState extends EventEmitter {
 
   onGenerateAllInstructions({
     instructions,
-    visibleRange,
+    visibleRanges,
     pixelsPerElement,
     maxDecimalPlaces,
   }) {
@@ -501,11 +502,13 @@ export default class ChartState extends EventEmitter {
     this.instructions = instructions;
 
     if (this.settings.lockedYScale) {
-      this.range.max = visibleRange.max;
-      this.range.min = visibleRange.min;
+      for (const layerId in visibleRanges) {
+        this.range.min = visibleRanges[layerId].min;
+        this.range.max = visibleRanges[layerId].max;
+      }
     }
 
-    this.renderedRange = visibleRange;
+    this.renderedRange = visibleRanges[0];
 
     this.$global.crosshair.updateCrosshairTimeAndPrice(this);
 
@@ -556,7 +559,7 @@ export default class ChartState extends EventEmitter {
     // Set start to candlesInView lookback
     start = end - candlesInView * this.timeframe;
 
-    this.setVisibleRange({ start, end });
+    this.setVisibleRange(Object.keys(this.overlays), { start, end });
   }
 
   resizeXRange(delta, width) {
@@ -576,7 +579,7 @@ export default class ChartState extends EventEmitter {
     // Set start to candlesInView lookback
     const start = end - candlesInView * this.timeframe;
 
-    this.setVisibleRange({ start, end });
+    this.setVisibleRange(Object.keys(this.overlays), { start, end });
   }
 
   setDefaultRangeBounds({ start, end, min, max }) {

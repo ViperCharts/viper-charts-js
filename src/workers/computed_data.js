@@ -14,8 +14,6 @@ class ComputedSet {
 
     this.data = data;
     this.timeframe = timeframe;
-    this.min = Infinity;
-    this.max = -Infinity;
     this.visibleMin = Infinity;
     this.visibleMax = -Infinity;
     this.visibleScaleMin = Infinity;
@@ -307,8 +305,12 @@ export default class ComputedData extends EventEmitter {
       timeframe
     );
 
-    let min = Infinity;
-    let max = -Infinity;
+    const layerMinsAndMaxs = {
+      0: {
+        min: Infinity,
+        max: -Infinity,
+      },
+    };
 
     // Calculate min and max of all sets in visible range that are visible
     for (const id in this.sets) {
@@ -344,25 +346,37 @@ export default class ComputedData extends EventEmitter {
       this.sets[id].visibleScaleMin = scaleMin;
       this.sets[id].visibleScaleMax = scaleMax;
 
-      if (scaleMin < min) min = scaleMin;
-      if (scaleMax > max) max = scaleMax;
+      if (!layerMinsAndMaxs[indicator.layerId]) {
+        layerMinsAndMaxs[indicator.layerId] = {
+          min: Infinity,
+          max: -Infinity,
+        };
+      }
+
+      if (scaleMin < layerMinsAndMaxs[indicator.layerId].min) {
+        layerMinsAndMaxs[indicator.layerId].min = scaleMin;
+      }
+      if (scaleMax > layerMinsAndMaxs[indicator.layerId].max) {
+        layerMinsAndMaxs[indicator.layerId].max = scaleMax;
+      }
     }
 
-    this.min = min;
-    this.max = max;
-
     // Calculate the visible range based on chart settings.
-    // Generaters will have access to this.visibleRange
-    const visibleRange = Calculations.getVisibleRange.bind(this)(
-      requestedRange,
-      settings,
-      min,
-      max
-    );
+    const visibleRanges = {};
+    for (const layerId in layerMinsAndMaxs) {
+      visibleRanges[layerId] = Calculations.getVisibleRange.bind(this)(
+        requestedRange,
+        settings,
+        layerMinsAndMaxs[layerId].min,
+        layerMinsAndMaxs[layerId].max
+      );
+    }
+
+    const { start, end } = visibleRanges[0];
 
     pixelsPerElement = Calculations.calculatePixelsPerElement(
-      visibleRange.start,
-      visibleRange.end,
+      start,
+      end,
       timeframe,
       chartDimensions.main.width
     );
@@ -372,12 +386,7 @@ export default class ComputedData extends EventEmitter {
 
     // Get array of x coords for each timestamp on x axis
     const timestampXCoords = timestamps.map((time) =>
-      Utils.getXCoordByTimestamp(
-        visibleRange.start,
-        visibleRange.end,
-        chartDimensions.main.width,
-        time
-      )
+      Utils.getXCoordByTimestamp(start, end, chartDimensions.main.width, time)
     );
 
     // Loop through all sets and generate main and yScale instructions for plots
@@ -398,7 +407,7 @@ export default class ComputedData extends EventEmitter {
           indicator,
           timestampXCoords,
           pixelsPerElement,
-          visibleRange,
+          visibleRanges[indicator.layerId],
           chartDimensions
         ),
       };
@@ -409,7 +418,7 @@ export default class ComputedData extends EventEmitter {
         timestamps,
         indicator,
         chartDimensions,
-        visibleRange
+        visibleRanges[indicator.layerId]
       );
 
       instructions.yScale.plots[id] = {
@@ -427,7 +436,7 @@ export default class ComputedData extends EventEmitter {
     instructions.xScale.scales = Generators.xScale.scales(
       pixelsPerElement,
       timeframe,
-      visibleRange
+      visibleRanges[0]
     );
 
     this.instructions = instructions;
@@ -440,7 +449,7 @@ export default class ComputedData extends EventEmitter {
 
     return {
       instructions,
-      visibleRange,
+      visibleRanges,
       pixelsPerElement,
       maxDecimalPlaces,
     };
