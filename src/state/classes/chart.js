@@ -20,13 +20,7 @@ export default class ChartState extends EventEmitter {
     name = "",
     ranges = {
       x: { start: 0, end: 0 },
-      y: {
-        0: {
-          heightPerc: 50,
-          range: { min: Infinity, max: -Infinity },
-          lockedYScale: true,
-        },
-      },
+      y: {},
     },
     pixelsPerElement = 10,
     timeframe = Constants.HOUR,
@@ -49,8 +43,8 @@ export default class ChartState extends EventEmitter {
       xScale: undefined,
       yScale: undefined,
     };
-    this.ranges = ranges;
-    this.renderedRanges = ranges;
+    this.ranges = JSON.parse(JSON.stringify(ranges));
+    this.renderedRanges = JSON.parse(JSON.stringify(ranges));
     this.settings = {
       syncRange: false,
       syncWithCrosshair: "",
@@ -86,7 +80,7 @@ export default class ChartState extends EventEmitter {
 
     // Add first layer if none
     if (!Object.keys(this.ranges.y).length) {
-      // this.addLayer();
+      this.addLayer();
     }
 
     // Add crosshair to crosshair state in prep for chart to be rendered
