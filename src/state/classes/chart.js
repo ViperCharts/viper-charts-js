@@ -19,11 +19,8 @@ export default class ChartState extends EventEmitter {
     id = Utils.uniqueId(),
     name = "",
     ranges = {
-      0: {
-        heightPerc: 50,
-        range: { min: Infinity, max: -Infinity },
-        lockedYScale: true,
-      },
+      x: { start: 0, end: 0 },
+      y: {},
     },
     pixelsPerElement = 10,
     timeframe = Constants.HOUR,
@@ -81,6 +78,11 @@ export default class ChartState extends EventEmitter {
       global: this.$global,
       dimensions: this.$global.layout.chartDimensions[this.id],
     };
+
+    // Add first layer if none
+    if (!Object.keys(this.ranges.y).length) {
+      this.addLayer();
+    }
 
     // Add crosshair to crosshair state in prep for chart to be rendered
     this.$global.crosshair.addCrosshair(this.id);
@@ -257,8 +259,8 @@ export default class ChartState extends EventEmitter {
     // Request data points for dataset
     this.$global.data.requestDataPoints({
       dataset,
-      start: this.range.start,
-      end: this.range.end,
+      start: this.ranges.x.start,
+      end: this.ranges.x.end,
     });
 
     this.$global.settings.onChartDatasetGroupsChange(
@@ -268,6 +270,16 @@ export default class ChartState extends EventEmitter {
 
     // If first new dataset, reset range according to data
     this.setInitialVisibleRange();
+  }
+
+  addLayer() {
+    const id = Object.keys(this.ranges.y).length;
+    this.ranges.y[id] = {
+      heightPerc: 50,
+      range: { min: Infinity, max: -Infinity },
+      lockedYScale: true,
+    };
+    this.$global.layout.chartDimensions[this.id].updateLayers();
   }
 
   setTimeframe(timeframe, movedId = this.id) {
@@ -290,8 +302,8 @@ export default class ChartState extends EventEmitter {
     if (this.isInitialized) {
       // Update range.start to be same pixelsPerElement calculation
       const { width } = this.$global.layout.chartDimensions[this.id].main;
-      this.range.start =
-        this.range.end - timeframe * (width / this.pixelsPerElement);
+      const { ranges, pixelsPerElement } = this;
+      ranges.x.start = ranges.x.end - timeframe * (width / pixelsPerElement);
 
       this.setInitialVisibleRange();
     }
@@ -316,8 +328,8 @@ export default class ChartState extends EventEmitter {
 
       this.$global.data.requestDataPoints({
         dataset,
-        start: this.range.start,
-        end: this.range.end,
+        start: this.ranges.x.start,
+        end: this.ranges.x.end,
       });
     }
 
@@ -447,23 +459,25 @@ export default class ChartState extends EventEmitter {
 
   /**
    * Set the visible range of the chart
-   * @param {number|array[]} layerId
    * @param {object} newRange Visible range boundaries
    * @param {number} newRange.start Start unix timestamp for time axis
    * @param {number} newRange.end End unix timestamp for time axis
    * @param {number} newRange.min Min value for price axis
    * @param {number} newRange.max Max value for price axis
+   * @param {number} layerId Layer moving
    * @param {string} movedId The chart id of the chart that initialzed the move
    */
-  async setVisibleRange(layerId = 0, newRange = {}, movedId = this.id) {
+  async setVisibleRange(newRange = {}, layerId = 0, movedId = this.id) {
     const {
-      start = this.range.start,
-      end = this.range.end,
-      min = this.range.min,
-      max = this.range.max,
+      start = this.ranges.x.start,
+      end = this.ranges.x.end,
+      min = this.ranges.y[layerId].min,
+      max = this.ranges.y[layerId].max,
     } = newRange;
 
-    this.range = { start, end, min, max };
+    this.ranges.x = { start, end };
+    this.ranges.y[layerId].min = min;
+    this.ranges.y[layerId].max = max;
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours
@@ -501,27 +515,27 @@ export default class ChartState extends EventEmitter {
     this.maxDecimalPlaces = maxDecimalPlaces;
     this.instructions = instructions;
 
+    this.renderedRanges.x = visibleRanges.x;
+
     if (this.settings.lockedYScale) {
-      for (const layerId in visibleRanges) {
-        this.range.min = visibleRanges[layerId].min;
-        this.range.max = visibleRanges[layerId].max;
+      for (const layerId in visibleRanges.y) {
+        this.renderedRanges.y[layerId].range.min = visibleRanges.y[layerId].min;
+        this.renderedRanges.y[layerId].range.max = visibleRanges.y[layerId].max;
       }
     }
-
-    this.renderedRange = visibleRanges[0];
 
     this.$global.crosshair.updateCrosshairTimeAndPrice(this);
 
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
-      range: this.range,
+      range: this.xRange,
     });
 
     // Check for any un-fetched data points in all subscribed datasets
     for (const datasetId in this.datasets) {
       this.$global.data.requestDataPoints({
         dataset: this.datasets[datasetId],
-        start: this.range.start,
-        end: this.range.end,
+        start: this.ranges.x.start,
+        end: this.ranges.x.end,
       });
     }
   }
@@ -531,7 +545,7 @@ export default class ChartState extends EventEmitter {
    */
   setInitialVisibleRange() {
     const { width } = this.$global.layout.chartDimensions[this.id].main;
-    let { start, end } = this.range;
+    let { start, end } = this.ranges.x;
 
     // End timestamp based on last element
     let endTimestamp;
@@ -559,7 +573,7 @@ export default class ChartState extends EventEmitter {
     // Set start to candlesInView lookback
     start = end - candlesInView * this.timeframe;
 
-    this.setVisibleRange(Object.keys(this.overlays), { start, end });
+    this.setVisibleRange({ start, end });
   }
 
   resizeXRange(delta, width) {
@@ -572,14 +586,14 @@ export default class ChartState extends EventEmitter {
     }
 
     // End timestamp based on last element
-    const { end } = this.range;
+    const { end } = this.ranges.x;
 
     // Calculate start timestamp using width and pixelsPerElement
     const candlesInView = width / this.pixelsPerElement;
     // Set start to candlesInView lookback
     const start = end - candlesInView * this.timeframe;
 
-    this.setVisibleRange(Object.keys(this.overlays), { start, end });
+    this.setVisibleRange({ start, end });
   }
 
   setDefaultRangeBounds({ start, end, min, max }) {
@@ -601,8 +615,8 @@ export default class ChartState extends EventEmitter {
 
   getTimestampByXCoord(x) {
     return Utils.getTimestampByXCoord(
-      this.renderedRange.start,
-      this.renderedRange.end,
+      this.renderedRanges.x.start,
+      this.renderedRanges.x.end,
       this.$global.layout.chartDimensions[this.id].main.width,
       x
     );
@@ -610,17 +624,17 @@ export default class ChartState extends EventEmitter {
 
   getXCoordByTimestamp(timestamp) {
     return Utils.getXCoordByTimestamp(
-      this.renderedRange.start,
-      this.renderedRange.end,
+      this.renderedRanges.x.start,
+      this.renderedRanges.x.end,
       this.$global.layout.chartDimensions[this.id].main.width,
       timestamp
     );
   }
 
-  getYCoordByPrice(price) {
+  getYCoordByPrice(price, layerId = 0) {
     return Utils.getYCoordByPrice(
-      this.renderedRange.min,
-      this.renderedRange.max,
+      this.renderedRanges.y[layerId].min,
+      this.renderedRanges.y[layerId].max,
       this.$global.layout.chartDimensions[this.id].main.height,
       price
     );
@@ -636,6 +650,23 @@ export default class ChartState extends EventEmitter {
     this.subcharts.main.setCanvasElement(main.current);
     this.subcharts.xScale.canvas.setCanvasElement(xScale.current);
     this.subcharts.yScale.canvas.setCanvasElement(yScale.current);
+  }
+
+  getLayerByYCoord(yCoord) {
+    const { layers } = this.$global.layout.chartDimensions[this.id].main;
+
+    for (let i = 0; i <= Object.keys(layers); i++) {
+      const l1 = layers[i];
+      const l2 = layers[i + 1];
+
+      // If no next layer, current layer
+      if (!l2) return i;
+
+      // If between top and bottom of layer in question
+      if (yCoord >= l1.top && yCoord <= l2.top) return i;
+    }
+
+    return -1;
   }
 
   setScaleType(type) {

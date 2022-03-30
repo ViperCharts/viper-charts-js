@@ -115,7 +115,7 @@ export default class Main {
    */
   onScroll(e) {
     e.preventDefault();
-    const { deltaX, deltaY, layerY } = e;
+    const { deltaX, deltaY } = e;
 
     // If horizontal scroll, move range
     if (deltaX !== 0) {
@@ -127,13 +127,11 @@ export default class Main {
       const change =
         (d > 0 ? d * 100 : -d * -100) * (width / ppe) * (timeframe / 60000);
 
-      let { start, end } = this.$state.chart.range;
+      let { start, end } = this.$state.chart.ranges.x;
       start += change;
       end += change;
 
-      this.getLayerToMove(layerY);
-
-      this.$state.chart.setVisibleRange(this.layerToMove, { start, end });
+      this.$state.chart.setVisibleRange({ start, end });
     }
 
     // If vertical scroll
@@ -171,10 +169,12 @@ export default class Main {
     const { layers } = this.$state.global.layout.chartDimensions[id].main;
 
     if (this.layerToMove === -1) {
-      this.getLayerToMove(layerY);
+      const layerId = this.$state.chart.getLayerByYCoord(layerY);
+      this.layerToMove = layerId;
     }
 
-    let { start, end, min, max } = this.$state.chart.range;
+    let { start, end } = this.$state.chart.ranges.x;
+    let { min, max } = this.$state.chart.ranges.y[this.layerToMove];
 
     // Get how many candles moved
     const candlesMoved = movementX / this.$state.chart.pixelsPerElement;
@@ -193,28 +193,9 @@ export default class Main {
       max += movement;
     }
 
-    this.$state.chart.setVisibleRange(0, { start, end, min, max });
-  }
-
-  getLayerToMove(yCoord) {
-    const { id } = this.$state.chart;
-    const { layers } = this.$state.global.layout.chartDimensions[id].main;
-
-    for (let i = 0; i <= Object.keys(layers); i++) {
-      const l1 = layers[i];
-      const l2 = layers[i + 1];
-
-      // If no next layer, current layer
-      if (!l2) {
-        this.layerToMove = i;
-        return;
-      }
-
-      // If between top and bottom of layer in question
-      if (yCoord >= l1.top && yCoord <= l2.top) {
-        this.layerToMove = i;
-        return;
-      }
-    }
+    this.$state.chart.setVisibleRange(
+      { start, end, min, max },
+      this.layerToMove
+    );
   }
 }

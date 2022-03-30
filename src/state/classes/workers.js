@@ -152,7 +152,7 @@ class ComputedStateMessenger {
             chartId: this.chart.id,
             params: {
               scaleType: this.chart.settings.scaleType,
-              requestedRange: this.chart.range,
+              requestedRanges: this.chart.ranges,
               timeframe: this.chart.timeframe,
               chartDimensions: {
                 main: chartDimensions.main,
