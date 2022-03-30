@@ -80,7 +80,7 @@ export default class ChartState extends EventEmitter {
 
     // Add first layer if none
     if (!Object.keys(this.ranges.y).length) {
-      this.addLayer();
+      this.addLayer(100);
     }
 
     // Add crosshair to crosshair state in prep for chart to be rendered
@@ -271,15 +271,22 @@ export default class ChartState extends EventEmitter {
     this.setInitialVisibleRange();
   }
 
-  addLayer() {
+  addLayer(heightPerc) {
     const id = Object.keys(this.ranges.y).length;
-    this.ranges.y[id] = {
-      heightPerc: 50,
+
+    // Loop through all existing layers and update percent
+    const { y } = this.ranges;
+    for (const layerId in y) {
+      y[layerId].heightPerc -= y[layerId].heightPerc * (heightPerc / 100);
+    }
+    y[id] = {
+      heightPerc,
       range: { min: Infinity, max: -Infinity },
       lockedYScale: true,
     };
     this.renderedRanges.y[id] = { range: { min: Infinity, max: -Infinity } };
     this.$global.layout.chartDimensions[this.id].updateLayers();
+    return id;
   }
 
   setTimeframe(timeframe, movedId = this.id) {
@@ -567,7 +574,7 @@ export default class ChartState extends EventEmitter {
 
     this.pixelsPerElement = 10;
 
-    end = endTimestamp + this.timeframe * 5;
+    end = endTimestamp + this.timeframe * 10;
 
     // Calculate start timestamp using width and pixelsPerElement
     const candlesInView = width / this.pixelsPerElement;
@@ -662,7 +669,7 @@ export default class ChartState extends EventEmitter {
   getLayerByYCoord(yCoord) {
     const { layers } = this.$global.layout.chartDimensions[this.id].main;
 
-    for (let i = 0; i <= Object.keys(layers); i++) {
+    for (let i = 0; i < Object.keys(layers).length; i++) {
       const l1 = layers[i];
       const l2 = layers[i + 1];
 

@@ -461,6 +461,8 @@ export default class ComputedData extends EventEmitter {
       maxDecimalPlaces = 2;
     }
 
+    console.log(instructions);
+
     return {
       instructions,
       visibleRanges,

@@ -15,29 +15,30 @@ export default {
         chartDimensions
       ) {
         const instructions = {};
+        const { top, height } = chartDimensions.main.layers[indicator.layerId];
 
         // Get min and max yCoords for multiplication later
         const minY = Utils.getYCoordByPrice(
           visibleRange.min,
           visibleRange.max,
-          chartDimensions.main.layers[indicator.layerId].height,
+          height,
           set.visibleMin
         );
         const maxY = Utils.getYCoordByPrice(
           visibleRange.min,
           visibleRange.max,
-          chartDimensions.main.layers[indicator.layerId].height,
+          height,
           set.visibleMax
         );
         const rangeY = maxY - minY;
         const range = set.visibleMax - set.visibleMin;
 
         const { data } = set;
-        const { top, height } = chartDimensions.main.layers[indicator.layerId];
 
         const getY = (val) =>
+          top +
           Math.max(
-            top,
+            0,
             Math.min(
               Math.floor(((val - set.visibleMin) / range) * rangeY + minY),
               height
@@ -340,13 +341,28 @@ export default {
             // Get the appropriate series array plot index depending on plot type
             const value = values.series[{ line: 0, candle: 3 }[type]];
 
+            const { top, height } =
+              chartDimensions.main.layers[indicator.layerId];
+
             // Get the appropriate series array plot index depending on plot type
-            const y = Utils.getYCoordByPrice(
-              visibleRange.min,
-              visibleRange.max,
-              chartDimensions.main.layers[indicator.layerId].height,
-              value
+            let y = Math.max(
+              0,
+              Math.min(
+                Utils.getYCoordByPrice(
+                  visibleRange.min,
+                  visibleRange.max,
+                  height,
+                  value
+                ),
+                height
+              ) - 13
             );
+
+            if (y + 20 > height) {
+              y -= y + 20 - height;
+            }
+
+            y += top;
 
             const textColor = Utils.isColorLight(values.colors.color)
               ? "#000"
@@ -355,7 +371,7 @@ export default {
             yScaleInstructions.push({
               type: "box",
               x: 0,
-              y: y - 13,
+              y: y,
               w: chartDimensions.yScale.width,
               h: 20,
               color: values.colors.color,
@@ -363,7 +379,7 @@ export default {
             yScaleInstructions.push({
               type: "text",
               x: chartDimensions.yScale.width / 2,
-              y,
+              y: y + 13,
               color: textColor,
               text: `${value}`,
               font: "bold 10px Arial",
@@ -375,7 +391,7 @@ export default {
             mainInstructions.push({
               type: "box",
               x: chartDimensions.main.width - textWidth,
-              y: y - 13,
+              y,
               w: textWidth,
               h: 20,
               color: values.colors.color,
@@ -383,7 +399,7 @@ export default {
             mainInstructions.push({
               type: "text",
               x: chartDimensions.main.width - textWidth / 2,
-              y,
+              y: y + 13,
               color: textColor,
               text,
               font: "bold 10px Arial",

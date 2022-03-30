@@ -155,15 +155,11 @@ export default class RenderingEngine {
           }
         };
 
-        if (this.type === "main") {
-          for (let i = 0; i < times.length; i++) {
-            const instructionsForTime = values[times[i]];
-            for (let j = 0; j < instructionsForTime.length; j++) {
-              parseInstruction(instructionsForTime[j], i, j);
-            }
+        for (let i = 0; i < times.length; i++) {
+          const instructionsForTime = values[times[i]];
+          for (let j = 0; j < instructionsForTime.length; j++) {
+            parseInstruction(instructionsForTime[j], i, j);
           }
-        } else {
-          parseInstruction(allInstructions[id]);
         }
       }
 

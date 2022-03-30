@@ -29,41 +29,16 @@ export default {
     }
 
     async addIndicator(indicatorId, offchart = false) {
-      let chart = this.chart;
-      let groupId = this.group.id;
+      let layerId = 0;
 
       if (offchart) {
-        chart.updateSettings({ syncRange: true });
-
-        const { chart: c } = this.$global.layout.addChartBoxToSide(
-          chart.id,
-          "bottom",
-          33,
-          {
-            pixelsPerElement: chart.pixelsPerElement,
-            range: chart.range,
-            settings: {
-              syncRange: true,
-            },
-          }
-        );
-        chart = c;
-
-        // Wait for chart to init
-        await new Promise((resolve) => {
-          const cb = () => {
-            chart.removeEventListener("init", cb);
-            resolve();
-          };
-          chart.addEventListener("init", cb);
-        });
-
-        groupId = chart.createDatasetGroup(this.group.datasets, {}).id;
+        layerId = this.chart.addLayer(20);
       }
 
       // Add the indicator to dataset group
-      chart.addIndicator(indicatorId, groupId, this.state.model, {
+      this.chart.addIndicator(indicatorId, this.group.id, this.state.model, {
         visible: true,
+        layerId,
       });
     }
 
