@@ -518,6 +518,8 @@ export default class ChartState extends EventEmitter {
     this.renderedRanges.x = visibleRanges.x;
 
     for (const layerId in visibleRanges.y) {
+      this.ranges.y[layerId].range.min = visibleRanges.y[layerId].min;
+      this.ranges.y[layerId].range.max = visibleRanges.y[layerId].max;
       this.renderedRanges.y[layerId].range.min = visibleRanges.y[layerId].min;
       this.renderedRanges.y[layerId].range.max = visibleRanges.y[layerId].max;
     }
@@ -562,6 +564,8 @@ export default class ChartState extends EventEmitter {
     ) {
       endTimestamp = Math.floor(Date.now() / this.timeframe) * this.timeframe;
     }
+
+    this.pixelsPerElement = 10;
 
     end = endTimestamp + this.timeframe * 5;
 

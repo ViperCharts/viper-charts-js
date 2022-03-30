@@ -97,6 +97,8 @@ export default class Chart extends React.Component {
         layer.lockedYScale = true;
         this.chart.setVisibleRange(this.chart.ranges.x);
       }
+    } else if (chart === "xScale") {
+      this.chart.setInitialVisibleRange();
     }
   }
 
@@ -121,7 +123,11 @@ export default class Chart extends React.Component {
         </div>
         <div className="chart-chart">
           <canvas className="chart-main" ref={this.subcharts.main}></canvas>
-          <canvas className="chart-x-axis" ref={this.subcharts.xScale}></canvas>
+          <canvas
+            onDoubleClick={(e) => this.onDoubleClick(e, "xScale")}
+            className="chart-x-axis"
+            ref={this.subcharts.xScale}
+          ></canvas>
           <canvas
             onDoubleClick={(e) => this.onDoubleClick(e, "yScale")}
             className="chart-y-axis"
