@@ -20,7 +20,13 @@ export default class ChartState extends EventEmitter {
     name = "",
     ranges = {
       x: { start: 0, end: 0 },
-      y: {},
+      y: {
+        0: {
+          heightPerc: 50,
+          range: { min: Infinity, max: -Infinity },
+          lockedYScale: true,
+        },
+      },
     },
     pixelsPerElement = 10,
     timeframe = Constants.HOUR,
@@ -48,7 +54,6 @@ export default class ChartState extends EventEmitter {
     this.settings = {
       syncRange: false,
       syncWithCrosshair: "",
-      lockedYScale: true,
       scaleType: "default",
       ...settings,
     };
@@ -81,7 +86,7 @@ export default class ChartState extends EventEmitter {
 
     // Add first layer if none
     if (!Object.keys(this.ranges.y).length) {
-      this.addLayer();
+      // this.addLayer();
     }
 
     // Add crosshair to crosshair state in prep for chart to be rendered
@@ -279,6 +284,7 @@ export default class ChartState extends EventEmitter {
       range: { min: Infinity, max: -Infinity },
       lockedYScale: true,
     };
+    this.renderedRanges.y[id] = { range: { min: Infinity, max: -Infinity } };
     this.$global.layout.chartDimensions[this.id].updateLayers();
   }
 
@@ -471,13 +477,13 @@ export default class ChartState extends EventEmitter {
     const {
       start = this.ranges.x.start,
       end = this.ranges.x.end,
-      min = this.ranges.y[layerId].min,
-      max = this.ranges.y[layerId].max,
+      min = this.ranges.y[layerId].range.min,
+      max = this.ranges.y[layerId].range.max,
     } = newRange;
 
     this.ranges.x = { start, end };
-    this.ranges.y[layerId].min = min;
-    this.ranges.y[layerId].max = max;
+    this.ranges.y[layerId].range.min = min;
+    this.ranges.y[layerId].range.max = max;
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours
@@ -498,7 +504,7 @@ export default class ChartState extends EventEmitter {
         // Calculate pixels per element relative to chart layout. This is because
         // different charts can have different viewpoints
         chart.setPixelsPerElement(this.pixelsPerElement * diff);
-        chart.setVisibleRange({ start, end }, movedId);
+        chart.setVisibleRange({ start, end }, 0, movedId);
       }
     }
 
@@ -517,11 +523,9 @@ export default class ChartState extends EventEmitter {
 
     this.renderedRanges.x = visibleRanges.x;
 
-    if (this.settings.lockedYScale) {
-      for (const layerId in visibleRanges.y) {
-        this.renderedRanges.y[layerId].range.min = visibleRanges.y[layerId].min;
-        this.renderedRanges.y[layerId].range.max = visibleRanges.y[layerId].max;
-      }
+    for (const layerId in visibleRanges.y) {
+      this.renderedRanges.y[layerId].range.min = visibleRanges.y[layerId].min;
+      this.renderedRanges.y[layerId].range.max = visibleRanges.y[layerId].max;
     }
 
     this.$global.crosshair.updateCrosshairTimeAndPrice(this);
@@ -632,11 +636,16 @@ export default class ChartState extends EventEmitter {
   }
 
   getYCoordByPrice(price, layerId = 0) {
-    return Utils.getYCoordByPrice(
-      this.renderedRanges.y[layerId].min,
-      this.renderedRanges.y[layerId].max,
-      this.$global.layout.chartDimensions[this.id].main.height,
-      price
+    const { main } = this.$global.layout.chartDimensions[this.id];
+    const { top, height } = main.layers[layerId];
+    return (
+      top +
+      Utils.getYCoordByPrice(
+        this.renderedRanges.y[layerId].range.min,
+        this.renderedRanges.y[layerId].range.max,
+        height,
+        price
+      )
     );
   }
 

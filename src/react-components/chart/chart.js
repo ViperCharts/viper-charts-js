@@ -88,11 +88,15 @@ export default class Chart extends React.Component {
     }
   }
 
-  onDoubleClick(chart) {
-    if (chart === "yScale" && !this.chart.settings.lockedYScale) {
-      this.chart.settings.lockedYScale = true;
-      const { start, end } = this.chart.range;
-      this.chart.setVisibleRange({ start, end });
+  onDoubleClick({ clientY }, chart) {
+    if (chart === "yScale") {
+      const layerId = this.chart.getLayerByYCoord(clientY);
+      const layer = this.chart.ranges.y[layerId];
+
+      if (layer.lockedYScale === false) {
+        layer.lockedYScale = true;
+        this.chart.setVisibleRange(this.chart.ranges.x);
+      }
     }
   }
 
@@ -119,7 +123,7 @@ export default class Chart extends React.Component {
           <canvas className="chart-main" ref={this.subcharts.main}></canvas>
           <canvas className="chart-x-axis" ref={this.subcharts.xScale}></canvas>
           <canvas
-            onDoubleClick={() => this.onDoubleClick("yScale")}
+            onDoubleClick={(e) => this.onDoubleClick(e, "yScale")}
             className="chart-y-axis"
             ref={this.subcharts.yScale}
             onContextMenuCapture={(e) =>

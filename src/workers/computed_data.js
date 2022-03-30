@@ -306,7 +306,7 @@ export default class ComputedData extends EventEmitter {
     );
 
     const layerMinsAndMaxs = {};
-    for (const layerId in requestedRanges.y.ranges) {
+    for (const layerId in requestedRanges.y) {
       layerMinsAndMaxs[layerId] = {
         min: Infinity,
         max: -Infinity,
@@ -372,13 +372,18 @@ export default class ComputedData extends EventEmitter {
 
     // Calculate the visible range based on chart settings.
     for (const layerId in layerMinsAndMaxs) {
-      const { min, max } = Calculations.getVisibleRange.bind(this)(
-        requestedRanges.x,
-        settings,
+      const { y } = Calculations.getVisibleRange.bind(this)(
+        {
+          x: requestedRanges.x,
+          y: requestedRanges.y[layerId],
+        },
         layerMinsAndMaxs[layerId].min,
         layerMinsAndMaxs[layerId].max
       );
-      visibleRanges.y[layerId] = { min, max };
+      visibleRanges.y[layerId] = {
+        min: y.range.min,
+        max: y.range.max,
+      };
     }
 
     const { start, end } = visibleRanges.x;
