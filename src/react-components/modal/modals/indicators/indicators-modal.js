@@ -29,16 +29,10 @@ export default {
     }
 
     async addIndicator(indicatorId, offchart = false) {
-      let layerId = 0;
-
-      if (offchart) {
-        layerId = this.chart.addLayer(20);
-      }
-
       // Add the indicator to dataset group
       this.chart.addIndicator(indicatorId, this.group.id, this.state.model, {
         visible: true,
-        layerId,
+        layerId: !offchart ? 0 : this.chart.ranges.y.length,
       });
     }
 

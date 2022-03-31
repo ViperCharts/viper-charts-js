@@ -219,6 +219,10 @@ export default class ChartState extends EventEmitter {
       layerId,
     };
 
+    if (!this.ranges.y[layerId]) {
+      this.addLayer(3);
+    }
+
     // Add to the rendering queue on computed state and rendering engine
     // NOTE: draw is set to undefined here because you cannot pass
     const { renderingQueueId } = await this.computedState.addToQueue({
@@ -229,6 +233,7 @@ export default class ChartState extends EventEmitter {
     });
 
     indicator.renderingQueueId = renderingQueueId;
+    this.ranges.y[layerId].indicators[renderingQueueId] = { visible };
 
     // If dataset already exists, get all times and calculate them
     const timestamps = Object.keys(dataset.data);
@@ -276,6 +281,7 @@ export default class ChartState extends EventEmitter {
       heightUnit,
       lockedYScale: true,
       visible: true,
+      indicators: {},
       range: { min: Infinity, max: -Infinity },
     });
     this.renderedRanges.y.push({ range: { min: Infinity, max: -Infinity } });
@@ -283,6 +289,11 @@ export default class ChartState extends EventEmitter {
     this.$global.layout.chartDimensions[this.id].updateLayers();
 
     return this.ranges.y.length - 1;
+  }
+
+  removeLayer(layerId) {
+    this.ranges.y.splice(layerId, 1);
+    this.$global.layout.chartDimensions[this.id].updateLayers();
   }
 
   setTimeframe(timeframe, movedId = this.id) {
@@ -392,6 +403,22 @@ export default class ChartState extends EventEmitter {
       this.datasetGroups
     );
 
+    // Update indicator visibility for layer
+    const layer = this.ranges.y[indicator.layerId];
+    layer.indicators[renderingQueueId].visible = indicator.visible;
+    const layerIndicatorIds = Object.keys(layer.indicators);
+    for (let i = 0; i < layerIndicatorIds.length; i++) {
+      if (layer.indicators[layerIndicatorIds[i]].visible) {
+        layer.visible = true;
+        break;
+      }
+
+      // If reached last item without finding visible indicator
+      if (i === layerIndicatorIds.length - 1) {
+        layer.visible = false;
+      }
+    }
+
     if (indicator.visible) {
       const dataset = this.datasets[indicator.datasetId];
       const timestamps = Object.keys(dataset.data);
@@ -442,11 +469,18 @@ export default class ChartState extends EventEmitter {
     const group = this.datasetGroups[datsetGroupId];
     const indicator = group.indicators[renderingQueueId];
 
+    // Remove indicator from layer and delete layer if no indicators
+    delete this.ranges.y[indicator.layerId].indicators[renderingQueueId];
+    if (!Object.keys(this.ranges.y[indicator.layerId].indicators).length) {
+      this.removeLayer(indicator.layerId);
+    }
+
     this.computedState.removeFromQueue({ renderingQueueId });
     delete group.indicators[renderingQueueId];
 
     // Remove dataset listener and dataset if no more listeners;
     const dataset = this.datasets[indicator.datasetId];
+    console.log(dataset, this.datasets, indicator.datasetId);
     const subscribers = dataset.removeSubscriber(this.id, renderingQueueId);
     if (!subscribers.length) {
       delete this.datasets[dataset.getTimeframeAgnosticId()];

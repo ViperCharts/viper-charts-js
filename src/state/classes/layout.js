@@ -57,9 +57,10 @@ class ChartDimension {
     const layers = [];
     for (const layerId in y) {
       const layer = y[layerId];
-      if (!layer.visible) continue;
 
-      const height = this.main.height * (layer.heightUnit / total);
+      const height = layer.visible
+        ? this.main.height * (layer.heightUnit / total)
+        : 0;
       layers[layerId] = { top, height };
 
       top += height;

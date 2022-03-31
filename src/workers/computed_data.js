@@ -259,7 +259,7 @@ export default class ComputedData extends EventEmitter {
     this.calculateMaxDecimalPlaces();
 
     // Delete instructions
-    delete this.instructions.main.layers[0][renderingQueueId];
+    delete this.instructions.main.values[renderingQueueId];
     delete this.instructions.main.plots[renderingQueueId];
     delete this.instructions.yScale.plots[renderingQueueId];
     this.mainThread.updateInstructions(this.instructions);
@@ -286,7 +286,7 @@ export default class ComputedData extends EventEmitter {
     this.queue.delete(renderingQueueId);
     this.emptySet({ renderingQueueId });
 
-    delete this.instructions.main.layers[0][renderingQueueId];
+    delete this.instructions.main.values[renderingQueueId];
     delete this.instructions.yScale.plots[renderingQueueId];
   }
 
@@ -346,6 +346,8 @@ export default class ComputedData extends EventEmitter {
 
       this.sets[id].visibleScaleMin = scaleMin;
       this.sets[id].visibleScaleMax = scaleMax;
+
+      console.log(indicator.layerId);
 
       if (!layerMinsAndMaxs[indicator.layerId]) {
         layerMinsAndMaxs[indicator.layerId] = {
