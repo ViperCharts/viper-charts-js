@@ -33,7 +33,7 @@ class ChartDimension {
     this.main = {
       width: width - this.yScale.width,
       height: height - this.xScale.height,
-      layers: {},
+      layers: [],
     };
     this.xScale.width = width - this.yScale.width;
     this.yScale.height = height - this.xScale.height;
@@ -42,14 +42,30 @@ class ChartDimension {
 
   updateLayers() {
     const { y } = this.$global.charts[this.id].ranges;
+
+    if (!y.length) return;
+
     let top = 0;
-    for (const id in y) {
-      this.main.layers[id] = {
-        top,
-        height: this.main.height * (y[id].heightPerc / 100),
-      };
-      top += this.main.layers[id].height;
+    let total = 0;
+
+    for (const layer of y) {
+      if (layer.visible) {
+        total += layer.heightUnit;
+      }
     }
+
+    const layers = [];
+    for (const layerId in y) {
+      const layer = y[layerId];
+      if (!layer.visible) continue;
+
+      const height = this.main.height * (layer.heightUnit / total);
+      layers[layerId] = { top, height };
+
+      top += height;
+    }
+
+    this.main.layers = layers;
   }
 
   setYScaleWidth(width) {

@@ -66,13 +66,7 @@ export default class CrosshairState extends EventEmitter {
     }
 
     const layerId = chart.getLayerByYCoord(y);
-    const { min, max } = chart.renderedRanges.y[layerId].range;
-    const { main } = this.$global.layout.chartDimensions[chart.id];
-
-    const range = max - min;
-    const screenPerc = y / main.layers[layerId].height;
-    const rangeOffset = (1 - screenPerc) * range;
-    const price = min + rangeOffset;
+    const price = chart.getPriceByYCoord(y, layerId);
 
     this.timestamp = timestamp;
     this.price = Utils.toFixed(price, chart.maxDecimalPlaces);

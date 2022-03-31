@@ -20,7 +20,7 @@ export default class ChartState extends EventEmitter {
     name = "",
     ranges = {
       x: { start: 0, end: 0 },
-      y: {},
+      y: [],
     },
     pixelsPerElement = 10,
     timeframe = Constants.HOUR,
@@ -80,7 +80,7 @@ export default class ChartState extends EventEmitter {
 
     // Add first layer if none
     if (!Object.keys(this.ranges.y).length) {
-      this.addLayer(100);
+      this.addLayer(10);
     }
 
     // Add crosshair to crosshair state in prep for chart to be rendered
@@ -271,22 +271,18 @@ export default class ChartState extends EventEmitter {
     this.setInitialVisibleRange();
   }
 
-  addLayer(heightPerc) {
-    const id = Object.keys(this.ranges.y).length;
-
-    // Loop through all existing layers and update percent
-    const { y } = this.ranges;
-    for (const layerId in y) {
-      y[layerId].heightPerc -= y[layerId].heightPerc * (heightPerc / 100);
-    }
-    y[id] = {
-      heightPerc,
-      range: { min: Infinity, max: -Infinity },
+  addLayer(heightUnit) {
+    this.ranges.y.push({
+      heightUnit,
       lockedYScale: true,
-    };
-    this.renderedRanges.y[id] = { range: { min: Infinity, max: -Infinity } };
+      visible: true,
+      range: { min: Infinity, max: -Infinity },
+    });
+    this.renderedRanges.y.push({ range: { min: Infinity, max: -Infinity } });
+
     this.$global.layout.chartDimensions[this.id].updateLayers();
-    return id;
+
+    return this.ranges.y.length - 1;
   }
 
   setTimeframe(timeframe, movedId = this.id) {
@@ -643,15 +639,15 @@ export default class ChartState extends EventEmitter {
   getYCoordByPrice(price, layerId = 0) {
     const { main } = this.$global.layout.chartDimensions[this.id];
     const { top, height } = main.layers[layerId];
-    return (
-      top +
-      Utils.getYCoordByPrice(
-        this.renderedRanges.y[layerId].range.min,
-        this.renderedRanges.y[layerId].range.max,
-        height,
-        price
-      )
-    );
+    const { range } = this.renderedRanges.y[layerId];
+    return top + Utils.getYCoordByPrice(range.min, range.max, height, price);
+  }
+
+  getPriceByYCoord(yCoord, layerId = 0) {
+    const { main } = this.$global.layout.chartDimensions[this.id];
+    const { top, height } = main.layers[layerId];
+    const { range } = this.renderedRanges.y[layerId];
+    return Utils.getPriceByYCoord(range.min, range.max, height, yCoord - top);
   }
 
   /**
@@ -669,7 +665,8 @@ export default class ChartState extends EventEmitter {
   getLayerByYCoord(yCoord) {
     const { layers } = this.$global.layout.chartDimensions[this.id].main;
 
-    for (let i = 0; i < Object.keys(layers).length; i++) {
+    // TODO FIX THIS YOU DUMB FUCK
+    for (let i = 0; i < layers.length; i++) {
       const l1 = layers[i];
       const l2 = layers[i + 1];
 

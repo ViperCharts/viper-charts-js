@@ -234,16 +234,16 @@ export default class ComputedData extends EventEmitter {
       return;
     }
 
-    const item = this.queue.get(renderingQueueId);
-    item.visible = visible;
-    this.queue.set(renderingQueueId, item);
+    const indicator = this.queue.get(renderingQueueId);
+    indicator.visible = visible;
+    this.queue.set(renderingQueueId, indicator);
 
     // Re calculate max decimal places when sets have changed
     this.calculateMaxDecimalPlaces();
 
     // If hiding indicator, delete main and yScale plot instructions
-    if (!item.visible) {
-      delete this.instructions.main.layers[0][renderingQueueId];
+    if (!indicator.visible) {
+      delete this.instructions.main.values[renderingQueueId];
       delete this.instructions.main.plots[renderingQueueId];
       delete this.instructions.yScale.plots[renderingQueueId];
       this.mainThread.updateInstructions(this.instructions);
@@ -460,8 +460,6 @@ export default class ComputedData extends EventEmitter {
     if (settings.scaleType !== "default") {
       maxDecimalPlaces = 2;
     }
-
-    console.log(instructions);
 
     return {
       instructions,
