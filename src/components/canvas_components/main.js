@@ -138,7 +138,7 @@ export default class Main {
     else if (deltaY !== 0) {
       const d = deltaY;
       const change = -(d > 0 ? -d * -50 : d * 50);
-      this.$state.chart.resizeXRange(change, this.canvas.width);
+      this.$state.chart.resizeXRange(change);
     }
   }
 

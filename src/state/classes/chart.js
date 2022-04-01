@@ -64,9 +64,7 @@ export default class ChartState extends EventEmitter {
   init() {
     if (this.isInitialized) return;
 
-    this.onResizeListener = (({ main }) => {
-      this.resizeXRange(0, main.width);
-    }).bind(this);
+    this.onResizeListener = (() => this.resizeXRange(0)).bind(this);
     this.$global.layout.addEventListener(
       `resize-${this.id}`,
       this.onResizeListener
@@ -622,7 +620,8 @@ export default class ChartState extends EventEmitter {
     this.setVisibleRange({ start, end });
   }
 
-  resizeXRange(delta, width) {
+  resizeXRange(delta) {
+    const { width } = this.$global.layout.chartDimensions[this.id].main;
     const ppe = this.pixelsPerElement;
 
     if (delta < 0) {

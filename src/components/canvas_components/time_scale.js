@@ -45,12 +45,31 @@ export default class TimeScale {
       `resize-${this.$state.chart.id}`,
       this.onResizeChartListener
     );
+
+    this.mouseMoveListener = this.onWindowMouseMove.bind(this);
+    this.$state.global.events.addEventListener(
+      "mousemove",
+      this.mouseMoveListener
+    );
+  }
+
+  onWindowMouseMove({ movementX }) {
+    if (!this.canvas.isMouseDown) return;
+    if (movementX === 0) return;
+
+    const m = movementX;
+    const change = -(m > 0 ? -m * -50 : m * 50);
+    this.$state.chart.resizeXRange(change);
   }
 
   destroy() {
     this.$state.global.layout.removeEventListener(
       `resize-${this.$state.chart.id}`,
       this.onResizeChartListener
+    );
+    this.$state.global.layout.events.removeEventListener(
+      "mousemove",
+      this.mouseMoveListener
     );
   }
 }
