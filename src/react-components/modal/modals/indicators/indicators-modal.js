@@ -32,7 +32,7 @@ export default {
       // Add the indicator to dataset group
       this.chart.addIndicator(indicatorId, this.group.id, this.state.model, {
         visible: true,
-        layerId: !offchart ? 0 : this.chart.ranges.y.length,
+        layerId: !offchart ? Object.keys(this.chart.ranges.y)[0] : "new",
       });
     }
 

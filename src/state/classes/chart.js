@@ -20,7 +20,7 @@ export default class ChartState extends EventEmitter {
     name = "",
     ranges = {
       x: { start: 0, end: 0 },
-      y: [],
+      y: {},
     },
     pixelsPerElement = 10,
     timeframe = Constants.HOUR,
@@ -188,11 +188,16 @@ export default class ChartState extends EventEmitter {
     indicator,
     datasetGroupId,
     model,
-    { visible = true, layerId = 0 }
+    { visible = true, layerId = Object.keys(this.ranges.y)[0] }
   ) {
     // If indicator passed was a string, assume its indicator id
     if (typeof indicator === "string") {
       indicator = PlotTypes.getIndicatorById(indicator);
+    }
+
+    console.log(layerId);
+    if (!layerId || !this.ranges.y[layerId]) {
+      layerId = this.addLayer(3);
     }
 
     // Get the dataset group
@@ -218,10 +223,6 @@ export default class ChartState extends EventEmitter {
       color,
       layerId,
     };
-
-    if (!this.ranges.y[layerId]) {
-      this.addLayer(3);
-    }
 
     // Add to the rendering queue on computed state and rendering engine
     // NOTE: draw is set to undefined here because you cannot pass
@@ -277,22 +278,24 @@ export default class ChartState extends EventEmitter {
   }
 
   addLayer(heightUnit) {
-    this.ranges.y.push({
+    const id = Utils.uniqueId();
+
+    this.ranges.y[id] = {
       heightUnit,
       lockedYScale: true,
       visible: true,
       indicators: {},
       range: { min: Infinity, max: -Infinity },
-    });
-    this.renderedRanges.y.push({ range: { min: Infinity, max: -Infinity } });
+    };
+    this.renderedRanges.y[id] = { range: { min: Infinity, max: -Infinity } };
 
     this.$global.layout.chartDimensions[this.id].updateLayers();
 
-    return this.ranges.y.length - 1;
+    return id;
   }
 
   removeLayer(layerId) {
-    this.ranges.y.splice(layerId, 1);
+    delete this.ranges.y[layerId];
     this.$global.layout.chartDimensions[this.id].updateLayers();
   }
 
@@ -504,7 +507,11 @@ export default class ChartState extends EventEmitter {
    * @param {number} layerId Layer moving
    * @param {string} movedId The chart id of the chart that initialzed the move
    */
-  async setVisibleRange(newRange = {}, layerId = 0, movedId = this.id) {
+  async setVisibleRange(
+    newRange = {},
+    layerId = Object.keys(this.ranges.y)[0],
+    movedId = this.id
+  ) {
     const {
       start = this.ranges.x.start,
       end = this.ranges.x.end,
@@ -670,14 +677,14 @@ export default class ChartState extends EventEmitter {
     );
   }
 
-  getYCoordByPrice(price, layerId = 0) {
+  getYCoordByPrice(price, layerId = Object.keys(this.ranges.y)[0]) {
     const { main } = this.$global.layout.chartDimensions[this.id];
     const { top, height } = main.layers[layerId];
     const { range } = this.renderedRanges.y[layerId];
     return top + Utils.getYCoordByPrice(range.min, range.max, height, price);
   }
 
-  getPriceByYCoord(yCoord, layerId = 0) {
+  getPriceByYCoord(yCoord, layerId = Object.keys(this.ranges.y)[0]) {
     const { main } = this.$global.layout.chartDimensions[this.id];
     const { top, height } = main.layers[layerId];
     const { range } = this.renderedRanges.y[layerId];
@@ -698,20 +705,18 @@ export default class ChartState extends EventEmitter {
 
   getLayerByYCoord(yCoord) {
     const { layers } = this.$global.layout.chartDimensions[this.id].main;
+    const ids = Object.keys(layers);
 
-    // TODO FIX THIS YOU DUMB FUCK
-    for (let i = 0; i < layers.length; i++) {
-      const l1 = layers[i];
-      const l2 = layers[i + 1];
+    for (let i = 0; i < ids.length; i++) {
+      const l1 = layers[ids[i]];
+      const l2 = layers[ids[i + 1]];
 
       // If no next layer, current layer
-      if (!l2) return i;
+      if (!l2) return ids[i];
 
       // If between top and bottom of layer in question
-      if (yCoord >= l1.top && yCoord <= l2.top) return i;
+      if (yCoord >= l1.top && yCoord <= l2.top) return ids[i];
     }
-
-    return -1;
   }
 
   setScaleType(type) {
