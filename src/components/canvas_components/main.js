@@ -115,13 +115,14 @@ export default class Main {
    */
   onScroll(e) {
     e.preventDefault();
-    const { deltaX, deltaY } = e;
+    const { deltaX, deltaY, clientX } = e;
+
+    const { width } =
+      this.$state.global.layout.chartDimensions[this.$state.chart.id].main;
 
     // If horizontal scroll, move range
     if (deltaX !== 0) {
       const { pixelsPerElement: ppe, timeframe } = this.$state.chart;
-      const { width } =
-        this.$state.global.layout.chartDimensions[this.$state.chart.id].main;
 
       const d = deltaX;
       const change =
@@ -136,9 +137,11 @@ export default class Main {
 
     // If vertical scroll
     else if (deltaY !== 0) {
+      const leftP = clientX / width;
+      const rightP = 1 - leftP;
       const d = deltaY;
       const change = -(d > 0 ? -d * -50 : d * 50);
-      this.$state.chart.resizeXRange(change);
+      this.$state.chart.resizeXRange(change, leftP, rightP);
     }
   }
 

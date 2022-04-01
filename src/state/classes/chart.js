@@ -292,9 +292,12 @@ export default class ChartState extends EventEmitter {
   }
 
   removeLayer(layerId) {
+    const keys = Object.keys(this.ranges.y);
     // If this is the last layer, don't delete it
-    if (Object.keys(this.ranges.y).length === 1) return;
+    if (keys.length === 1) return;
     delete this.ranges.y[layerId];
+    keys.splice(layerId, 1);
+    if (keys.length === 1) this.ranges.y[keys[0]].heightUnit = 10;
     this.$global.layout.chartDimensions[this.id].updateLayers();
   }
 
@@ -620,23 +623,25 @@ export default class ChartState extends EventEmitter {
     this.setVisibleRange({ start, end });
   }
 
-  resizeXRange(delta) {
+  resizeXRange(change, left = 0.5, right = 0.5) {
     const { width } = this.$global.layout.chartDimensions[this.id].main;
-    const ppe = this.pixelsPerElement;
 
-    if (delta < 0) {
-      this.setPixelsPerElement(Math.max(1, ppe - ppe / 5));
-    } else if (delta > 0) {
-      this.setPixelsPerElement(Math.min(ppe + ppe / 5, 1000));
+    let { start, end } = this.ranges.x;
+    let range = end - start;
+
+    if (change < 0) {
+      start -= (range * left) / 10;
+      end += (range * right) / 10;
+    } else if (change > 0) {
+      start += (range * left) / 10;
+      end -= (range * right) / 10;
     }
 
-    // End timestamp based on last element
-    const { end } = this.ranges.x;
+    // Calcualte new pixels per element based on new range
+    const ppe = width / ((end - start) / this.timeframe);
 
-    // Calculate start timestamp using width and pixelsPerElement
-    const candlesInView = width / this.pixelsPerElement;
-    // Set start to candlesInView lookback
-    const start = end - candlesInView * this.timeframe;
+    // If pixels per element is less than 1 or greater than 1000, dont apply changes
+    if (ppe < 1 || ppe > 1000) return;
 
     this.setVisibleRange({ start, end });
   }
