@@ -347,8 +347,6 @@ export default class ComputedData extends EventEmitter {
       this.sets[id].visibleScaleMin = scaleMin;
       this.sets[id].visibleScaleMax = scaleMax;
 
-      console.log(indicator.layerId);
-
       if (!layerMinsAndMaxs[indicator.layerId]) {
         layerMinsAndMaxs[indicator.layerId] = {
           min: Infinity,

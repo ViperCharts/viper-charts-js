@@ -195,7 +195,6 @@ export default class ChartState extends EventEmitter {
       indicator = PlotTypes.getIndicatorById(indicator);
     }
 
-    console.log(layerId);
     if (!layerId || !this.ranges.y[layerId]) {
       layerId = this.addLayer(3);
     }
@@ -295,6 +294,8 @@ export default class ChartState extends EventEmitter {
   }
 
   removeLayer(layerId) {
+    // If this is the last layer, don't delete it
+    if (Object.keys(this.ranges.y).length === 1) return;
     delete this.ranges.y[layerId];
     this.$global.layout.chartDimensions[this.id].updateLayers();
   }
@@ -478,16 +479,15 @@ export default class ChartState extends EventEmitter {
       this.removeLayer(indicator.layerId);
     }
 
-    this.computedState.removeFromQueue({ renderingQueueId });
-    delete group.indicators[renderingQueueId];
-
     // Remove dataset listener and dataset if no more listeners;
     const dataset = this.datasets[indicator.datasetId];
-    console.log(dataset, this.datasets, indicator.datasetId);
     const subscribers = dataset.removeSubscriber(this.id, renderingQueueId);
-    if (!subscribers.length) {
+    if (!Object.keys(subscribers).length) {
       delete this.datasets[dataset.getTimeframeAgnosticId()];
     }
+
+    this.computedState.removeFromQueue({ renderingQueueId });
+    delete group.indicators[renderingQueueId];
 
     this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
 

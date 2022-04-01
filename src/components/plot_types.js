@@ -113,6 +113,20 @@ const indicators = {
     },
   },
 
+  "zero-bars": {
+    version: "1.0.0",
+    name: "Zero Bars",
+    dependencies: ["value"],
+    draw({ plotBox, value }) {
+      plotBox({
+        top: value >= 0 ? value : 0,
+        bottom: value >= 0 ? 0 : value,
+        width: 0.9,
+        color: value >= 0 ? "#C4FF49" : "#FE3A64",
+      });
+    },
+  },
+
   deltafootprint: {
     version: "1.0.0",
     name: "Delta Footprint",
