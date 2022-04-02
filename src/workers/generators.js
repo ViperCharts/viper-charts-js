@@ -2,6 +2,8 @@ import Constants from "../constants";
 import Utils from "../utils.js";
 import Calculations from "./calculations.js";
 
+import Decimal from "decimal.js";
+
 export default {
   main: {
     values: {
@@ -589,22 +591,41 @@ export default {
 
         const { top, height } = chartDimensions.main.layers[id];
 
-        const range = max - min;
-        const exp = +range.toExponential().split("e")[1];
-        const interval = 10 ** exp;
+        const range = new Decimal(max - min);
+        const exp = new Decimal(+range.toExponential().split("e")[1]);
+        const interval = new Decimal(10).pow(exp);
 
-        min -= min % interval;
-        max += interval - (max % interval);
+        const baseInterval = new Decimal(interval);
+        let i = 1;
+        const arr = [0.5, 0.25, 0.1, 0.05, 0.025, 0.001];
+        while ((max - min) / interval < Math.floor(height / 50)) {
+          if (!arr[i]) break;
+          interval = baseInterval.times(arr[i]);
+          i++;
+        }
+
+        min = new Decimal(min)
+          .minus(new Decimal(min).modulo(interval))
+          .toNumber();
+        max = new Decimal(max)
+          .plus(interval.minus(new Decimal(max).modulo(interval)))
+          .toNumber();
 
         const getY = (v) =>
           Utils.getYCoordByPrice(yRanges[id].min, yRanges[id].max, height, v);
 
-        scales[id] = new Array((max - min) / interval).fill().map((_, i) => ({
-          x: chartDimensions.yScale.width / 2,
-          y: top + getY(min + interval * i),
-          color: "#A7A8B3",
-          text: `${min + interval * i}`,
-        }));
+        scales[id] = [];
+        for (let i = 0; i < (max - min) / interval; i++) {
+          const value = interval.times(i).add(min).toNumber();
+          if (value < yRanges[id].min || value > yRanges[id].max) continue;
+
+          scales[id].push({
+            x: chartDimensions.yScale.width / 2,
+            y: top + getY(value),
+            color: "#A7A8B3",
+            text: `${value}`,
+          });
+        }
       }
 
       return scales;

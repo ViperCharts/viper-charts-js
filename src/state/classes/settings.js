@@ -53,15 +53,13 @@ export default class SettingsState extends EventEmitter {
                 });
 
                 for (const indicator of Object.values(indicators)) {
-                  const [source, name] = indicator.datasetId.split(":");
                   chart.addIndicator(
                     PlotTypes.getIndicatorById(indicator.id),
                     group.id,
                     indicator.model,
                     {
-                      source,
-                      name,
                       visible: indicator.visible,
+                      layerId: indicator.layerId,
                     }
                   );
                 }

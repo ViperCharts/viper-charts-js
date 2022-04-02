@@ -42,7 +42,7 @@ export default class TimeScale {
     if (movementX === 0) return;
 
     const m = movementX;
-    const change = -(m > 0 ? -m * -50 : m * 50);
+    const change = -(m > 0 ? -m * -10 : m * 10);
     this.$state.chart.resizeXRange(change);
   }
 
