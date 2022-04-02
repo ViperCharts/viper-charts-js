@@ -1,7 +1,4 @@
 import Canvas from "../canvas.js";
-import Background from "./background.js";
-import Overlay from "./overlay.js";
-import TimeSelected from "./time_selected.js";
 
 export default class TimeScale {
   constructor({ $state }) {
@@ -22,19 +19,6 @@ export default class TimeScale {
       width: this.$state.dimensions.width - 50,
       cursor: "e-resize",
       position: "bottom",
-    });
-
-    this.background = new Background({
-      canvas: this.canvas,
-      color: "#080019",
-    });
-    this.timeScaleOverlay = new TimeScaleOverlay({
-      $state: this.$state,
-      canvas: this.canvas,
-    });
-    this.timeSelected = new TimeSelected({
-      $state: this.$state,
-      canvas: this.canvas,
     });
 
     this.onResizeChartListener = (({ xScale }) => {
@@ -71,29 +55,5 @@ export default class TimeScale {
       "mousemove",
       this.mouseMoveListener
     );
-  }
-}
-
-class TimeScaleOverlay extends Overlay {
-  constructor({ $state, canvas }) {
-    super({ canvas, type: "single" });
-
-    this.$state = $state;
-
-    this.init(this.draw.bind(this));
-  }
-
-  /**
-   * Draw canvas function, this is a placeholder
-   */
-  draw() {
-    for (const time of this.$state.chart.instructions.xScale.scales) {
-      const d = new Date(time);
-      this.canvas.drawTextAtPriceAndTime(
-        "#A7A8B3",
-        [time, 15],
-        "" + `${d.getHours()}:${`0${d.getMinutes()}`.slice(-2)}`
-      );
-    }
   }
 }

@@ -1,6 +1,4 @@
 import Canvas from "../canvas.js";
-import Background from "./background.js";
-import Grid from "./grid.js";
 import Crosshair from "./crosshair.js";
 import LastPriceLine from "./last_price_line.js";
 
@@ -23,8 +21,6 @@ export default class Main {
     this.setCanvasElement(subcharts.main.current);
 
     // Add indicators to it
-    new Background({ $state: this.$state, canvas: this.canvas });
-    new Grid({ $state: this.$state, canvas: this.canvas });
     new LastPriceLine({ $state: this.$state, canvas: this.canvas });
     new Crosshair({ $state: this.$state, canvas: this.canvas });
 

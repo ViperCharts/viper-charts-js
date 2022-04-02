@@ -296,7 +296,7 @@ export default class ChartState extends EventEmitter {
     // If this is the last layer, don't delete it
     if (keys.length === 1) return;
     delete this.ranges.y[layerId];
-    keys.splice(layerId, 1);
+    keys.splice(keys.indexOf(layerId), 1);
     if (keys.length === 1) this.ranges.y[keys[0]].heightUnit = 10;
     this.$global.layout.chartDimensions[this.id].updateLayers();
   }

@@ -1,5 +1,4 @@
 import Canvas from "../canvas.js";
-import Background from "./background.js";
 
 // TODO rename to PriceScale
 export default class TimeScale {

@@ -58,6 +58,14 @@ export default class RenderingEngine {
 
       let maxWidth = 0;
 
+      // Draw all scales
+      for (const layerId in instructions.scales) {
+        for (const item of instructions.scales[layerId]) {
+          const { x, y, color, text } = item;
+          this.canvas.drawText(color, [x, y], text);
+        }
+      }
+
       // Loop through all yScale plot instructions and measure the width of all texts and get max width
       for (const key in instructions.plots) {
         // If no instructions for set, continue
@@ -85,6 +93,7 @@ export default class RenderingEngine {
         this.$state.chart.setVisibleRange({});
       }
 
+      // Crosshair
       const p = this.$state.global.crosshair.price;
       const { y } =
         this.$state.global.crosshair.crosshairs[this.$state.chart.id];
@@ -95,32 +104,67 @@ export default class RenderingEngine {
         this.canvas.drawBox("#424242", [0, y - 10, width, 20]);
         this.canvas.drawText("#fff", [width / 2, y + 3], p);
       }
-
-      return;
-    }
-
-    const ids = [...this.renderingOrder];
-
-    const allInstructions = instructions;
-
-    // If no instructions
-    if (!allInstructions || typeof allInstructions !== "object") {
-      return;
     }
 
     if (this.type === "xScale") {
-      for (const id of ids) {
-        let item = this.overlayQueue.get(id);
+      // Draw background
+      this.canvas.drawBox("#080019", [
+        0,
+        0,
+        chartDimensions.xScale.width,
+        chartDimensions.xScale.height,
+      ]);
 
-        // If overlay and not indicator
-        if (item) {
-          const { overlay } = item;
-          overlay.drawFunc.bind(overlay)();
-        }
+      // Draw all scales
+      for (const { color, x, y, text } of instructions.scales) {
+        this.canvas.drawText(color, [x, y], text);
+      }
+
+      // Crosshair
+      const { crosshair } = this.$state.global;
+      if (crosshair.visible) {
+        const d = new Date(crosshair.timestamp);
+        const dateText = `${
+          d.getMonth() + 1
+        }/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${`0${d.getMinutes()}`.slice(
+          -2
+        )}`;
+
+        const { x } = crosshair.crosshairs[this.$state.chart.id];
+        this.canvas.drawBox("#424242", [x - 45, 0, 90, 30]);
+        this.canvas.drawText("#fff", [x, 15], dateText);
       }
     }
 
     if (this.type === "main") {
+      // Draw background
+      this.canvas.drawBox("#080019", [
+        0,
+        0,
+        chartDimensions.main.width,
+        chartDimensions.main.height,
+      ]);
+
+      // Draw grid
+      (() => {
+        const { height, width } = chartDimensions.main;
+        const { xScale, yScale } = this.$state.chart.instructions;
+        const color = "#43434377";
+
+        for (const { x } of xScale.scales) {
+          this.canvas.drawLine(color, [x, 0, x, height]);
+        }
+
+        for (const layerId in yScale.scales) {
+          const values = yScale.scales[layerId];
+          for (const { y } of values) {
+            this.canvas.drawLine(color, [0, y, width, y]);
+          }
+        }
+      })();
+
+      const ids = [...this.renderingOrder];
+
       // Loop through all rendering ids
       for (const id of ids) {
         let item = this.overlayQueue.get(id);

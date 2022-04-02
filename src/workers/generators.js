@@ -579,13 +579,40 @@ export default {
       },
     },
 
-    scales() {
-      return [];
+    scales(yRanges, chartDimensions) {
+      const scales = {};
+
+      for (const id in yRanges) {
+        let { min, max } = yRanges[id];
+
+        if (min === Infinity || max === -Infinity) continue;
+
+        const { top, height } = chartDimensions.main.layers[id];
+
+        const range = max - min;
+        const exp = +range.toExponential().split("e")[1];
+        const interval = 10 ** exp;
+
+        min -= min % interval;
+        max += interval - (max % interval);
+
+        const getY = (v) =>
+          Utils.getYCoordByPrice(yRanges[id].min, yRanges[id].max, height, v);
+
+        scales[id] = new Array((max - min) / interval).fill().map((_, i) => ({
+          x: chartDimensions.yScale.width / 2,
+          y: top + getY(min + interval * i),
+          color: "#A7A8B3",
+          text: `${min + interval * i}`,
+        }));
+      }
+
+      return scales;
     },
   },
 
   xScale: {
-    scales(pixelsPerElement, timeframe, visibleRange) {
+    scales(pixelsPerElement, timeframe, visibleRange, chartDimensions) {
       const scales = [];
 
       const minPixels = 100;
@@ -602,9 +629,23 @@ export default {
         }
       }
 
+      const getX = (t) =>
+        Utils.getXCoordByTimestamp(
+          visibleRange.start,
+          visibleRange.end,
+          chartDimensions.xScale.width,
+          t
+        );
+
       const start = visibleRange.start - (visibleRange.start % xTimeStep);
-      for (let i = start; i < visibleRange.end; i += xTimeStep) {
-        scales.push(i);
+      for (let time = start; time < visibleRange.end; time += xTimeStep) {
+        const d = new Date(time);
+        scales.push({
+          x: getX(time),
+          y: 13,
+          color: "#A7A8B3",
+          text: `${d.getHours()}:${`0${d.getMinutes()}`.slice(-2)}`,
+        });
       }
 
       return scales;

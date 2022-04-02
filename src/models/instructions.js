@@ -1,7 +1,6 @@
 export default {
   main: {
     background: {},
-    grid: {},
     values: {},
     plots: {},
   },
