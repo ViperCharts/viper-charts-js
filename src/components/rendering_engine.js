@@ -104,6 +104,16 @@ export default class RenderingEngine {
         this.canvas.drawBox("#424242", [0, y - 10, width, 20]);
         this.canvas.drawText("#fff", [width / 2, y + 3], p);
       }
+
+      // Border left, top, right
+      const { width, height, layers } = chartDimensions.main;
+      this.canvas.drawBox("#2E2E2E", [0, 0, width, 2]);
+
+      // Border breakpoints / bottom
+      for (const layerId in layers) {
+        const { top, height } = layers[layerId];
+        this.canvas.drawBox("#2E2E2E", [0, top + height - 2, width, 4]);
+      }
     }
 
     if (this.type === "xScale") {
