@@ -111,7 +111,7 @@ export default class Main {
    */
   onScroll(e) {
     e.preventDefault();
-    const { deltaX, deltaY, clientX } = e;
+    const { deltaX, deltaY, offsetX } = e;
 
     const { width } =
       this.$state.global.layout.chartDimensions[this.$state.chart.id].main;
@@ -133,7 +133,7 @@ export default class Main {
 
     // If vertical scroll
     else if (deltaY !== 0) {
-      const leftP = clientX / width;
+      const leftP = offsetX / width;
       const rightP = 1 - leftP;
       const d = deltaY;
       const change = -(d > 0 ? -d * -50 : d * 50);

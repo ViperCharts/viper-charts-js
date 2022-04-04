@@ -51,7 +51,7 @@ export default class TimeScale {
       `resize-${this.$state.chart.id}`,
       this.onResizeChartListener
     );
-    this.$state.global.layout.events.removeEventListener(
+    this.$state.global.events.removeEventListener(
       "mousemove",
       this.mouseMoveListener
     );

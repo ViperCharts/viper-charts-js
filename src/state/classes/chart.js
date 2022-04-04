@@ -287,6 +287,9 @@ export default class ChartState extends EventEmitter {
     this.renderedRanges.y[id] = { range: { min: Infinity, max: -Infinity } };
 
     this.$global.layout.chartDimensions[this.id].updateLayers();
+    this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
+      ranges: JSON.parse(JSON.stringify(this.ranges)),
+    });
 
     return id;
   }
@@ -299,6 +302,10 @@ export default class ChartState extends EventEmitter {
     keys.splice(keys.indexOf(layerId), 1);
     if (keys.length === 1) this.ranges.y[keys[0]].heightUnit = 10;
     this.$global.layout.chartDimensions[this.id].updateLayers();
+
+    this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
+      ranges: JSON.parse(JSON.stringify(this.ranges)),
+    });
   }
 
   setTimeframe(timeframe, movedId = this.id) {
@@ -572,7 +579,7 @@ export default class ChartState extends EventEmitter {
     this.$global.crosshair.updateCrosshairTimeAndPrice(this);
 
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
-      range: this.xRange,
+      ranges: JSON.parse(JSON.stringify(this.ranges)),
     });
 
     // Check for any un-fetched data points in all subscribed datasets
