@@ -105,6 +105,13 @@ export default class Chart extends React.Component {
     }
   }
 
+  onYScaleContextMenu(e) {
+    this.$global.ui.app.setContextMenu(e, "yScale", {
+      chartId: this.state.id,
+      layerId: this.chart.getLayerByYCoord(e.clientY),
+    });
+  }
+
   render() {
     return (
       <div
@@ -139,11 +146,7 @@ export default class Chart extends React.Component {
             onDoubleClick={(e) => this.onDoubleClick(e, "yScale")}
             className="chart-y-axis"
             ref={this.subcharts.yScale}
-            onContextMenuCapture={(e) =>
-              this.$global.ui.app.setContextMenu(e, "yScale", {
-                chartId: this.state.id,
-              })
-            }
+            onContextMenuCapture={this.onYScaleContextMenu.bind(this)}
           ></canvas>
         </div>
       </div>

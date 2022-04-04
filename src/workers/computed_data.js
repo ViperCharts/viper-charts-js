@@ -291,12 +291,10 @@ export default class ComputedData extends EventEmitter {
   }
 
   generateAllInstructions({
-    scaleType,
     requestedRanges,
     timeframe,
     chartDimensions,
     pixelsPerElement,
-    settings,
   }) {
     // Calculate max and min of all plotted sets
     const timestamps = Utils.getAllTimestampsIn(
@@ -331,15 +329,18 @@ export default class ComputedData extends EventEmitter {
       this.sets[id].visibleMin = setMin;
       this.sets[id].visibleMax = setMax;
 
+      const layer = requestedRanges.y[indicator.layerId];
+
       // If percentage chart, calculate scale based on first plotted value
-      if (settings.scaleType === "percent") {
+      console.log(layer.scaleType);
+      if (layer.scaleType === "percent") {
         const first = Calculations.getFirstValue(this.sets[id], timestamps);
         scaleMin = ((setMin - first) / first) * 100;
         scaleMax = ((setMax - first) / first) * 100;
       }
 
       // If normalizes chart, calcualte based on 0-100 range
-      if (settings.scaleType === "normalized") {
+      if (layer.scaleType === "normalized") {
         scaleMin = 0;
         scaleMax = 100;
       }
@@ -411,6 +412,8 @@ export default class ComputedData extends EventEmitter {
       // If indicator is not visible, dont generate instrutions
       if (!indicator.visible) continue;
 
+      const { scaleType } = requestedRanges.y[indicator.layerId];
+
       // Generate main instructions for set depending on scale type
       const mainLayerGenerate = Generators.main.values[scaleType];
       instructions.main.values[id] = {
@@ -461,9 +464,6 @@ export default class ComputedData extends EventEmitter {
 
     // TODO this is a temporary implementation
     let maxDecimalPlaces = this.maxDecimalPlaces;
-    if (settings.scaleType !== "default") {
-      maxDecimalPlaces = 2;
-    }
 
     return {
       instructions,

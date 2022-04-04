@@ -48,7 +48,6 @@ export default class ChartState extends EventEmitter {
     this.settings = {
       syncRange: false,
       syncWithCrosshair: "",
-      scaleType: "default",
       ...settings,
     };
 
@@ -281,6 +280,8 @@ export default class ChartState extends EventEmitter {
       heightUnit,
       lockedYScale: true,
       visible: true,
+      fullscreen: false,
+      scaleType: "default",
       indicators: {},
       range: { min: Infinity, max: -Infinity },
     };
@@ -311,6 +312,12 @@ export default class ChartState extends EventEmitter {
     }
 
     this.$global.layout.chartDimensions[this.id].updateLayers();
+    this.setVisibleRange({});
+  }
+
+  setLayerScaleType(layerId, scaleType) {
+    this.ranges.y[layerId].scaleType = scaleType;
+    this.ranges.y[layerId].lockedYScale = true;
     this.setVisibleRange({});
   }
 
@@ -748,14 +755,6 @@ export default class ChartState extends EventEmitter {
       // If between top and bottom of layer in question
       if (yCoord >= l1.top && yCoord <= l2.top) return ids[i];
     }
-  }
-
-  setScaleType(type) {
-    this.updateSettings({
-      scaleType: type,
-      lockedYScale: true,
-    });
-    this.setInitialVisibleRange();
   }
 
   updateSettings(updates) {

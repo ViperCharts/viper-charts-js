@@ -127,18 +127,19 @@ export default {
         chartDimensions
       ) {
         const instructions = {};
+        const { top, height } = chartDimensions.main.layers[indicator.layerId];
 
         // Get min and max yCoords for multiplication later
         const minY = Utils.getYCoordByPrice(
           visibleRange.min,
           visibleRange.max,
-          chartDimensions.main.height,
+          height,
           set.visibleScaleMin
         );
         const maxY = Utils.getYCoordByPrice(
           visibleRange.min,
           visibleRange.max,
-          chartDimensions.main.height,
+          height,
           set.visibleScaleMax
         );
 
@@ -148,7 +149,14 @@ export default {
         const { data } = set;
 
         const getY = (val) =>
-          Math.floor(((val - set.visibleMin) / range) * rangeY + minY);
+          top +
+          Math.max(
+            0,
+            Math.min(
+              Math.floor(((val - set.visibleMin) / range) * rangeY + minY),
+              height
+            )
+          );
 
         // Loop through all set times and generate plot values
         for (let i = 0; i < timestamps.length; i++) {
@@ -228,18 +236,19 @@ export default {
         chartDimensions
       ) {
         const instructions = {};
+        const { top, height } = chartDimensions.main.layers[indicator.layerId];
 
         // Get min and max yCoords for multiplication later
         const minY = Utils.getYCoordByPrice(
           visibleRange.min,
           visibleRange.max,
-          chartDimensions.main.height,
+          height,
           set.visibleScaleMin
         );
         const maxY = Utils.getYCoordByPrice(
           visibleRange.min,
           visibleRange.max,
-          chartDimensions.main.height,
+          height,
           set.visibleScaleMax
         );
         const rangeY = maxY - minY;
@@ -248,7 +257,14 @@ export default {
         const { data } = set;
 
         const getY = (val) =>
-          Math.floor(((val - set.visibleMin) / range) * rangeY + minY);
+          top +
+          Math.max(
+            0,
+            Math.min(
+              Math.floor(((val - set.visibleMin) / range) * rangeY + minY),
+              height
+            )
+          );
 
         // Loop through all set times and generate plot values
         for (let i = 0; i < timestamps.length; i++) {
@@ -438,13 +454,28 @@ export default {
             let value = values.series[{ line: 0, candle: 3 }[type]];
             value = ((value - first) / first) * 100;
 
+            const { top, height } =
+              chartDimensions.main.layers[indicator.layerId];
+
             // Get the appropriate series array plot index depending on plot type
-            const y = Utils.getYCoordByPrice(
-              visibleRange.min,
-              visibleRange.max,
-              chartDimensions.yScale.height,
-              value
+            let y = Math.max(
+              0,
+              Math.min(
+                Utils.getYCoordByPrice(
+                  visibleRange.min,
+                  visibleRange.max,
+                  height,
+                  value
+                ),
+                height
+              ) - 13
             );
+
+            if (y + 20 > height) {
+              y -= y + 20 - height;
+            }
+
+            y += top;
 
             const textColor = Utils.isColorLight(values.colors.color)
               ? "#000"
@@ -455,7 +486,7 @@ export default {
             yScaleInstructions.push({
               type: "box",
               x: 0,
-              y: y - 13,
+              y: y,
               w: chartDimensions.yScale.width,
               h: 20,
               color: values.colors.color,
@@ -463,7 +494,7 @@ export default {
             yScaleInstructions.push({
               type: "text",
               x: chartDimensions.yScale.width / 2,
-              y,
+              y: y + 13,
               color: textColor,
               text: `${a}${Utils.toFixed(value, 2)}%`,
               font: "bold 10px Arial",
@@ -475,7 +506,7 @@ export default {
             mainInstructions.push({
               type: "box",
               x: chartDimensions.main.width - textWidth,
-              y: y - 13,
+              y: y,
               w: textWidth,
               h: 20,
               color: values.colors.color,
@@ -483,7 +514,7 @@ export default {
             mainInstructions.push({
               type: "text",
               x: chartDimensions.main.width - textWidth / 2,
-              y,
+              y: y + 13,
               color: textColor,
               text,
               font: "bold 10px Arial",
@@ -523,13 +554,28 @@ export default {
               2
             );
 
+            const { top, height } =
+              chartDimensions.main.layers[indicator.layerId];
+
             // Get the appropriate series array plot index depending on plot type
-            const y = Utils.getYCoordByPrice(
-              visibleRange.min,
-              visibleRange.max,
-              chartDimensions.yScale.height,
-              value
+            let y = Math.max(
+              0,
+              Math.min(
+                Utils.getYCoordByPrice(
+                  visibleRange.min,
+                  visibleRange.max,
+                  height,
+                  value
+                ),
+                height
+              ) - 13
             );
+
+            if (y + 20 > height) {
+              y -= y + 20 - height;
+            }
+
+            y += top;
 
             const textColor = Utils.isColorLight(values.colors.color)
               ? "#000"
@@ -538,7 +584,7 @@ export default {
             yScaleInstructions.push({
               type: "box",
               x: 0,
-              y: y - 13,
+              y: y,
               w: chartDimensions.yScale.width,
               h: 20,
               color: values.colors.color,
@@ -546,7 +592,7 @@ export default {
             yScaleInstructions.push({
               type: "text",
               x: chartDimensions.yScale.width / 2,
-              y,
+              y: y + 13,
               color: textColor,
               text: `${value}`,
               font: "bold 10px Arial",
@@ -558,7 +604,7 @@ export default {
             mainInstructions.push({
               type: "box",
               x: chartDimensions.main.width - textWidth,
-              y: y - 13,
+              y: y,
               w: textWidth,
               h: 20,
               color: values.colors.color,
@@ -566,7 +612,7 @@ export default {
             mainInstructions.push({
               type: "text",
               x: chartDimensions.main.width - textWidth / 2,
-              y,
+              y: y + 13,
               color: textColor,
               text,
               font: "bold 10px Arial",

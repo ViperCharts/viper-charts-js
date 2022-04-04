@@ -106,7 +106,7 @@ export default class RenderingEngine {
       }
 
       // Border left, top, right
-      const { width, height, layers } = chartDimensions.main;
+      const { width, layers } = chartDimensions.main;
       this.canvas.drawBox("#2E2E2E", [0, 0, width, 2]);
 
       // Border breakpoints / bottom

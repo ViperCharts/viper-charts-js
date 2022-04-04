@@ -105,7 +105,6 @@ class ComputedStateMessenger {
           params: {
             renderingQueueId,
             timestamps,
-            scaleType: this.chart.settings.scaleType,
             visibleRange: this.chart.range,
             timeframe: this.chart.timeframe,
             chartDimensions: {
@@ -114,7 +113,6 @@ class ComputedStateMessenger {
               xScale: chartDimensions.xScale,
             },
             pixelsPerElement: this.chart.pixelsPerElement,
-            settings: this.chart.settings,
           },
         },
       });
@@ -151,7 +149,6 @@ class ComputedStateMessenger {
             resolveId: id,
             chartId: this.chart.id,
             params: {
-              scaleType: this.chart.settings.scaleType,
               requestedRanges: this.chart.ranges,
               timeframe: this.chart.timeframe,
               chartDimensions: {
@@ -160,7 +157,6 @@ class ComputedStateMessenger {
                 xScale: chartDimensions.xScale,
               },
               pixelsPerElement: this.chart.pixelsPerElement,
-              settings: this.chart.settings,
             },
           },
         });

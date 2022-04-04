@@ -31,30 +31,32 @@ const contextMenus = {
       this.$global = props.$global;
 
       this.chartId = props.data.chartId;
+      this.layerId = props.data.layerId;
       this.chart = this.$global.charts[this.chartId];
+      this.layer = this.chart.ranges.y[this.layerId];
     }
 
     setChartScaleType(type) {
-      this.chart.setScaleType(type);
+      this.chart.setLayerScaleType(this.layerId, type);
     }
 
     render() {
       return (
         <div>
           <button onClick={() => this.setChartScaleType("default")}>
-            {this.chart.settings.scaleType === "default" ? (
+            {this.layer.scaleType === "default" ? (
               <i className="gg-check"></i>
             ) : null}
             Default
           </button>
           <button onClick={() => this.setChartScaleType("percent")}>
-            {this.chart.settings.scaleType === "percent" ? (
+            {this.layer.scaleType === "percent" ? (
               <i className="gg-check"></i>
             ) : null}
             Percent
           </button>
           <button onClick={() => this.setChartScaleType("normalized")}>
-            {this.chart.settings.scaleType === "normalized" ? (
+            {this.layer.scaleType === "normalized" ? (
               <i className="gg-check"></i>
             ) : null}
             Normalized
