@@ -221,16 +221,21 @@ export default class RenderingEngine {
         });
       }
 
+      // Check if in fullscreen
+      const { y } = this.$state.chart.ranges;
+      const found = Object.values(y).find(({ fullscreen }) => fullscreen);
+      const borderColor = found ? "#0a6102" : "#2E2E2E";
+
       // Border left, top, right
       const { width, height, layers } = chartDimensions.main;
-      this.canvas.drawBox("#2E2E2E", [0, 0, 2, height]);
-      this.canvas.drawBox("#2E2E2E", [0, 0, width, 2]);
-      this.canvas.drawBox("#2E2E2E", [width - 2, 0, 2, height]);
+      this.canvas.drawBox(borderColor, [0, 0, 2, height]);
+      this.canvas.drawBox(borderColor, [0, 0, width, 2]);
+      this.canvas.drawBox(borderColor, [width - 2, 0, 2, height]);
 
       // Border breakpoints / bottom
       for (const layerId in layers) {
         const { top, height } = layers[layerId];
-        this.canvas.drawBox("#2E2E2E", [0, top + height - 2, width, 4]);
+        this.canvas.drawBox(borderColor, [0, top + height - 2, width, 4]);
       }
     }
   }

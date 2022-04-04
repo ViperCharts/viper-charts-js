@@ -114,7 +114,6 @@ export default class SettingsState extends EventEmitter {
       for (const id in ranges.y) {
         ranges.y[id].indicators = {};
       }
-      console.log(ranges);
       chart.ranges = ranges;
     }
     if (timeframe) chart.timeframe = timeframe;

@@ -294,6 +294,26 @@ export default class ChartState extends EventEmitter {
     return id;
   }
 
+  /**
+   * Toggle layer fullscreen
+   * @param {string} layerId
+   */
+  toggleLayerFullScreen(layerId) {
+    const layer = this.ranges.y[layerId];
+    layer.fullscreen = !layer.fullscreen;
+    console.log(layerId);
+
+    // Disable fullscreen on all other charts if fullscreen is true
+    if (layer.fullscreen) {
+      for (const id in this.ranges.y) {
+        if (id !== layerId) this.ranges.y[id].fullscreen = false;
+      }
+    }
+
+    this.$global.layout.chartDimensions[this.id].updateLayers();
+    this.setVisibleRange({});
+  }
+
   removeLayer(layerId) {
     const keys = Object.keys(this.ranges.y);
     // If this is the last layer, don't delete it
@@ -716,7 +736,7 @@ export default class ChartState extends EventEmitter {
 
   getLayerByYCoord(yCoord) {
     const { layers } = this.$global.layout.chartDimensions[this.id].main;
-    const ids = Object.keys(layers);
+    const ids = Object.keys(layers).filter((id) => layers[id].height > 0);
 
     for (let i = 0; i < ids.length; i++) {
       const l1 = layers[ids[i]];

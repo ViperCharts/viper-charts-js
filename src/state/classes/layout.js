@@ -48,24 +48,34 @@ class ChartDimension {
 
     let top = 0;
     let total = 0;
+    let fullscreenId = "";
+    const layers = {};
 
     for (const id of ids) {
       const layer = y[id];
+      layers[id] = { top: 0, height: 0 };
+
+      if (layer.fullscreen) {
+        fullscreenId = id;
+      }
       if (layer.visible) {
         total += layer.heightUnit;
       }
     }
 
-    const layers = {};
-    for (const id of ids) {
-      const layer = y[id];
+    if (!fullscreenId.length) {
+      for (const id of ids) {
+        const layer = y[id];
 
-      const height = layer.visible
-        ? this.main.height * (layer.heightUnit / total)
-        : 0;
-      layers[id] = { top, height };
+        layers[id].top = top;
+        layers[id].height = layer.visible
+          ? this.main.height * (layer.heightUnit / total)
+          : 0;
 
-      top += height;
+        top += layers[id].height;
+      }
+    } else {
+      layers[fullscreenId].height = this.main.height;
     }
 
     this.main.layers = layers;

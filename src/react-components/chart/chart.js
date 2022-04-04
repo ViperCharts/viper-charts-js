@@ -89,7 +89,10 @@ export default class Chart extends React.Component {
   }
 
   onDoubleClick({ clientY }, chart) {
-    if (chart === "yScale") {
+    if (chart === "main") {
+      const layerId = this.chart.getLayerByYCoord(clientY);
+      this.chart.toggleLayerFullScreen(layerId);
+    } else if (chart === "yScale") {
       const layerId = this.chart.getLayerByYCoord(clientY);
       const layer = this.chart.ranges.y[layerId];
 
@@ -122,7 +125,11 @@ export default class Chart extends React.Component {
           </div>
         </div>
         <div className="chart-chart">
-          <canvas className="chart-main" ref={this.subcharts.main}></canvas>
+          <canvas
+            onDoubleClick={(e) => this.onDoubleClick(e, "main")}
+            className="chart-main"
+            ref={this.subcharts.main}
+          ></canvas>
           <canvas
             onDoubleClick={(e) => this.onDoubleClick(e, "xScale")}
             className="chart-x-axis"
