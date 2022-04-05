@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import Canvas from "../canvas.js";
 import Crosshair from "./crosshair.js";
 import LastPriceLine from "./last_price_line.js";
@@ -12,8 +14,13 @@ export default class Main {
     this.mousemoveListener = null;
     this.mouseleaveListener = null;
 
-    // Layer being updated on visible range change
     this.layerToMove = -1;
+    this.change = { x: 0, y: 0 };
+
+    this.debounceSetVisibleRange = _.throttle(
+      this.calculateNewVisibleRange.bind(this),
+      16
+    );
   }
 
   init() {
@@ -164,32 +171,39 @@ export default class Main {
       return;
     }
 
-    const { id } = this.$state.chart;
-    const { layers } = this.$state.global.layout.chartDimensions[id].main;
-
     if (this.layerToMove === -1) {
       const layerId = this.$state.chart.getLayerByYCoord(layerY);
       this.layerToMove = layerId;
     }
 
+    this.change.x += movementX;
+    this.change.y += movementY;
+
+    this.debounceSetVisibleRange();
+  }
+
+  calculateNewVisibleRange() {
+    const { x, y } = this.change;
+    this.change = { x: 0, y: 0 };
+
+    const { id } = this.$state.chart;
+    const { layers } = this.$state.global.layout.chartDimensions[id].main;
+
     let { start, end } = this.$state.chart.ranges.x;
     let { min, max } = this.$state.chart.ranges.y[this.layerToMove].range;
 
     // Get how many candles moved
-    const candlesMoved = movementX / this.$state.chart.pixelsPerElement;
+    const candlesMoved = x / this.$state.chart.pixelsPerElement;
     const timeMoved = this.$state.chart.timeframe * candlesMoved;
 
     start -= timeMoved;
     end -= timeMoved;
 
-    if (!this.$state.chart.settings.lockedYScale && movementY !== 0) {
-      const yInView = max - min;
-      // Pixels per tick
-      const ppt = yInView / layers[this.layerToMove].height;
-      const y = movementY;
-      const movement = y * ppt;
-      min += movement;
-      max += movement;
+    if (!this.$state.chart.ranges.y[this.layerToMove].lockedYScale) {
+      const pixelsPerTick = layers[this.layerToMove].height / (max - min);
+      const priceMoved = y / pixelsPerTick;
+      min += priceMoved;
+      max += priceMoved;
     }
 
     this.$state.chart.setVisibleRange(

@@ -177,12 +177,10 @@ export default class ChartState extends EventEmitter {
   }
 
   updateDatasetGroup(datasetGroupId, newDatasets) {
-    console.log(this.datasets, this.datasetGroups[datasetGroupId]);
     const group = this.datasetGroups[datasetGroupId];
 
     const oldId = `${group.datasets[0].source}:${group.datasets[0].name}`;
     const oldDataset = this.datasets[oldId];
-    console.log(oldId, this.datasets);
 
     const newDataset = this.$global.data.addOrGetDataset({
       source: newDatasets[0].source,
@@ -347,7 +345,6 @@ export default class ChartState extends EventEmitter {
   toggleLayerFullScreen(layerId) {
     const layer = this.ranges.y[layerId];
     layer.fullscreen = !layer.fullscreen;
-    console.log(layerId);
 
     // Disable fullscreen on all other charts if fullscreen is true
     if (layer.fullscreen) {
@@ -603,8 +600,7 @@ export default class ChartState extends EventEmitter {
     } = newRange;
 
     this.ranges.x = { start, end };
-    this.ranges.y[layerId].range.min = min;
-    this.ranges.y[layerId].range.max = max;
+    this.ranges.y[layerId].range = { min, max };
 
     // If this chart is in synced mode and other charts are also in sync mode,
     // set their scales to ours
