@@ -10,6 +10,7 @@ class Dataset extends EventEmitter {
     this.name = name;
     this.timeframe = timeframe;
     this.data = data;
+    this.pendingRequests = {};
     this.subscribers = {};
     this.dependencies = new Set();
   }
@@ -82,7 +83,12 @@ class Dataset extends EventEmitter {
     subscribers[renderingQueueId] = dependencies;
 
     // Add to cached dependencies set
-    dependencies.forEach((d) => this.dependencies.add(d));
+    dependencies.forEach((d) => {
+      this.dependencies.add(d);
+      this.pendingRequests[d] = 0;
+    });
+
+    this.fireEvent("pending-requests", this.pendingRequests);
 
     this.subscribers[chartId] = subscribers;
   }
@@ -124,11 +130,15 @@ class Dataset extends EventEmitter {
     // Check if a dependency was removed, if so remove from data store
     for (const old of oldDependencies) {
       if (!this.dependencies.has(old)) {
+        delete this.pendingRequests[old];
+
         for (const time in this.data) {
           delete this.data[time][old];
         }
       }
     }
+
+    this.fireEvent("pending-requests", this.pendingRequests);
 
     return this.subscribers[chartId] || {};
   }
@@ -254,6 +264,8 @@ export default class DataState extends EventEmitter {
       for (; i > 0; i--) {
         const leftBound = i <= 1 ? start : end - timeframe * 300;
 
+        dataModels.forEach((m) => dataset.pendingRequests[m]++);
+
         requests.push({
           id,
           source,
@@ -266,6 +278,8 @@ export default class DataState extends EventEmitter {
 
         end -= timeframe * 300;
       }
+
+      dataset.fireEvent("pending-requests", dataset.pendingRequests);
     }
 
     // Sort by latest timestamps
@@ -277,8 +291,12 @@ export default class DataState extends EventEmitter {
       // If dataset was deleted since request was fired
       if (!dataset) return;
 
+      dataset.pendingRequests[model]--;
+
       // Update data
       dataset.updateDataset.bind(dataset)(updates, model);
+
+      dataset.fireEvent("pending-requests", dataset.pendingRequests);
     };
 
     this.$global.api.onRequestHistoricalData({

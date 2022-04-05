@@ -27,6 +27,12 @@
   font-size: 10px;
 }
 
+.indicator-loading {
+  color: rgb(126, 126, 126);
+  font-size: 8px;
+  padding: 0px 4px;
+}
+
 .indicator-controls {
   display: flex;
   align-items: center;

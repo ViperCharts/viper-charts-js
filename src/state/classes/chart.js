@@ -381,6 +381,8 @@ export default class ChartState extends EventEmitter {
   }
 
   setTimeframe(timeframe, movedId = this.id) {
+    if (timeframe === this.timeframe) return;
+
     const oldDatasets = {};
 
     // Copy all datasets so we can reset master in preperation for setting new visible range
@@ -392,7 +394,6 @@ export default class ChartState extends EventEmitter {
     // We can reset to initial default range
     this.datasets = {};
     this.timeframe = timeframe;
-    this.fireEvent("set-timeframe", timeframe);
 
     // Clear all computed indicator results
     this.computedState.emptyAllSets();
@@ -445,6 +446,8 @@ export default class ChartState extends EventEmitter {
     }
 
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, { timeframe });
+
+    this.fireEvent("set-timeframe", timeframe);
   }
 
   /**

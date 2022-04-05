@@ -30,7 +30,7 @@ export default class Indicator extends React.Component {
   }
 
   render() {
-    const { indicator } = this.props;
+    const { indicator, pendingRequests } = this.props;
     const v = indicator.visible;
 
     const mo = this.state.isMouseOver;
@@ -49,6 +49,9 @@ export default class Indicator extends React.Component {
       >
         <span className="indicator-model">{indicator.model.name}</span>
         <span className="indicator-name">{indicator.name}</span>
+        {pendingRequests > 0 ? (
+          <div className="indicator-loading">Loading...</div>
+        ) : null}
 
         <div
           className="indicator-controls"
