@@ -1,6 +1,7 @@
 import Constants from "../constants";
 import Utils from "../utils.js";
 import Calculations from "./calculations.js";
+import Helpers from "./helpers.js";
 
 import Decimal from "decimal.js";
 
@@ -366,7 +367,7 @@ export default {
             let y = Math.max(
               0,
               Math.min(
-                Utils.getYCoordByPrice( 
+                Utils.getYCoordByPrice(
                   visibleRange.min,
                   visibleRange.max,
                   height,
@@ -627,7 +628,7 @@ export default {
       },
     },
 
-    scales(yRanges, chartDimensions) {
+    scales(yRanges, chartDimensions, requestedRanges) {
       const scales = {};
 
       for (const id in yRanges) {
@@ -661,6 +662,8 @@ export default {
           Utils.getYCoordByPrice(yRanges[id].min, yRanges[id].max, height, v);
 
         scales[id] = [];
+        const layer = requestedRanges[id];
+
         for (let i = 0; i < (max - min) / interval; i++) {
           const value = interval.times(i).add(min).toNumber();
           if (value < yRanges[id].min || value > yRanges[id].max) continue;
@@ -669,7 +672,7 @@ export default {
             x: chartDimensions.yScale.width / 2,
             y: top + getY(value),
             color: "#A7A8B3",
-            text: `${value}`,
+            text: Helpers.yScale.scales.scaleText(value, layer.scaleType),
           });
         }
       }

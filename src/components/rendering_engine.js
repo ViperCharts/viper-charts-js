@@ -1,5 +1,6 @@
 import instructions from "../models/instructions.js";
 import Utils from "../utils.js";
+import Helpers from "../workers/helpers.js";
 import Canvas from "./canvas.js";
 
 /**
@@ -88,7 +89,9 @@ export default class RenderingEngine {
       maxWidth = Math.max((maxWidth += 10), 50);
 
       // Check if maxWidth is not equal to current width of yScale
-      if (maxWidth !== chartDimensions.yScale.width) {
+      const newScale = Math.floor(maxWidth / 5);
+      const existingScale = Math.floor(chartDimensions.yScale.width / 5);
+      if (newScale !== existingScale) {
         chartDimensions.setYScaleWidth(maxWidth);
         this.$state.chart.setVisibleRange({});
       }
@@ -101,8 +104,12 @@ export default class RenderingEngine {
       if (this.$state.global.crosshair.visible) {
         const { width } = chartDimensions.yScale;
 
+        const layerId = this.$state.chart.getLayerByYCoord(y);
+        const { scaleType } = this.$state.chart.ranges.y[layerId];
+        const text = Helpers.yScale.scales.scaleText(p, scaleType);
+
         this.canvas.drawBox("#424242", [0, y - 10, width, 20]);
-        this.canvas.drawText("#fff", [width / 2, y + 3], p);
+        this.canvas.drawText("#fff", [width / 2, y + 3], text);
       }
 
       // Border left, top, right

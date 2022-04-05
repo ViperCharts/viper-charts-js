@@ -459,7 +459,8 @@ export default class ComputedData extends EventEmitter {
     // Calculate x and y scales
     instructions.yScale.scales = Generators.yScale.scales(
       visibleRanges.y,
-      chartDimensions
+      chartDimensions,
+      requestedRanges.y
     );
     instructions.xScale.scales = Generators.xScale.scales(
       pixelsPerElement,
