@@ -3,6 +3,7 @@ import React from "react";
 import AddDataModal from "./modals/add-data/add-data";
 import IndicatorsModal from "./modals/indicators/indicators-modal";
 import DatasetGroupModal from "./modals/dataset-group/dataset-group";
+import ChangeDatasetModal from "./modals/dataset-group/change-dataset";
 
 import "./modal.css";
 
@@ -55,5 +56,7 @@ function getModal(id) {
       return AddDataModal;
     case "dataset-group":
       return DatasetGroupModal;
+    case "change-dataset":
+      return ChangeDatasetModal;
   }
 }

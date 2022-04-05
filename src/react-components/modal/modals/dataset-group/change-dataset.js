@@ -5,31 +5,30 @@ import Sources from "./sources/sources";
 import "./dataset-group.css";
 
 export default {
-  title: "Add Dataset",
+  title: "Change Dataset",
   width: 100,
   height: 100,
   component: class DatasetGroupModal extends React.Component {
     constructor(props) {
       super(props);
 
+      this.datasetGroupId = props.data.datasetGroupId;
       this.$global = props.$global;
     }
 
-    addDatsetGroup(dataset) {
+    changeDataset(dataset) {
       const chart = this.$global.charts[this.$global.selectedChartId];
-      const { id } = chart.createDatasetGroup([dataset], {
-        visible: true,
-      });
+      chart.updateDatasetGroup(this.datasetGroupId, [dataset]);
 
-      // Redirect modal to add indicators
-      this.$global.ui.app.setModal("indicators", { datasetGroupId: id });
+      // Close the modal
+      this.$global.ui.app.setModal("");
     }
 
     render() {
       return (
         <Sources
           $global={this.$global}
-          onClickSource={this.addDatsetGroup.bind(this)}
+          onClickSource={this.changeDataset.bind(this)}
         />
       );
     }

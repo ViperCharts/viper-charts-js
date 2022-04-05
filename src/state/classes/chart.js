@@ -176,6 +176,51 @@ export default class ChartState extends EventEmitter {
     return this.datasetGroups[id];
   }
 
+  updateDatasetGroup(datasetGroupId, newDatasets) {
+    console.log(this.datasets, this.datasetGroups[datasetGroupId]);
+    const group = this.datasetGroups[datasetGroupId];
+
+    const oldId = `${group.datasets[0].source}:${group.datasets[0].name}`;
+    const oldDataset = this.datasets[oldId];
+    console.log(oldId, this.datasets);
+
+    const newDataset = this.$global.data.addOrGetDataset({
+      source: newDatasets[0].source,
+      name: newDatasets[0].name,
+      timeframe: this.timeframe,
+    });
+    const newId = newDataset.getTimeframeAgnosticId();
+
+    let subscribers = [];
+    const indicatorUpdates = {};
+
+    // Update array on dataset group
+    for (const id in group.indicators) {
+      subscribers = oldDataset.removeSubscriber(this.id, id);
+      const indicator = group.indicators[id];
+      indicator.datasetId = newId;
+      indicatorUpdates[id] = { datasetId: newId };
+      newDataset.addSubscriber(this.id, id, [indicator.model.id]);
+    }
+
+    // If no more indicators on chart consuming this dataset, delete from memory
+    if (!Object.keys(subscribers).length) {
+      delete this.datasets[oldId];
+    }
+
+    this.datasets[newId] = newDataset;
+    group.datasets = newDatasets;
+
+    this.computedState.updateIndicators(indicatorUpdates);
+
+    // Update chart UI
+    this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
+    this.$global.settings.onChartDatasetGroupsChange(
+      this.id,
+      this.datasetGroups
+    );
+  }
+
   /**
    * Add an indicator to this chart by id or by object
    * @param {string|indicator} indicator The indicator to add
@@ -577,7 +622,7 @@ export default class ChartState extends EventEmitter {
         // Calculate pixels per element relative to chart layout. This is because
         // different charts can have different viewpoints
         chart.setPixelsPerElement(this.pixelsPerElement * diff);
-        chart.setVisibleRange({ start, end }, 0, movedId);
+        chart.setVisibleRange({ start, end }, undefined, movedId);
       }
     }
 

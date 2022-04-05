@@ -76,7 +76,15 @@ const contextMenus = {
 
       return (
         <div>
-          <button>Change Dataset</button>
+          <button
+            onClick={() => {
+              this.props.$global.ui.app.setModal("change-dataset", {
+                datasetGroupId,
+              });
+            }}
+          >
+            Change Dataset
+          </button>
           <button
             onClick={() => {
               this.props.$global.ui.app.setModal("indicators", {

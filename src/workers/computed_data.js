@@ -250,6 +250,15 @@ export default class ComputedData extends EventEmitter {
     }
   }
 
+  updateIndicators({ updates = {} }) {
+    for (const id in updates) {
+      const indicator = this.queue.get(id);
+      for (const prop in updates[id]) {
+        indicator[prop] = updates[id][prop];
+      }
+    }
+  }
+
   emptySet({ renderingQueueId }) {
     // Delete set info
     delete this.sets[renderingQueueId];
@@ -332,7 +341,6 @@ export default class ComputedData extends EventEmitter {
       const layer = requestedRanges.y[indicator.layerId];
 
       // If percentage chart, calculate scale based on first plotted value
-      console.log(layer.scaleType);
       if (layer.scaleType === "percent") {
         const first = Calculations.getFirstValue(this.sets[id], timestamps);
         scaleMin = ((setMin - first) / first) * 100;

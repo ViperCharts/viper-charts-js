@@ -366,7 +366,7 @@ export default {
             let y = Math.max(
               0,
               Math.min(
-                Utils.getYCoordByPrice(
+                Utils.getYCoordByPrice( 
                   visibleRange.min,
                   visibleRange.max,
                   height,

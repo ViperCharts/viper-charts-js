@@ -177,6 +177,17 @@ class ComputedStateMessenger {
     }
   }
 
+  updateIndicators(updates) {
+    this.worker.postMessage({
+      type: "runComputedStateMethod",
+      data: {
+        method: "updateIndicators",
+        chartId: this.chart.id,
+        params: { updates },
+      },
+    });
+  }
+
   emptyAllSets() {
     this.worker.postMessage({
       type: "runComputedStateMethod",
