@@ -199,6 +199,7 @@ export default class ChartState extends EventEmitter {
       indicator.datasetId = newId;
       indicatorUpdates[id] = { datasetId: newId };
       newDataset.addSubscriber(this.id, id, [indicator.model.id]);
+      this.computedState.emptySet({ renderingQueueId: id });
     }
 
     // If no more indicators on chart consuming this dataset, delete from memory

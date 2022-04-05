@@ -60,7 +60,7 @@ export default class Indicator extends React.Component {
               height="24px"
               width="24px"
               viewBox="0 0 100 100"
-              enable-background="new 0 0 0 0"
+              enableBackground="new 0 0 0 0"
             >
               <circle fill="#fff" stroke="none" cx="6" cy="50" r="6">
                 <animate

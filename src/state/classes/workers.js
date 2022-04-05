@@ -188,6 +188,17 @@ class ComputedStateMessenger {
     });
   }
 
+  emptySet({ renderingQueueId }) {
+    this.worker.postMessage({
+      type: "runComputedStateMethod",
+      data: {
+        method: "emptySet",
+        chartId: this.chart.id,
+        params: { renderingQueueId },
+      },
+    });
+  }
+
   emptyAllSets() {
     this.worker.postMessage({
       type: "runComputedStateMethod",
