@@ -118,7 +118,7 @@ export default class Main {
    */
   onScroll(e) {
     e.preventDefault();
-    const { deltaX, deltaY, offsetX, offsetY } = e;
+    let { deltaX, deltaY, offsetX, offsetY } = e;
 
     const { id: chartId } = this.$state.chart;
     const { main } = this.$state.global.layout.chartDimensions[chartId];
@@ -157,6 +157,10 @@ export default class Main {
         const topP = (offsetY - top) / height;
         const bottomP = 1 - topP;
         const range = max - min;
+
+        if (this.$state.global.events.keys.Shift) {
+          deltaY = -deltaY;
+        }
 
         if (deltaY < 0) {
           max -= (range * topP) / 10;

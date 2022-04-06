@@ -8,7 +8,7 @@ export default class EventsState extends EventEmitter {
     this.$global = $global;
 
     this.keys = {};
-
+    this.mousedown = false;
     this.keyBinds = {};
   }
 
@@ -43,6 +43,7 @@ export default class EventsState extends EventEmitter {
   }
 
   onMouseDown(e) {
+    this.mousedown = true;
     this.fireEvent("mousedown", e);
     const { app } = this.$global.ui;
 
@@ -53,6 +54,7 @@ export default class EventsState extends EventEmitter {
   }
 
   onMouseUp(e) {
+    this.mousedown = false;
     this.fireEvent("mouseup", e);
   }
 
@@ -67,15 +69,12 @@ export default class EventsState extends EventEmitter {
   }
 
   onKeyDown({ key }) {
-    console.log(`@${key} down`);
-
     this.keys[key] = true;
   }
 
   onKeyUp(e) {
     const { code, key } = e;
 
-    console.log(`@${key} up`);
     this.keys[key] = false;
 
     if (code === "Delete") {

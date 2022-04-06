@@ -155,7 +155,9 @@ export default class RenderingEngine {
 
     if (this.type === "main") {
       // Cursor
-      if (this.$state.global.events.keys.Control) {
+      if (this.$state.global.events.mousedown) {
+        this.canvas.setCursor("grabbing");
+      } else if (this.$state.global.events.keys.Control) {
         this.canvas.setCursor("zoom-in");
       } else if (this.$state.global.events.keys.Shift) {
         this.canvas.setCursor("ns-resize");
