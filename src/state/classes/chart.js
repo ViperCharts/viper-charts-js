@@ -368,6 +368,15 @@ export default class ChartState extends EventEmitter {
     const keys = Object.keys(this.ranges.y);
     // If this is the last layer, don't delete it
     if (keys.length === 1) return;
+
+    // If any indicators on layer, delete them
+    for (const id in this.ranges.y[layerId].indicators) {
+      const group = Object.values(this.datasetGroups).find(
+        ({ indicators }) => !!indicators[id]
+      );
+      this.removeIndicator(group.id, id);
+    }
+
     delete this.ranges.y[layerId];
     keys.splice(keys.indexOf(layerId), 1);
     if (keys.length === 1) this.ranges.y[keys[0]].heightUnit = 10;

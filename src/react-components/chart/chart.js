@@ -6,8 +6,6 @@ import ChartInfo from "./chart-info/chart-info";
 
 import "./chart.css";
 
-import Constants from "../../constants";
-
 export default class Chart extends React.Component {
   constructor(props) {
     super(props);
@@ -124,6 +122,13 @@ export default class Chart extends React.Component {
     }
   }
 
+  onMainChartContextMenu(e) {
+    this.$global.ui.app.setContextMenu(e, "main", {
+      chartId: this.state.id,
+      layerId: this.chart.getLayerByYCoord(e.clientY),
+    });
+  }
+
   onYScaleContextMenu(e) {
     this.$global.ui.app.setContextMenu(e, "yScale", {
       chartId: this.state.id,
@@ -157,6 +162,7 @@ export default class Chart extends React.Component {
           <canvas
             onDoubleClick={(e) => this.onDoubleClick(e, "main")}
             className="chart-main"
+            onContextMenuCapture={this.onMainChartContextMenu.bind(this)}
             ref={this.subcharts.main}
           ></canvas>
           <canvas
