@@ -141,36 +141,48 @@ export default class Main {
 
     // If vertical scroll
     else if (deltaY !== 0) {
-      const change = -(deltaY > 0 ? -deltaY * -50 : deltaY * 50);
+      const layerId = this.$state.chart.getLayerByYCoord(offsetY);
+      const layer = this.$state.chart.ranges.y[layerId];
+      let { start, end } = this.$state.chart.ranges.x;
+      let { min, max } = layer.range;
 
-      // If
-      if (this.$state.global.events.keys.Control) {
-        const layerId = this.$state.chart.getLayerByYCoord(offsetY);
-        const layer = this.$state.chart.ranges.y[layerId];
+      // If zoom on Y axis
+      if (
+        this.$state.global.events.keys.Control ||
+        this.$state.global.events.keys.Shift
+      ) {
         layer.lockedYScale = false;
-
         const { top, height } = main.layers[layerId];
 
-        let { min, max } = layer.range;
         const topP = (offsetY - top) / height;
         const bottomP = 1 - topP;
         const range = max - min;
 
-        console.log(change);
-        if (change > 0) {
+        if (deltaY < 0) {
           max -= (range * topP) / 10;
           min += (range * bottomP) / 10;
-        } else if (change < 0) {
+        } else {
           max += (range * topP) / 10;
           min -= (range * bottomP) / 10;
         }
-
-        layer.range = { min, max };
       }
 
-      const leftP = offsetX / width;
-      const rightP = 1 - leftP;
-      this.$state.chart.resizeXRange(change, leftP, rightP);
+      if (!this.$state.global.events.keys.Shift) {
+        const leftP = offsetX / width;
+        const rightP = 1 - leftP;
+
+        const range = end - start;
+
+        if (deltaY > 0) {
+          start -= (range * leftP) / 10;
+          end += (range * rightP) / 10;
+        } else {
+          start += (range * leftP) / 10;
+          end -= (range * rightP) / 10;
+        }
+      }
+
+      this.$state.chart.setVisibleRange({ start, end, min, max }, layerId);
     }
   }
 

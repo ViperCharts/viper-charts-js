@@ -2,8 +2,11 @@ import React from "react";
 
 import DatasetGroup from "./dataset-group/dataset-group";
 import ChartSettings from "./chart-settings/chart-settings";
+import ChartInfo from "./chart-info/chart-info";
 
 import "./chart.css";
+
+import Constants from "../../constants";
 
 export default class Chart extends React.Component {
   constructor(props) {
@@ -15,9 +18,14 @@ export default class Chart extends React.Component {
 
     this.chart = this.$global.charts[this.props.id];
 
+    const defaultName = `Untitled Chart ${
+      Object.keys(this.$global.charts).indexOf(this.chart.id) + 1
+    }`;
+
     this.state = {
       id: this.props.id,
-      name: this.chart.name,
+      name: this.chart.name || defaultName,
+      timeframe: this.chart.timeframe,
       datasetGroups: this.chart.datasetGroups,
 
       isFocused: this.$global.selectedChartId === this.props.id,
@@ -42,6 +50,13 @@ export default class Chart extends React.Component {
     this.$global.addEventListener(
       "set-selected-chart-id",
       this.setSelectedChartListener
+    );
+
+    this.setChartTimeframeListener = ((timeframe) =>
+      this.setState({ timeframe })).bind(this);
+    this.chart.addEventListener(
+      "set-timeframe",
+      this.setChartTimeframeListener
     );
 
     this.setChartNameListener = ((name) => this.setState({ name })).bind(this);
@@ -73,6 +88,10 @@ export default class Chart extends React.Component {
       this.setSelectedChartListener
     );
     this.chart.removeEventListener("set-name", this.setChartNameListener);
+    this.chart.removeEventListener(
+      "set-timeframe",
+      this.setChartTimeframeListener
+    );
   }
 
   updateDatasetGroups(datasetGroups) {
@@ -123,7 +142,10 @@ export default class Chart extends React.Component {
         <div className="overlay-padding">
           <div className="overlay">
             <div className="top-left">
-              <div className="chart-name">{this.state.name}</div>
+              <ChartInfo
+                name={this.state.name}
+                timeframe={this.state.timeframe}
+              />
               <div className="indicator-list">{this.renderDatasetGroups()}</div>
             </div>
             <div className="top-right">

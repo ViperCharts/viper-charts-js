@@ -65,6 +65,16 @@ const TIMEFRAMES = {
   y: YEAR,
 };
 
+function getTimeframeText(timeframe) {
+  const keys = Object.keys(TIMEFRAMES);
+  for (let i = 0; i < keys.length; i++) {
+    if (timeframe / TIMEFRAMES[keys[i]] < 1) {
+      const key = keys[i - 1];
+      return `${timeframe / TIMEFRAMES[key]}${key}`;
+    }
+  }
+}
+
 export default {
   MILLISECOND,
   MILLISECOND100,
@@ -81,4 +91,5 @@ export default {
   YEAR,
   TIMESCALES,
   TIMEFRAMES,
+  getTimeframeText,
 };

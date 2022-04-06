@@ -154,6 +154,15 @@ export default class RenderingEngine {
     }
 
     if (this.type === "main") {
+      // Cursor
+      if (this.$state.global.events.keys.Control) {
+        this.canvas.setCursor("zoom-in");
+      } else if (this.$state.global.events.keys.Shift) {
+        this.canvas.setCursor("ns-resize");
+      } else if (this.canvas.cursor !== "crosshair") {
+        this.canvas.setCursor("crosshair");
+      }
+
       // Draw background
       this.canvas.drawBox("#080019", [
         0,

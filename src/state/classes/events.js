@@ -1,4 +1,5 @@
 import EventEmitter from "../../events/event_emitter";
+import utils from "../../utils";
 
 export default class EventsState extends EventEmitter {
   constructor({ $global }) {
@@ -7,6 +8,8 @@ export default class EventsState extends EventEmitter {
     this.$global = $global;
 
     this.keys = {};
+
+    this.keyBinds = {};
   }
 
   init() {
@@ -57,13 +60,22 @@ export default class EventsState extends EventEmitter {
     this.fireEvent("mousemove", e);
   }
 
+  addKeyBind(keys, callback) {
+    const id = utils.uniqueId();
+    this.keyBinds[id] = { keys, callback };
+    return id;
+  }
+
   onKeyDown({ key }) {
+    console.log(`@${key} down`);
+
     this.keys[key] = true;
   }
 
   onKeyUp(e) {
     const { code, key } = e;
 
+    console.log(`@${key} up`);
     this.keys[key] = false;
 
     if (code === "Delete") {

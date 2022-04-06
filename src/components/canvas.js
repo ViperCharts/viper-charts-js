@@ -37,6 +37,11 @@ export default class Canvas {
     );
   }
 
+  setCursor(cursor = "") {
+    this.cursor = cursor;
+    this.canvas.style.cursor = cursor;
+  }
+
   setCanvasElement(canvas) {
     this.ctx = canvas.getContext("2d");
 
