@@ -118,10 +118,11 @@ export default class Main {
    */
   onScroll(e) {
     e.preventDefault();
-    const { deltaX, deltaY, offsetX } = e;
+    const { deltaX, deltaY, offsetX, offsetY } = e;
 
-    const { width } =
-      this.$state.global.layout.chartDimensions[this.$state.chart.id].main;
+    const { id: chartId } = this.$state.chart;
+    const { main } = this.$state.global.layout.chartDimensions[chartId];
+    const { width } = main;
 
     // If horizontal scroll, move range
     if (deltaX !== 0) {
@@ -140,10 +141,35 @@ export default class Main {
 
     // If vertical scroll
     else if (deltaY !== 0) {
+      const change = -(deltaY > 0 ? -deltaY * -50 : deltaY * 50);
+
+      // If
+      if (this.$state.global.events.keys.Control) {
+        const layerId = this.$state.chart.getLayerByYCoord(offsetY);
+        const layer = this.$state.chart.ranges.y[layerId];
+        layer.lockedYScale = false;
+
+        const { top, height } = main.layers[layerId];
+
+        let { min, max } = layer.range;
+        const topP = (offsetY - top) / height;
+        const bottomP = 1 - topP;
+        const range = max - min;
+
+        console.log(change);
+        if (change > 0) {
+          max -= (range * topP) / 10;
+          min += (range * bottomP) / 10;
+        } else if (change < 0) {
+          max += (range * topP) / 10;
+          min -= (range * bottomP) / 10;
+        }
+
+        layer.range = { min, max };
+      }
+
       const leftP = offsetX / width;
       const rightP = 1 - leftP;
-      const d = deltaY;
-      const change = -(d > 0 ? -d * -50 : d * 50);
       this.$state.chart.resizeXRange(change, leftP, rightP);
     }
   }

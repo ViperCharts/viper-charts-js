@@ -5,6 +5,8 @@ export default class EventsState extends EventEmitter {
     super();
 
     this.$global = $global;
+
+    this.keys = {};
   }
 
   init() {
@@ -14,6 +16,8 @@ export default class EventsState extends EventEmitter {
     window.addEventListener("mouseup", this.mouseUpListener);
     this.mouseMoveListener = this.onMouseMove.bind(this);
     window.addEventListener("mousemove", this.mouseMoveListener);
+    this.keyDownListener = this.onKeyDown.bind(this);
+    window.addEventListener("keydown", this.keyDownListener);
     this.keyUpListener = this.onKeyUp.bind(this);
     window.addEventListener("keyup", this.keyUpListener);
     this.contextMenuListener = this.onContextMenu.bind(this);
@@ -27,6 +31,7 @@ export default class EventsState extends EventEmitter {
     window.removeEventListener("mousedown", this.mouseDownListener);
     window.removeEventListener("mouseup", this.mouseUpListener);
     window.removeEventListener("mousemove", this.mouseMoveListener);
+    window.removeEventListener("keydown", this.keyDownListener);
     window.removeEventListener("keyup", this.keyUpListener);
     this.$global.api.element.removeEventListener(
       "contextmenu",
@@ -52,10 +57,15 @@ export default class EventsState extends EventEmitter {
     this.fireEvent("mousemove", e);
   }
 
-  onKeyUp(e) {
-    const { code } = e;
+  onKeyDown({ key }) {
+    this.keys[key] = true;
+  }
 
-    // if (code === "Delete" || code === "Backspace") {
+  onKeyUp(e) {
+    const { code, key } = e;
+
+    this.keys[key] = false;
+
     if (code === "Delete") {
       this.$global.deleteSelectedChart();
     }
