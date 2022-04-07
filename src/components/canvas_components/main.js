@@ -232,7 +232,9 @@ export default class Main {
     const { layers } = this.$state.global.layout.chartDimensions[id].main;
 
     let { start, end } = this.$state.chart.ranges.x;
-    let { min, max } = this.$state.chart.ranges.y[this.layerToMove].range;
+    const layer = this.$state.chart.ranges.y[this.layerToMove];
+    if (!layer) return;
+    let { min, max } = layer.range;
 
     // Get how many candles moved
     const candlesMoved = x / this.$state.chart.pixelsPerElement;

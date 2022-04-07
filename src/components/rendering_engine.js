@@ -105,8 +105,9 @@ export default class RenderingEngine {
         const { width } = chartDimensions.yScale;
 
         for (const id in y) {
-          const { scaleType } = this.$state.chart.ranges.y[id];
-          const text = Helpers.yScale.scales.scaleText(p, scaleType);
+          const layer = this.$state.chart.ranges.y[id];
+          if (!layer) continue;
+          const text = Helpers.yScale.scales.scaleText(p, layer.scaleType);
 
           this.canvas.drawBox("#424242", [0, y[id] - 10, width, 20]);
           this.canvas.drawText("#fff", [width / 2, y[id] + 3], text);
