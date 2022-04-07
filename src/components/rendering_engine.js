@@ -220,6 +220,21 @@ export default class RenderingEngine {
             if (!b) return;
             b = b[j];
             this.canvas.drawLine(a.color, [a.x, a.y, b.x, b.y], a.linewidth);
+          } else if (a.type === "fill") {
+            if (i === undefined || j === undefined) return;
+            let b = values[times[i + 1]];
+            if (!b) return;
+            b = b[j];
+            this.canvas.drawPolygon(a.color, [
+              b.x,
+              b.y1,
+              a.x,
+              a.y1,
+              a.x,
+              a.y2,
+              b.x,
+              b.y2,
+            ]);
           } else if (a.type === "polygon") {
             this.canvas.drawPolygon(a.color, a.coords);
           } else if (a.type === "box") {

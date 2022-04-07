@@ -128,6 +128,14 @@ export default {
                   color,
                 });
               }
+            } else if (type === "fill") {
+              instructions[time].push({
+                type: "fill",
+                x,
+                y1: getY(series[0]),
+                y2: getY(series[1]),
+                color: values.colors.color,
+              });
             } else if (type === "box") {
               // If center is true, add offset to time
               const offset = values.center ? pixelsPerElement / 2 : 0;

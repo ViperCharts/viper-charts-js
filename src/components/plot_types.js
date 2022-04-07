@@ -113,6 +113,60 @@ const indicators = {
     },
   },
 
+  bbands: {
+    version: "1.0.0",
+    name: "Bollinger Bands",
+    dependencies: ["value"],
+    draw({ plot, fill, bbands }) {
+      const [middle, upper, lower] = bbands({
+        source: "value",
+        length: 20,
+        multiplier: 3,
+      });
+
+      fill({
+        value1: upper,
+        value2: lower,
+        color: "#5142f511",
+      });
+      plot({
+        value: middle,
+        color: "#ba7d13",
+        linewidth: 1,
+      });
+      plot({
+        value: upper,
+        color: "#5142f5",
+        linewidth: 1,
+      });
+      plot({
+        value: lower,
+        color: "#5142f5",
+        linewidth: 1,
+      });
+    },
+  },
+
+  bbw: {
+    version: "1.0.0",
+    name: "Bollinger Bands Width",
+    dependencies: ["value"],
+    draw({ plot, bbands, math }) {
+      const [middle, upper, lower] = bbands({
+        source: "value",
+        length: 20,
+        multiplier: 3,
+      });
+
+      plot({
+        value: +math.divide(math.sub(upper, lower), middle).toFixed(4),
+        color: this.color,
+        linewidth: 2,
+        ylabel: true,
+      });
+    },
+  },
+
   "zero-bars": {
     version: "1.0.0",
     name: "Zero Bars",

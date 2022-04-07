@@ -14,6 +14,13 @@ export default {
     });
   },
 
+  fill({ addSetItem, time }, { value1, value2, color = "#FFF" }) {
+    addSetItem(time, "fill", {
+      series: [value1, value2],
+      colors: { color },
+    });
+  },
+
   plotBox(
     { addSetItem, time },
     {
@@ -105,6 +112,22 @@ export default {
     return item[dataModel.id][source];
   },
 
+  getDataArray(
+    { set, timeframe, data, time, dataModel },
+    { lookback, source }
+  ) {
+    set.addLookback(lookback);
+    const items = [];
+    for (let i = lookback; i >= 0; i--) {
+      const timestamp = time - i * timeframe;
+      const item = data[timestamp];
+      if (!item) continue;
+      if (!item[dataModel.id]) continue;
+      items.push(item[dataModel.id][source]);
+    }
+    return items;
+  },
+
   setVar({ time, computedState }, { name, value }) {
     if (!computedState[time]) computedState[time] = {};
     computedState[time][name] = value;
@@ -119,16 +142,32 @@ export default {
   },
 
   sma({ dataModel }, { source, length }) {
-    let total = 0;
-    let addedLength = 0;
-    for (let i = 0; i < length; i++) {
-      source = dataModel.model === "ohlc" ? "close" : source;
-      const e = this.getData(arguments[0], { lookback: i, source });
-      if (isNaN(e) || typeof e !== "number") continue;
-      addedLength++;
-      total = math.add(total, e);
-    }
-    return math.divide(total, addedLength);
+    source = dataModel.model === "ohlc" ? "close" : source;
+
+    const points = this.getDataArray(arguments[0], {
+      lookback: length,
+      source,
+    }).filter((v) => !isNaN(v) && typeof v === "number");
+
+    return math.mean(points);
+  },
+
+  mean() {
+    return this.sma(...arguments);
+  },
+
+  bbands({ dataModel }, { source, length, multiplier }) {
+    source = dataModel.model === "ohlc" ? "close" : source;
+
+    const points = this.getDataArray(arguments[0], {
+      lookback: length,
+      source,
+    }).filter((v) => !isNaN(v) && typeof v === "number");
+
+    const basis = math.mean(points);
+    const dev = math.times(math.stdev(points, basis), multiplier);
+
+    return [basis, math.add(basis, dev), math.sub(basis, dev)];
   },
 
   declareGlobal({ globals }, { name, value }) {

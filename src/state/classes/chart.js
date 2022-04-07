@@ -816,6 +816,8 @@ export default class ChartState extends EventEmitter {
     if (updates.syncRange) {
       for (const chartId in this.$global.charts) {
         const chart = this.$global.charts[chartId];
+        if (!chart.settings.syncRange) continue;
+
         if (chart.timeframe !== this.timeframe) {
           chart.setTimeframe(this.timeframe);
         }
