@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import math from "./math.js";
 
 export default {
@@ -169,6 +170,38 @@ export default {
 
     return [basis, math.add(basis, dev), math.sub(basis, dev)];
   },
+
+  // rsi({ dataModel, setVar, getVar }, { source, length }) {
+  //   source = dataModel.model === "ohlc" ? "close" : source;
+
+  //   let totalGain = 0;
+  //   let totalLoss = 0;
+  //   const points = this.getDataArray(arguments[0], {
+  //     lookback: length,
+  //     source,
+  //   }).filter((v) => !isNaN(v) && typeof v === "number");
+
+  //   for (let i = 0; i < points.length; i++) {
+  //     const v = points[i] - points[i + 1];
+
+  //     if (point >= 0) totalGain += v;
+  //     else totalLoss += v;
+  //   }
+
+  //   let avgGain = new Decimal(totalGain).dividedBy(14);
+  //   let avgLoss = new Decimal(totalLoss).dividedBy(14);
+
+  //   setVar({ name: "avgGain", value: avgGain });
+  //   setVar({ name: "avgLoss", value: avgLoss });
+
+  //   const rsi = new Decimal(100).minus(
+  //     new Decimal(100).dividedBy(avgGain.dividedBy(avgLoss).plus(1))
+  //   );
+
+  //   const lastRsi = getVar({ name: "rsi", lookback: 1 });
+
+  //   return
+  // },
 
   declareGlobal({ globals }, { name, value }) {
     if (!globals[name]) globals[name] = value;

@@ -219,6 +219,7 @@ export default class RenderingEngine {
             let b = values[times[i + 1]];
             if (!b) return;
             b = b[j];
+            if (!b) return;
             this.canvas.drawLine(a.color, [a.x, a.y, b.x, b.y], a.linewidth);
           } else if (a.type === "fill") {
             if (i === undefined || j === undefined) return;

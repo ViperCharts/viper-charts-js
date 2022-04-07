@@ -113,6 +113,15 @@ const indicators = {
     },
   },
 
+  // rsi: {
+  //   version: "1.0.0",
+  //   name: "Relative Strength Index",
+  //   dependencies: ["value"],
+  //   draw({ plot }) {
+
+  //   }
+  // },
+
   bbands: {
     version: "1.0.0",
     name: "Bollinger Bands",
