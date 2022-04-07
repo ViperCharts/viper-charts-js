@@ -97,11 +97,11 @@ const indicators = {
     version: "1.0.0",
     name: "MA Slope",
     dependencies: ["value"],
-    draw({ plot, sma, setVar, getVar }) {
+    draw({ plot, sma, math, setVar, getVar }) {
       const ma20 = sma({ source: "value", length: 20 });
       setVar({ name: "ma20", value: ma20 });
 
-      const slope = ma20 - getVar({ name: "value", lookback: 1 });
+      const slope = math.sub(ma20, getVar({ name: "ma20", lookback: 1 }));
 
       plot({
         value: slope,

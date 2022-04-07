@@ -7,6 +7,7 @@ import Calculations from "./calculations.js";
 import Generators from "./generators.js";
 
 import EventEmitter from "../events/event_emitter";
+import math from "../viper_script/math.js";
 
 class ComputedSet {
   constructor({ $state, timeframe, data = {} }) {
@@ -173,6 +174,7 @@ export default class ComputedData extends EventEmitter {
             time: iteratedTime,
             timeframe,
             data: dataset.data,
+            dataModel: indicator.model,
             globals,
             computedState: this.computedState[renderingQueueId],
           },
@@ -209,6 +211,7 @@ export default class ComputedData extends EventEmitter {
       indicator.draw({
         ...data,
         ...funcWraps,
+        math,
         times: {
           iteratedTime,
           timeframe,

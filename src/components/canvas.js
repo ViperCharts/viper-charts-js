@@ -124,6 +124,17 @@ export default class Canvas {
     this.ctx.closePath();
   }
 
+  drawPolygon(color, coords) {
+    this.ctx.beginPath();
+    this.ctx.fillStyle = color;
+    this.ctx.moveTo(coords[0], coords[1]);
+    for (let i = 2; i < coords.length; i += 2) {
+      this.ctx.lineTo(coords[i], coords[i + 1]);
+    }
+    this.ctx.fill();
+    this.ctx.closePath();
+  }
+
   /**
    * Draw line between 2 points using price and time coords
    * @param {string} color Hex color

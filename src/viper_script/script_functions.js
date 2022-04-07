@@ -1,3 +1,5 @@
+import math from "./math.js";
+
 export default {
   plot(
     { addSetItem, time },
@@ -44,6 +46,29 @@ export default {
     });
   },
 
+  plotDeltaArea(
+    { addSetItem, time },
+    {
+      value,
+      title,
+      posColor = "#FFF",
+      negColor = "#FFF",
+      linewidth,
+      ylabel = false,
+    }
+  ) {
+    addSetItem(time, "delta-area", {
+      series: [value],
+      title,
+      linewidth,
+      colors: {
+        pos: posColor,
+        neg: negColor,
+      },
+      ylabel,
+    });
+  },
+
   plotCandle(
     { addSetItem, time },
     {
@@ -71,12 +96,13 @@ export default {
   plotText() {},
 
   // Get value from previous or future data point if exists
-  getData({ set, timeframe, data, time }, { lookback, source }) {
+  getData({ set, timeframe, data, time, dataModel }, { lookback, source }) {
     set.addLookback(lookback);
     const timestamp = time - lookback * timeframe;
     const item = data[timestamp];
     if (!item) return undefined;
-    return item[source];
+    if (!item[dataModel.id]) return undefined;
+    return item[dataModel.id][source];
   },
 
   setVar({ time, computedState }, { name, value }) {
@@ -92,16 +118,17 @@ export default {
     return item[name];
   },
 
-  sma({}, { source, length }) {
+  sma({ dataModel }, { source, length }) {
     let total = 0;
     let addedLength = 0;
     for (let i = 0; i < length; i++) {
+      source = dataModel.model === "ohlc" ? "close" : source;
       const e = this.getData(arguments[0], { lookback: i, source });
       if (isNaN(e) || typeof e !== "number") continue;
       addedLength++;
-      total += e;
+      total = math.add(total, e);
     }
-    return total / addedLength;
+    return math.divide(total, addedLength);
   },
 
   declareGlobal({ globals }, { name, value }) {

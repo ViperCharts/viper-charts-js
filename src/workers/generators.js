@@ -61,6 +61,7 @@ export default {
 
           instructions[time] = [];
 
+          let j = 0;
           for (const point of points) {
             const { type, values } = point;
             const { series } = values;
@@ -73,6 +74,60 @@ export default {
                 color: values.colors.color,
                 linewidth: values.linewidth,
               });
+            } else if (type === "delta-area") {
+              if (i === 0) continue;
+              const x1 = timestampXCoords[i - 1];
+              const lastTime = timestamps[i - 1];
+              const lastPoints = data[lastTime];
+              if (!lastPoints) continue;
+
+              const lastSeries = lastPoints[j].values.series;
+
+              const y = getY(series[0]);
+              const y1 = getY(lastSeries[0]);
+              const y0 = getY(0);
+
+              const v = series[0];
+              const lv = lastSeries[0];
+
+              if (v >= 0 && lv < 0) {
+                const mx = x - x1;
+                const xD = x1 + mx / 2;
+
+                instructions[time].push({
+                  type: "polygon",
+                  coords: [x1, y1, xD, y0, x1, y0],
+                  color: values.colors.neg,
+                });
+                instructions[time].push({
+                  type: "polygon",
+                  coords: [xD, y0, x, y, x, y0],
+                  color: values.colors.pos,
+                });
+              } else if (v < 0 && lv >= 0) {
+                const mx = x - x1;
+                const xD = x1 + mx / 2;
+
+                instructions[time].push({
+                  type: "polygon",
+                  coords: [x1, y1, xD, y0, x1, y0],
+                  color: values.colors.pos,
+                });
+                instructions[time].push({
+                  type: "polygon",
+                  coords: [xD, y0, x, y, x, y0],
+                  color: values.colors.neg,
+                });
+              } else {
+                const color =
+                  series[0] >= 0 ? values.colors.pos : values.colors.neg;
+
+                instructions[time].push({
+                  type: "polygon",
+                  coords: [x1, y1, x, y, x, y0, x1, y0],
+                  color,
+                });
+              }
             } else if (type === "box") {
               // If center is true, add offset to time
               const offset = values.center ? pixelsPerElement / 2 : 0;
@@ -112,6 +167,8 @@ export default {
                 color: values.colors.wickcolor,
               });
             }
+
+            j++;
           }
         }
 

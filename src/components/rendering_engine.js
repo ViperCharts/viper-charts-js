@@ -219,6 +219,8 @@ export default class RenderingEngine {
             if (!b) return;
             b = b[j];
             this.canvas.drawLine(a.color, [a.x, a.y, b.x, b.y], a.linewidth);
+          } else if (a.type === "polygon") {
+            this.canvas.drawPolygon(a.color, a.coords);
           } else if (a.type === "box") {
             this.canvas.drawBox(a.color, [a.x, a.y, a.w, a.h]);
           } else if (a.type === "single-line") {
