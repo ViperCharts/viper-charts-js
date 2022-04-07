@@ -121,7 +121,7 @@ const indicators = {
       const [middle, upper, lower] = bbands({
         source: "value",
         length: 20,
-        multiplier: 3,
+        multiplier: 2,
       });
 
       fill({
@@ -155,7 +155,7 @@ const indicators = {
       const [middle, upper, lower] = bbands({
         source: "value",
         length: 20,
-        multiplier: 3,
+        multiplier: 2,
       });
 
       plot({

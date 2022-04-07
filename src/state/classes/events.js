@@ -23,6 +23,8 @@ export default class EventsState extends EventEmitter {
     window.addEventListener("keydown", this.keyDownListener);
     this.keyUpListener = this.onKeyUp.bind(this);
     window.addEventListener("keyup", this.keyUpListener);
+    this.visibilitychangeListener = this.onVisibilityChange.bind(this);
+    window.addEventListener("visibilitychange", this.visibilitychangeListener);
     this.contextMenuListener = this.onContextMenu.bind(this);
     this.$global.api.element.addEventListener(
       "contextmenu",
@@ -36,6 +38,10 @@ export default class EventsState extends EventEmitter {
     window.removeEventListener("mousemove", this.mouseMoveListener);
     window.removeEventListener("keydown", this.keyDownListener);
     window.removeEventListener("keyup", this.keyUpListener);
+    window.removeEventListener(
+      "visibilitychange",
+      this.visibilitychangeListener
+    );
     this.$global.api.element.removeEventListener(
       "contextmenu",
       this.contextMenuListener
@@ -82,6 +88,13 @@ export default class EventsState extends EventEmitter {
     }
 
     this.fireEvent("keyup", e);
+  }
+
+  onVisibilityChange() {
+    // Reset all down keys on change window to prevent de-synced state
+    for (const key in this.keys) {
+      this.keys[key] = false;
+    }
   }
 
   onContextMenu(e) {
