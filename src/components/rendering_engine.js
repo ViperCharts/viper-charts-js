@@ -104,12 +104,13 @@ export default class RenderingEngine {
       if (this.$state.global.crosshair.visible) {
         const { width } = chartDimensions.yScale;
 
-        const layerId = this.$state.chart.getLayerByYCoord(y);
-        const { scaleType } = this.$state.chart.ranges.y[layerId];
-        const text = Helpers.yScale.scales.scaleText(p, scaleType);
+        for (const id in y) {
+          const { scaleType } = this.$state.chart.ranges.y[id];
+          const text = Helpers.yScale.scales.scaleText(p, scaleType);
 
-        this.canvas.drawBox("#424242", [0, y - 10, width, 20]);
-        this.canvas.drawText("#fff", [width / 2, y + 3], text);
+          this.canvas.drawBox("#424242", [0, y[id] - 10, width, 20]);
+          this.canvas.drawText("#fff", [width / 2, y[id] + 3], text);
+        }
       }
 
       // Border left, top, right

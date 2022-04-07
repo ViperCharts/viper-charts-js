@@ -40,11 +40,23 @@ export default class CrosshairState extends EventEmitter {
       chart = this.$global.charts[chartId];
       if (!chart.isInitialized) continue;
 
-      const layerId = chart.getLayerByYCoord(y);
       this.crosshairs[chart.id] = {
         x: chart.getXCoordByTimestamp(this.timestamp),
-        y: chart.getYCoordByPrice(this.price, layerId),
+        y: {},
       };
+
+      // Loop through all layers on chart and draw crosshair config for each
+      const { layers } = this.$global.layout.chartDimensions[chartId].main;
+      for (const id in chart.ranges.y) {
+        const { top, height } = layers[id];
+
+        const yCoord = chart.getYCoordByPrice(this.price, id);
+        if (yCoord < top || yCoord > top + height) {
+          continue;
+        }
+
+        this.crosshairs[chart.id].y[id] = yCoord;
+      }
     }
   }
 
