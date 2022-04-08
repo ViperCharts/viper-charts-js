@@ -176,9 +176,9 @@ const indicators = {
     },
   },
 
-  "zero-bars": {
+  "delta-bars": {
     version: "1.0.0",
-    name: "Zero Bars",
+    name: "Delta Bars",
     dependencies: ["value"],
     draw({ plotBox, value }) {
       plotBox({

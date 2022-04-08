@@ -163,6 +163,11 @@ export default class DataState extends EventEmitter {
     this.fireEvent("set-all-data-sources", this.sources);
   }
 
+  getDataSource(source, name) {
+    source = this.sources[source];
+    return source.find((a) => a.name === name);
+  }
+
   addOrGetDataset({ source, name, timeframe, data = {} }) {
     let dataset;
     const datasetId = `${source}:${name}:${timeframe}`;

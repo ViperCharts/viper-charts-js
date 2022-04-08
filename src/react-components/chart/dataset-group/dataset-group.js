@@ -69,6 +69,7 @@ export default class DatsetGroup extends React.Component {
     const indicatorIds = Object.keys(datasetGroup.indicators);
 
     const mo = this.state.isMouseOver;
+    const isSelected = this.chart.selectedDatasetGroup === datasetGroup.id;
 
     return (
       <div
@@ -79,7 +80,9 @@ export default class DatsetGroup extends React.Component {
             datasetGroupId: datasetGroup.id,
           })
         }
-        className={`dataset-group v-noselect ${v ? "" : "invisible"}`}
+        className={`dataset-group v-noselect ${
+          isSelected ? "dataset-group-selected" : ""
+        } ${v ? "" : "invisible"}`}
       >
         <div className="dataset-group-info">
           <div className="dataset-group-title">

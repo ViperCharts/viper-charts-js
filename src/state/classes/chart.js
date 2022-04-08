@@ -35,6 +35,7 @@ export default class ChartState extends EventEmitter {
     this.timeframe = 0;
     this.datasets = {};
     this.datasetGroups = {};
+    this.selectedDatasetGroup = "";
     this.maxDecimalPlaces = 0;
     this.instructions = Instructions;
     this.computedState = this.$global.workers.createComputedState(this);
@@ -154,13 +155,14 @@ export default class ChartState extends EventEmitter {
     const id = Utils.uniqueId();
 
     // Get all the datasets
-    datasets.map((dataset) =>
-      this.$global.data.addOrGetDataset({
+    datasets = datasets.map((dataset) => {
+      const { source, name } = this.$global.data.addOrGetDataset({
         source: dataset.source,
         name: dataset.name,
         timeframe: this.timeframe,
-      })
-    );
+      });
+      return { source, name };
+    });
 
     this.datasetGroups[id] = {
       id,
@@ -169,6 +171,10 @@ export default class ChartState extends EventEmitter {
       indicators: {},
       synced,
     };
+
+    if (!this.selectedDatasetGroup.length) {
+      this.selectedDatasetGroup = id;
+    }
 
     // Update chart UI
     this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
@@ -208,7 +214,10 @@ export default class ChartState extends EventEmitter {
     }
 
     this.datasets[newId] = newDataset;
-    group.datasets = newDatasets;
+    group.datasets = newDatasets.map((d) => ({
+      source: d.source,
+      name: d.name,
+    }));
 
     this.computedState.updateIndicators(indicatorUpdates);
 
@@ -542,6 +551,12 @@ export default class ChartState extends EventEmitter {
       this.removeIndicator(datasetGroupId, id);
     });
     delete this.datasetGroups[datasetGroupId];
+
+    // If selected dataset group
+    if (this.selectedDatasetGroup === datasetGroupId) {
+      const group = Object.keys(this.datasetGroups)[0] || "";
+      this.selectedDatasetGroup = group;
+    }
 
     // Update chart UI
     this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);

@@ -18,9 +18,11 @@ export default {
 
       this.chart = this.$global.charts[this.$global.selectedChartId];
       this.group = this.chart.datasetGroups[props.data.datasetGroupId];
+      const { source, name } = this.group.datasets[0];
+      this.dataSource = this.$global.data.getDataSource(source, name);
 
       this.state = {
-        model: this.group.datasets[0].models[0],
+        model: this.dataSource.models[0],
       };
     }
 
@@ -47,7 +49,7 @@ export default {
         // Display horizontal grid of dataModels from source
         <div className="indicators-modal">
           <div className="dataset-models">
-            {this.group.datasets[0].models.map((model) => (
+            {this.dataSource.models.map((model) => (
               <button
                 onClick={() => this.setModel(model)}
                 key={model.id}
