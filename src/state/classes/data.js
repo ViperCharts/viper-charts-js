@@ -56,9 +56,6 @@ class Dataset extends EventEmitter {
     for (const chartId in this.subscribers) {
       const chart = this.$global.charts[chartId];
 
-      // Load the visible data for this chart range
-      chart.setVisibleRange();
-
       // Calculate all indicator data for new time additions
       for (const renderingQueueId in this.subscribers[chartId]) {
         chart.computedState.calculateOneSet({

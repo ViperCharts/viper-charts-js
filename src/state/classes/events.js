@@ -74,12 +74,18 @@ export default class EventsState extends EventEmitter {
     return id;
   }
 
-  onKeyDown({ key, which }) {
+  onKeyDown({ key, which, target }) {
+    // If focused on an element, ignore global keys
     this.keys[key] = true;
 
     // If keyboard key down to type
     if (!this.keys.Control && !this.keys.Alt) {
-      if (which >= 65 && which <= 90 && /[a-z]/.test(key)) {
+      if (
+        target.nodeName !== "INPUT" &&
+        which >= 65 &&
+        which <= 90 &&
+        /[a-z]/.test(key)
+      ) {
         const chart = this.$global.charts[this.$global.selectedChartId];
 
         // Show change dataset group modal
@@ -112,7 +118,12 @@ export default class EventsState extends EventEmitter {
       this.$global.ui.app.setModal("");
     }
 
-    if (this.keys.Shift && which >= 49 && which <= 57) {
+    if (
+      target.nodeName !== "INPUT" &&
+      this.keys.Shift &&
+      which >= 49 &&
+      which <= 57
+    ) {
       const i = which - 49;
       const chart = this.$global.charts[this.$global.selectedChartId];
 

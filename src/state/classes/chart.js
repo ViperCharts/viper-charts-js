@@ -321,9 +321,6 @@ export default class ChartState extends EventEmitter {
       this.id,
       this.datasetGroups
     );
-
-    // If first new dataset, reset range according to data
-    this.setInitialVisibleRange();
   }
 
   addLayer(heightUnit) {
