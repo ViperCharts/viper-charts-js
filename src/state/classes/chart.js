@@ -173,7 +173,7 @@ export default class ChartState extends EventEmitter {
     };
 
     if (!this.selectedDatasetGroup.length) {
-      this.selectedDatasetGroup = id;
+      this.setSelectedDatasetGroup(id);
     }
 
     // Update chart UI
@@ -555,7 +555,7 @@ export default class ChartState extends EventEmitter {
     // If selected dataset group
     if (this.selectedDatasetGroup === datasetGroupId) {
       const group = Object.keys(this.datasetGroups)[0] || "";
-      this.selectedDatasetGroup = group;
+      this.setSelectedDatasetGroup(group);
     }
 
     // Update chart UI
@@ -757,6 +757,11 @@ export default class ChartState extends EventEmitter {
     if (end) this.defaultRangeBounds.end = end;
     if (min) this.defaultRangeBounds.min = min;
     if (max) this.defaultRangeBounds.max = max;
+  }
+
+  setSelectedDatasetGroup(datasetGroup) {
+    this.selectedDatasetGroup = datasetGroup;
+    this.fireEvent("set-selected-dataset-group", datasetGroup);
   }
 
   setPixelsPerElement(pixelsPerElement) {

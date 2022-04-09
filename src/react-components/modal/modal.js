@@ -12,6 +12,14 @@ export default class Modal extends React.Component {
     super(props);
 
     this.$global = props.$global;
+    this.modalRef = React.createRef();
+  }
+
+  componentDidMount() {
+    setTimeout(() => {
+      const input = this.modalRef.current.querySelector("input");
+      if (input) input.focus();
+    }, 1);
   }
 
   close() {
@@ -25,7 +33,7 @@ export default class Modal extends React.Component {
     const { title, component: Component, height = 0, width = 0 } = modal;
 
     return (
-      <div className="modal-container">
+      <div className="modal-container" ref={this.modalRef}>
         <div
           className="modal"
           style={{ height: `${height}%`, width: `${width}%` }}

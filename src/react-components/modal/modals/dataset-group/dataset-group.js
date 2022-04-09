@@ -29,6 +29,7 @@ export default {
       return (
         <Sources
           $global={this.$global}
+          search={this.props.data.search}
           onClickSource={this.addDatsetGroup.bind(this)}
         />
       );

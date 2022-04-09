@@ -28,6 +28,7 @@ export default {
       return (
         <Sources
           $global={this.$global}
+          search={this.props.data.search}
           onClickSource={this.changeDataset.bind(this)}
         />
       );

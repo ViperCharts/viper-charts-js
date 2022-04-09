@@ -74,8 +74,58 @@ export default class EventsState extends EventEmitter {
     return id;
   }
 
-  onKeyDown({ key }) {
+  onKeyDown({ key, which }) {
     this.keys[key] = true;
+
+    // If keyboard key down to type
+    if (!this.keys.Control && !this.keys.Alt) {
+      if (which >= 65 && which <= 90 && /[a-z]/.test(key)) {
+        const chart = this.$global.charts[this.$global.selectedChartId];
+
+        // Show change dataset group modal
+        if (chart.selectedDatasetGroup) {
+          this.$global.ui.app.setModal("change-dataset", {
+            datasetGroupId: chart.selectedDatasetGroup,
+            search: key,
+          });
+        }
+
+        // If no dataset group, show create dataset group modal
+        else {
+          this.$global.ui.app.setModal("dataset-group", { search: key });
+        }
+      }
+
+      if (key === "/") {
+        const chart = this.$global.charts[this.$global.selectedChartId];
+
+        // Show add indicator modal if dataset group present
+        if (chart.selectedDatasetGroup) {
+          this.$global.ui.app.setModal("indicators", {
+            datasetGroupId: chart.selectedDatasetGroup,
+          });
+        }
+      }
+    }
+
+    if (key === "Escape") {
+      this.$global.ui.app.setModal("");
+    }
+
+    if (this.keys.Shift && which >= 49 && which <= 57) {
+      const i = which - 49;
+      const chart = this.$global.charts[this.$global.selectedChartId];
+
+      const groupIds = Object.keys(chart.datasetGroups);
+      const datasetGroupId = groupIds[i];
+
+      // If found a dataset group
+      if (datasetGroupId !== undefined) {
+        chart.setSelectedDatasetGroup(datasetGroupId);
+      } else {
+        this.$global.ui.app.setModal("dataset-group", { search: "" });
+      }
+    }
   }
 
   onKeyUp(e) {

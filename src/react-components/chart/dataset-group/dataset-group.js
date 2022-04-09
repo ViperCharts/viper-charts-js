@@ -63,13 +63,12 @@ export default class DatsetGroup extends React.Component {
   }
 
   render() {
-    const { datasetGroup, chartId } = this.props;
+    const { datasetGroup, chartId, isSelected } = this.props;
     const v = datasetGroup.visible;
     const dataset = datasetGroup.datasets[0];
     const indicatorIds = Object.keys(datasetGroup.indicators);
 
     const mo = this.state.isMouseOver;
-    const isSelected = this.chart.selectedDatasetGroup === datasetGroup.id;
 
     return (
       <div

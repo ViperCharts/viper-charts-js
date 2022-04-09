@@ -25,6 +25,7 @@ export default class Chart extends React.Component {
       name: this.chart.name || defaultName,
       timeframe: this.chart.timeframe,
       datasetGroups: this.chart.datasetGroups,
+      selectedDatasetGroup: this.chart.selectedDatasetGroup,
 
       isFocused: this.$global.selectedChartId === this.props.id,
     };
@@ -55,6 +56,13 @@ export default class Chart extends React.Component {
     this.chart.addEventListener(
       "set-timeframe",
       this.setChartTimeframeListener
+    );
+
+    this.setSelectedDatasetGroupListener = ((dg) =>
+      this.setState({ selectedDatasetGroup: dg })).bind(this);
+    this.chart.addEventListener(
+      "set-selected-dataset-group",
+      this.setSelectedDatasetGroupListener
     );
 
     this.setChartNameListener = ((name) => this.setState({ name })).bind(this);
@@ -89,6 +97,10 @@ export default class Chart extends React.Component {
     this.chart.removeEventListener(
       "set-timeframe",
       this.setChartTimeframeListener
+    );
+    this.chart.removeEventListener(
+      "set-selected-dataset-group",
+      this.setSelectedDatasetGroupListener
     );
   }
 
@@ -196,6 +208,7 @@ export default class Chart extends React.Component {
         $global={this.$global}
         chartId={this.state.id}
         datasetGroup={this.state.datasetGroups[key]}
+        isSelected={this.state.selectedDatasetGroup === key}
         key={key}
       />
     ));

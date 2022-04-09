@@ -8,7 +8,7 @@ export default class Sources extends React.Component {
 
     this.state = {
       sources: this.$global.data.sources,
-      search: "",
+      search: this.props.search,
       searchResults: [],
     };
 
@@ -74,7 +74,8 @@ export default class Sources extends React.Component {
       <div>
         <div className="markets-search-box">
           <input
-            onInput={this.onSearchInput.bind(this)}
+            value={this.state.search}
+            onChange={this.onSearchInput.bind(this)}
             type="text"
             placeholder="Search for a data source here..."
             style={{ textTransform: "uppercase" }}
