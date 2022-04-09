@@ -127,8 +127,6 @@ class ComputedStateMessenger {
   }
 
   async generateAllInstructions() {
-    console.log("@gen");
-
     // If already generating instructions, dont fill the call stack with useless calls
     if (this.isGeneratingAllInstrutions) {
       this.isRequestingToGenerateAllInstructions = true;

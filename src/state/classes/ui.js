@@ -37,9 +37,7 @@ class App extends React.Component {
   }
 
   addChart(chart) {
-    const charts = this.state.charts;
-    charts[chart.id] = chart;
-    this.setState(() => (this.state.charts = charts));
+    this.setState({ charts: { ...this.state.charts, [chart.id]: chart } });
   }
 
   setModal(modal, modalData = {}) {

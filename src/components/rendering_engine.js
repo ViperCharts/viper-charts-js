@@ -1,3 +1,4 @@
+import constants from "../constants.js";
 import instructions from "../models/instructions.js";
 import Utils from "../utils.js";
 import Helpers from "../workers/helpers.js";
@@ -143,15 +144,18 @@ export default class RenderingEngine {
       const { crosshair } = this.$state.global;
       if (crosshair.visible) {
         const d = new Date(crosshair.timestamp);
-        const dateText = `${
-          d.getMonth() + 1
-        }/${d.getDate()}/${d.getFullYear()} ${d.getHours()}:${`0${d.getMinutes()}`.slice(
-          -2
-        )}`;
+
+        const da = `0${d.getDate()}`.slice(-2);
+        const mo = constants.MONTHS[d.getMonth()].short;
+        const yr = d.getFullYear().toString().substr(2, 2);
+        const ho = d.getHours();
+        const mi = `0${d.getMinutes()}`.slice(-2);
+
+        const text = `${da} ${mo} '${yr}  ${ho}:${mi}`;
 
         const { x } = crosshair.crosshairs[this.$state.chart.id];
         this.canvas.drawBox("#424242", [x - 45, 0, 90, 30]);
-        this.canvas.drawText("#fff", [x, 15], dateText);
+        this.canvas.drawText("#fff", [x, 15], text);
       }
     }
 

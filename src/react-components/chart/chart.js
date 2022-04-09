@@ -85,7 +85,13 @@ export default class Chart extends React.Component {
 
   componentDidUpdate() {
     const { clientWidth, clientHeight } = this.chartContainer.current;
-    this.$global.layout.updateSize(this.state.id, clientWidth, clientHeight);
+    const { width, height } =
+      this.$global.layout.chartDimensions[this.state.id];
+
+    // Check if width or height changed
+    if (width !== clientWidth || height !== clientHeight) {
+      this.$global.layout.updateSize(this.state.id, clientWidth, clientHeight);
+    }
   }
 
   componentWillUnmount() {

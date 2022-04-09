@@ -4,6 +4,7 @@ import Calculations from "./calculations.js";
 import Helpers from "./helpers.js";
 
 import Decimal from "decimal.js";
+import constants from "../constants";
 
 export default {
   main: {
@@ -775,11 +776,24 @@ export default {
       const start = visibleRange.start - (visibleRange.start % xTimeStep);
       for (let time = start; time < visibleRange.end; time += xTimeStep) {
         const d = new Date(time);
+
+        let text = "";
+        if ((time % 24) * 60 * 60 * 1000 === 0) {
+          const date = d.getDate();
+          if (date === 1) {
+            text = `${constants.MONTHS[date].short}`;
+          } else {
+            text = `${date}`;
+          }
+        } else {
+          text = `${d.getHours()}:${`0${d.getMinutes()}`.slice(-2)}`;
+        }
+
         scales.push({
           x: getX(time),
           y: 13,
           color: "#A7A8B3",
-          text: `${d.getHours()}:${`0${d.getMinutes()}`.slice(-2)}`,
+          text,
         });
       }
 
