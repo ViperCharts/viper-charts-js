@@ -4,9 +4,7 @@ import ViperCharts from "./viper";
 let Viper;
 
 (async () => {
-  const res = await fetch(
-    "https://api.staging.vipercharts.com/api/markets/get"
-  );
+  const res = await fetch("http://localhost:3001/api/markets/get");
   if (!res.ok) {
     alert("An error occurred when fetching available markets.");
     return;
@@ -21,6 +19,7 @@ let Viper;
     settings: JSON.parse(localStorage.getItem("settings")),
     onRequestHistoricalData,
     onSaveViperSettings,
+    onRequestTemplates,
   });
 
   async function onRequestHistoricalData({ requests, callback }) {
@@ -41,7 +40,7 @@ let Viper;
         }
 
         const res = await fetch(
-          `https://api.staging.vipercharts.com/api/${path}?source=${source}&ticker=${name}&dataModel=${dataModel}&timeframe=${timeframe}&start=${start}&end=${end}`
+          `http://localhost:3001/api/${path}?source=${source}&ticker=${name}&dataModel=${dataModel}&timeframe=${timeframe}&start=${start}&end=${end}`
         );
 
         if (!res.ok) {
@@ -62,5 +61,10 @@ let Viper;
 
   function onSaveViperSettings(settings) {
     localStorage.setItem("settings", JSON.stringify(settings));
+  }
+
+  async function onRequestTemplates() {
+    const res = await fetch("http://localhost:3001/api/templates/get");
+    return (await res.json()).data;
   }
 })();

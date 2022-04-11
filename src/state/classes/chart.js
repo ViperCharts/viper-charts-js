@@ -387,6 +387,7 @@ export default class ChartState extends EventEmitter {
     keys.splice(keys.indexOf(layerId), 1);
     if (keys.length === 1) this.ranges.y[keys[0]].heightUnit = 10;
     this.$global.layout.chartDimensions[this.id].updateLayers();
+    this.computedState.generateAllInstructions();
 
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
       ranges: JSON.parse(JSON.stringify(this.ranges)),
@@ -519,6 +520,8 @@ export default class ChartState extends EventEmitter {
       }
     }
 
+    this.$global.layout.chartDimensions[this.id].updateLayers();
+
     if (indicator.visible) {
       const dataset = this.datasets[indicator.datasetId];
       const timestamps = Object.keys(dataset.data);
@@ -575,12 +578,6 @@ export default class ChartState extends EventEmitter {
     const group = this.datasetGroups[datsetGroupId];
     const indicator = group.indicators[renderingQueueId];
 
-    // Remove indicator from layer and delete layer if no indicators
-    delete this.ranges.y[indicator.layerId].indicators[renderingQueueId];
-    if (!Object.keys(this.ranges.y[indicator.layerId].indicators).length) {
-      this.removeLayer(indicator.layerId);
-    }
-
     // Remove dataset listener and dataset if no more listeners;
     const dataset = this.datasets[indicator.datasetId];
     const subscribers = dataset.removeSubscriber(this.id, renderingQueueId);
@@ -597,6 +594,12 @@ export default class ChartState extends EventEmitter {
       this.id,
       this.datasetGroups
     );
+
+    // Remove indicator from layer and delete layer if no indicators
+    delete this.ranges.y[indicator.layerId].indicators[renderingQueueId];
+    if (!Object.keys(this.ranges.y[indicator.layerId].indicators).length) {
+      this.removeLayer(indicator.layerId);
+    }
   }
 
   /**

@@ -54,6 +54,7 @@ export default class Viper extends EventEmitter {
       settings = {},
       onRequestHistoricalData = async () => {},
       onSaveViperSettings = () => {},
+      onRequestTemplates = () => {},
     } = params;
 
     if (!element) {
@@ -67,6 +68,7 @@ export default class Viper extends EventEmitter {
     this.$global.api = this;
     this.onRequestHistoricalData = onRequestHistoricalData;
     this.onSaveViperSettings = onSaveViperSettings;
+    this.onRequestTemplates = onRequestTemplates;
 
     await this.$global.init();
     this.setAllDataSources(sources);
