@@ -47,17 +47,19 @@ class App extends React.Component {
   setContextMenu(e, id, data = {}) {
     e.stopPropagation();
     e.preventDefault();
-    const pos = [e.clientX, e.clientY];
+    let pos = [0, 0];
 
-    const elWidth = this.contextMenusElement.current.clientWidth;
-    const elHeight = this.contextMenusElement.current.clientHeight;
-    const appWidth = this.appElement.current.clientWidth;
-    const appHeight = this.appElement.current.clientHeight;
+    this.setState({ contextmenu: { id, pos, data } }, () => {
+      const elWidth = this.contextMenusElement.current.clientWidth;
+      const elHeight = this.contextMenusElement.current.clientHeight;
+      const appWidth = this.appElement.current.clientWidth;
+      const appHeight = this.appElement.current.clientHeight;
 
-    pos[0] = Math.min(pos[0], appWidth - elWidth);
-    pos[1] = Math.min(pos[1], appHeight - elHeight);
+      pos[0] = Math.min(e.clientX, appWidth - elWidth);
+      pos[1] = Math.min(e.clientY, appHeight - elHeight);
 
-    this.setState({ contextmenu: { id, pos, data } });
+      this.setState({ contextmenu: { id, pos, data } });
+    });
   }
 
   closeContextMenu() {
