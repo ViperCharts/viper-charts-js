@@ -39,7 +39,10 @@ export default {
         <div>
           {this.state.templates.map((template, i) => (
             <div className="indicator-list-item grouped-list-item" key={i}>
-              <button onClick={() => this.setTemplate(template)}>
+              <button
+                onClick={() => this.setTemplate(template)}
+                style={{ width: "100%" }}
+              >
                 {template.name}
               </button>
             </div>
