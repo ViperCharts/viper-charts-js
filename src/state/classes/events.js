@@ -49,7 +49,6 @@ export default class EventsState extends EventEmitter {
   }
 
   onMouseDown(e) {
-    this.mousedown = true;
     this.fireEvent("mousedown", e);
     const { app } = this.$global.ui;
 
@@ -60,7 +59,6 @@ export default class EventsState extends EventEmitter {
   }
 
   onMouseUp(e) {
-    this.mousedown = false;
     this.fireEvent("mouseup", e);
   }
 

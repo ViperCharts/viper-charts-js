@@ -27,10 +27,11 @@ export default {
     }
 
     setTemplate(template) {
-      const storage = JSON.parse(localStorage.getItem("settings"));
-      const chartId = Object.keys(storage.charts)[0];
-      storage.charts[chartId] = template.config;
-      localStorage.setItem("settings", JSON.stringify(storage));
+      const config = JSON.parse(
+        '{"layout":[{"id":"30o8tnp423w","chartId":"c4xg42aqku8","top":0,"left":0,"width":100,"height":100,"children":[]}],"charts":{},"global":{"maxCharts":null,"gridEdit":true}}'
+      );
+      config.charts.c4xg42aqku8 = template.config;
+      localStorage.setItem("settings", JSON.stringify(config));
       location.reload();
     }
 

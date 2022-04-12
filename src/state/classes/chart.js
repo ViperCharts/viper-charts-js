@@ -227,6 +227,8 @@ export default class ChartState extends EventEmitter {
       this.id,
       this.datasetGroups
     );
+
+    this.computedState.generateAllInstructions();
   }
 
   /**

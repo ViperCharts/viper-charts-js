@@ -778,7 +778,7 @@ export default {
         const d = new Date(time);
 
         let text = "";
-        if ((time % 24) * 60 * 60 * 1000 === 0) {
+        if ((time / Constants.DAY) % 1 === 0) {
           const date = d.getDate();
           if (date === 1) {
             text = `${constants.MONTHS[date].short}`;
