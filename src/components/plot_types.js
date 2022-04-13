@@ -33,6 +33,31 @@ const bases = {
     },
   },
 
+  volumeBySide: {
+    version: "1.0.0",
+    name: "Volume By Side",
+    dependencies: ["volumeBySide"],
+    draw({ buyVolume, sellVolume, plotBox }) {
+      const delta = buyVolume - sellVolume;
+      const total = buyVolume + sellVolume;
+
+      plotBox({
+        top: total,
+        bottom: 0,
+        width: 1,
+        center: true,
+        color: delta >= 0 ? "#C4FF4966" : "#FE3A6466",
+      });
+      plotBox({
+        top: Math.abs(delta),
+        bottom: 0,
+        width: 1,
+        center: true,
+        color: delta >= 0 ? "#C4FF49" : "#FE3A64",
+      });
+    },
+  },
+
   footprint: {
     version: "1.0.0",
     name: "Footprint",
