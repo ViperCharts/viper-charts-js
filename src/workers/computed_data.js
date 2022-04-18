@@ -289,17 +289,16 @@ export default class ComputedData extends EventEmitter {
    * @param {string} params.renderingQueueId The id in the sets object
    * @returns
    */
-  removeFromQueue({ renderingQueueId }) {
-    if (!this.queue.has(renderingQueueId)) {
-      console.error(`${renderingQueueId} was not found in rendering queue`);
-      return false;
+  removeFromQueue({ renderingQueueIds }) {
+    for (const renderingQueueId of renderingQueueIds) {
+      if (!this.queue.has(renderingQueueId)) {
+        console.error(`${renderingQueueId} was not found in rendering queue`);
+        continue;
+      }
+
+      this.queue.delete(renderingQueueId);
+      this.emptySet({ renderingQueueId });
     }
-
-    this.queue.delete(renderingQueueId);
-    this.emptySet({ renderingQueueId });
-
-    delete this.instructions.main.values[renderingQueueId];
-    delete this.instructions.yScale.plots[renderingQueueId];
   }
 
   generateAllInstructions({

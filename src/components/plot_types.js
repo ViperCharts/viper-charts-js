@@ -210,6 +210,7 @@ const indicators = {
         top: value >= 0 ? value : 0,
         bottom: value >= 0 ? 0 : value,
         width: 0.9,
+        center: true,
         color: value >= 0 ? "#C4FF49" : "#FE3A64",
       });
     },

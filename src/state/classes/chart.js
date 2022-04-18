@@ -372,28 +372,33 @@ export default class ChartState extends EventEmitter {
     this.setVisibleRange({});
   }
 
-  removeLayer(layerId) {
+  removeLayer(layerId, render = true) {
     const keys = Object.keys(this.ranges.y);
     // If this is the last layer, don't delete it
     if (keys.length === 1) return;
+
+    const renderingQueueIds = [];
 
     // If any indicators on layer, delete them
     for (const id in this.ranges.y[layerId].indicators) {
       const group = Object.values(this.datasetGroups).find(
         ({ indicators }) => !!indicators[id]
       );
-      this.removeIndicator(group.id, id);
+      this.removeIndicator(group.id, id, false);
+      renderingQueueIds.push(id);
     }
 
     delete this.ranges.y[layerId];
     keys.splice(keys.indexOf(layerId), 1);
     if (keys.length === 1) this.ranges.y[keys[0]].heightUnit = 10;
     this.$global.layout.chartDimensions[this.id].updateLayers();
-    this.computedState.generateAllInstructions();
 
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, {
       ranges: JSON.parse(JSON.stringify(this.ranges)),
     });
+
+    this.computedState.removeFromQueue({ renderingQueueIds });
+    if (render) this.setVisibleRange();
   }
 
   setTimeframe(timeframe, movedId = this.id) {
@@ -549,8 +554,11 @@ export default class ChartState extends EventEmitter {
    * @param {string} datasetGroupId
    */
   removeDatasetGroup(datasetGroupId) {
+    const renderingQueueIds = [];
+
     Object.keys(this.datasetGroups[datasetGroupId].indicators).forEach((id) => {
-      this.removeIndicator(datasetGroupId, id);
+      this.removeIndicator(datasetGroupId, id, false);
+      renderingQueueIds.push(id);
     });
     delete this.datasetGroups[datasetGroupId];
 
@@ -568,14 +576,18 @@ export default class ChartState extends EventEmitter {
       this.id,
       this.datasetGroups
     );
+
+    this.computedState.removeFromQueue({ renderingQueueIds });
+    this.setVisibleRange();
   }
 
   /**
    * Remove indicator from dataset and from all other references
    * @param {string} datsetGroupId
    * @param {string} renderingQueueId
+   * @param {boolean} isRemovingDatasetGroup
    */
-  removeIndicator(datsetGroupId, renderingQueueId) {
+  removeIndicator(datsetGroupId, renderingQueueId, render = true) {
     // Get the dataset group
     const group = this.datasetGroups[datsetGroupId];
     const indicator = group.indicators[renderingQueueId];
@@ -587,7 +599,6 @@ export default class ChartState extends EventEmitter {
       delete this.datasets[dataset.getTimeframeAgnosticId()];
     }
 
-    this.computedState.removeFromQueue({ renderingQueueId });
     delete group.indicators[renderingQueueId];
 
     this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
@@ -600,7 +611,14 @@ export default class ChartState extends EventEmitter {
     // Remove indicator from layer and delete layer if no indicators
     delete this.ranges.y[indicator.layerId].indicators[renderingQueueId];
     if (!Object.keys(this.ranges.y[indicator.layerId].indicators).length) {
-      this.removeLayer(indicator.layerId);
+      this.removeLayer(indicator.layerId, false);
+    }
+
+    if (render) {
+      this.computedState.removeFromQueue({
+        renderingQueueIds: [renderingQueueId],
+      });
+      this.setVisibleRange();
     }
   }
 

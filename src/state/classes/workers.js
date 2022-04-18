@@ -210,18 +210,20 @@ class ComputedStateMessenger {
     });
   }
 
-  removeFromQueue({ renderingQueueId }) {
+  removeFromQueue({ renderingQueueIds }) {
     this.worker.postMessage({
       type: "runComputedStateMethod",
       data: {
         method: "removeFromQueue",
         chartId: this.chart.id,
-        params: { renderingQueueId },
+        params: { renderingQueueIds },
       },
     });
 
     const { canvas } = this.chart.subcharts.main;
-    canvas.RE.removeFromRenderingOrder(renderingQueueId);
+    for (const id of renderingQueueIds) {
+      canvas.RE.removeFromRenderingOrder(id);
+    }
   }
 }
 
