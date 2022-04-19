@@ -44,14 +44,14 @@ const bases = {
       plotBox({
         top: total,
         bottom: 0,
-        width: 1,
+        width: 0.9,
         center: true,
         color: delta >= 0 ? "#C4FF4966" : "#FE3A6466",
       });
       plotBox({
         top: Math.abs(delta),
         bottom: 0,
-        width: 1,
+        width: 0.9,
         center: true,
         color: delta >= 0 ? "#C4FF49" : "#FE3A64",
       });
@@ -201,6 +201,30 @@ const indicators = {
     },
   },
 
+  cvd: {
+    version: "1.0.0",
+    name: "Cumulative Volume Delta",
+    dependencies: ["volumeBySide"],
+    draw({ plot, plotBox, getDataArray, buyVolume, sellVolume }) {
+      const delta = buyVolume - sellVolume;
+
+      const buy = getDataArray({ lookback: 49, source: "buyVolume" });
+      const sell = getDataArray({ lookback: 49, source: "sellVolume" });
+
+      let cum = delta;
+      for (let i = 0; i < 49; i++) {
+        cum += buy[i] - sell[i];
+      }
+
+      plot({
+        value: +cum.toFixed(4),
+        color: this.color,
+        linewidth: 2,
+        ylabel: true,
+      });
+    },
+  },
+
   "delta-bars": {
     version: "1.0.0",
     name: "Delta Bars",
@@ -259,21 +283,21 @@ const indicators = {
       plotBox({
         top: Math.floor(bpt),
         bottom: 0,
-        width: 1,
+        width: 0.9,
         center: true,
         color: "#C4FF4966",
       });
       plotBox({
         top: 0,
         bottom: -Math.ceil(spt),
-        width: 1,
+        width: 0.9,
         center: true,
         color: "#FE3A6466",
       });
       plotBox({
         top: delta > 0 ? Math.floor(delta) : 0,
         bottom: delta > 0 ? 0 : Math.floor(delta),
-        width: 1,
+        width: 0.9,
         center: true,
         color: delta > 0 ? "#C4FF49" : "#FE3A64",
       });
