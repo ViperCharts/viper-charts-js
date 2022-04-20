@@ -12,6 +12,8 @@ class Dataset extends EventEmitter {
     this.data = data;
     this.pendingRequests = {};
     this.subscribers = {};
+    this.minTime = Infinity;
+    this.maxTime = -Infinity;
     this.dependencies = new Set();
   }
 
@@ -38,6 +40,13 @@ class Dataset extends EventEmitter {
       if (typeof time === "string") {
         time = new Date(time).getTime();
         timestamps.add(time);
+
+        if (time < this.minTime) {
+          this.minTime = time;
+        }
+        if (time > this.maxTime) {
+          this.maxTime = time;
+        }
       }
 
       if (!this.data[time]) {
@@ -66,6 +75,8 @@ class Dataset extends EventEmitter {
             name: this.name,
             timeframe: this.timeframe,
             data: this.data,
+            minTime: this.minTime,
+            maxTime: this.maxTime,
           },
         });
       }

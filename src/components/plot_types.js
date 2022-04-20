@@ -205,19 +205,19 @@ const indicators = {
     version: "1.0.0",
     name: "Cumulative Volume Delta",
     dependencies: ["volumeBySide"],
-    draw({ plot, plotBox, getDataArray, buyVolume, sellVolume }) {
+    draw({ plot, buyVolume, sellVolume, cum }) {
       const delta = buyVolume - sellVolume;
 
-      const buy = getDataArray({ lookback: 49, source: "buyVolume" });
-      const sell = getDataArray({ lookback: 49, source: "sellVolume" });
+      const buy = cum({ source: "buyVolume" });
+      const sell = cum({ source: "sellVolume" });
 
-      let cum = delta;
-      for (let i = 0; i < 49; i++) {
-        cum += buy[i] - sell[i];
+      let value = delta;
+      for (let i = 0; i < buy.length; i++) {
+        value += buy[i] - sell[i];
       }
 
       plot({
-        value: +cum.toFixed(4),
+        value: +value.toFixed(4),
         color: this.color,
         linewidth: 2,
         ylabel: true,
