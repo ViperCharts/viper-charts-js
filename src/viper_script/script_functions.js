@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import { set } from "lodash";
 import math from "./math.js";
 
 export default {
@@ -148,9 +149,22 @@ export default {
     const points = this.getDataArray(arguments[0], {
       lookback: length,
       source,
-    }).filter((v) => !isNaN(v) && typeof v === "number");
+    });
 
     return math.mean(points);
+  },
+
+  cum({ set, dataset, time, timeframe, dataModel }, { source }) {
+    source = dataModel.model === "ohlc" ? "close" : source;
+
+    // Set lookback to Infinity because cumulative is.... well... cumulative
+    set.addLookback(Infinity);
+    const lookback = (time - dataset.minTime) / timeframe;
+    const points = this.getDataArray(arguments[0], { source, lookback }).filter(
+      (v) => !isNaN(v) && typeof v === "number"
+    );
+
+    return points;
   },
 
   mean() {

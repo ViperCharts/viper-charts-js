@@ -104,17 +104,29 @@ export default class ComputedData extends EventEmitter {
 
     // Check if set has requires lookback or lookforwardw
     if (set.maxLookback) {
+      let n = set.maxLookback;
+
       const last = +timestamps[timestamps.length - 1];
+      if (n === Infinity) {
+        n = (dataset.maxTime - last) / dataset.timeframe;
+      }
+
       const start = last + timeframe;
-      const end = last + timeframe * set.maxLookback;
+      const end = last + timeframe * n;
       timestamps = [
         ...timestamps,
         ...Utils.getAllTimestampsIn(start, end, timeframe),
       ];
     }
     if (set.maxLookforward) {
+      let n = set.maxLookforward;
+
       const first = +timestamps[0];
-      const start = first - timeframe * set.maxLookforward;
+      if (n === Infinity) {
+        n = (first - dataset.minTime) / dataset.timeframe;
+      }
+
+      const start = first - timeframe * n;
       const end = first - timeframe;
       timestamps = [
         ...Utils.getAllTimestampsIn(start, end, timeframe),
@@ -173,6 +185,7 @@ export default class ComputedData extends EventEmitter {
             addSetItem,
             time: iteratedTime,
             timeframe,
+            dataset,
             data: dataset.data,
             dataModel: indicator.model,
             globals,
@@ -345,8 +358,8 @@ export default class ComputedData extends EventEmitter {
       // If percentage chart, calculate scale based on first plotted value
       if (layer.scaleType === "percent") {
         const first = Calculations.getFirstValue(this.sets[id], timestamps);
-        scaleMin = ((setMin - first) / first) * 100;
-        scaleMax = ((setMax - first) / first) * 100;
+        scaleMin = ((setMin - first) / Math.abs(first)) * 100;
+        scaleMax = ((setMax - first) / Math.abs(first)) * 100;
       }
 
       // If normalizes chart, calcualte based on 0-100 range
