@@ -425,10 +425,9 @@ export default class ComputedData extends EventEmitter {
       const { scaleType } = requestedRanges.y[indicator.layerId];
 
       // Generate main instructions for set depending on scale type
-      const mainLayerGenerate = Generators.main.values[scaleType];
       instructions.main.values[id] = {
         layerId: indicator.layerId,
-        values: mainLayerGenerate(
+        values: Generators.main.values(
           set,
           timestamps,
           indicator,
@@ -439,13 +438,13 @@ export default class ComputedData extends EventEmitter {
         ),
       };
 
-      const yScaleLayerGenerate = Generators.yScale.plots[scaleType];
-      const [yScale, main] = yScaleLayerGenerate(
+      const [yScale, main] = Generators.yScale.plots(
         set,
         timestamps,
         indicator,
         chartDimensions,
-        visibleRanges.y[indicator.layerId]
+        visibleRanges.y[indicator.layerId],
+        scaleType
       );
 
       instructions.yScale.plots[id] = {
