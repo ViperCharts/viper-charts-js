@@ -358,8 +358,13 @@ export default class ComputedData extends EventEmitter {
       // If percentage chart, calculate scale based on first plotted value
       if (layer.scaleType === "percent") {
         const first = Calculations.getFirstValue(this.sets[id], timestamps);
-        scaleMin = ((setMin - first) / first) * 100;
-        scaleMax = ((setMax - first) / first) * 100;
+        scaleMin = ((setMin - first) / Math.abs(first)) * 100;
+        scaleMax = ((setMax - first) / Math.abs(first)) * 100;
+
+        if (indicator.datasetId === "FTX:AXS-PERP") {
+          console.log(first, setMin, setMax);
+          console.log(scaleMin, scaleMax);
+        }
       }
 
       // If normalizes chart, calcualte based on 0-100 range

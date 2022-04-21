@@ -519,7 +519,7 @@ export default {
             // Get first value
             const first = Calculations.getFirstValue(set, timestamps);
             let value = values.series[{ line: 0, candle: 3 }[type]];
-            value = ((value - first) / first) * 100;
+            value = ((value - first) / Math.abs(first)) * 100;
 
             const { top, height } =
               chartDimensions.main.layers[indicator.layerId];
