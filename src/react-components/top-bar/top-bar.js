@@ -169,6 +169,14 @@ export default class TopBar extends React.Component {
 
         {this.renderTimeframes()}
 
+        <button
+          onClick={() => this.$global.ui.app.setModal("templates")}
+          className="top-bar-item"
+        >
+          <i className="gg-layout-grid"></i>
+          Templates
+        </button>
+
         <div className="top-bar-seperator"></div>
 
         {this.state.globalSettings.gridEdit ? (

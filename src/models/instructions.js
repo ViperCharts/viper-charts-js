@@ -1,10 +1,7 @@
 export default {
   main: {
     background: {},
-    grid: {},
-    layers: {
-      0: {},
-    },
+    values: {},
     plots: {},
   },
   yScale: {

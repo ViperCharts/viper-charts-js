@@ -1,3 +1,7 @@
+import Decimal from "decimal.js";
+import { set } from "lodash";
+import math from "./math.js";
+
 export default {
   plot(
     { addSetItem, time },
@@ -9,6 +13,13 @@ export default {
       colors: { color },
       linewidth,
       ylabel,
+    });
+  },
+
+  fill({ addSetItem, time }, { value1, value2, color = "#FFF" }) {
+    addSetItem(time, "fill", {
+      series: [value1, value2],
+      colors: { color },
     });
   },
 
@@ -44,6 +55,29 @@ export default {
     });
   },
 
+  plotDeltaArea(
+    { addSetItem, time },
+    {
+      value,
+      title,
+      posColor = "#FFF",
+      negColor = "#FFF",
+      linewidth,
+      ylabel = false,
+    }
+  ) {
+    addSetItem(time, "delta-area", {
+      series: [value],
+      title,
+      linewidth,
+      colors: {
+        pos: posColor,
+        neg: negColor,
+      },
+      ylabel,
+    });
+  },
+
   plotCandle(
     { addSetItem, time },
     {
@@ -71,12 +105,29 @@ export default {
   plotText() {},
 
   // Get value from previous or future data point if exists
-  getData({ set, timeframe, data, time }, { lookback, source }) {
+  getData({ set, timeframe, data, time, dataModel }, { lookback, source }) {
     set.addLookback(lookback);
     const timestamp = time - lookback * timeframe;
     const item = data[timestamp];
     if (!item) return undefined;
-    return item[source];
+    if (!item[dataModel.id]) return undefined;
+    return item[dataModel.id][source];
+  },
+
+  getDataArray(
+    { set, timeframe, data, time, dataModel },
+    { lookback, source }
+  ) {
+    set.addLookback(lookback);
+    const items = [];
+    for (let i = lookback; i >= 0; i--) {
+      const timestamp = time - i * timeframe;
+      const item = data[timestamp];
+      if (!item) continue;
+      if (!item[dataModel.id]) continue;
+      items.push(item[dataModel.id][source]);
+    }
+    return items;
   },
 
   setVar({ time, computedState }, { name, value }) {
@@ -92,17 +143,79 @@ export default {
     return item[name];
   },
 
-  sma({}, { source, length }) {
-    let total = 0;
-    let addedLength = 0;
-    for (let i = 0; i < length; i++) {
-      const e = this.getData(arguments[0], { lookback: i, source });
-      if (isNaN(e) || typeof e !== "number") continue;
-      addedLength++;
-      total += e;
-    }
-    return total / addedLength;
+  sma({ dataModel }, { source, length }) {
+    source = dataModel.model === "ohlc" ? "close" : source;
+
+    const points = this.getDataArray(arguments[0], {
+      lookback: length,
+      source,
+    });
+
+    return math.mean(points);
   },
+
+  cum({ set, dataset, time, timeframe, dataModel }, { source }) {
+    source = dataModel.model === "ohlc" ? "close" : source;
+
+    // Set lookback to Infinity because cumulative is.... well... cumulative
+    set.addLookback(Infinity);
+    const lookback = (time - dataset.minTime) / timeframe;
+    const points = this.getDataArray(arguments[0], { source, lookback }).filter(
+      (v) => !isNaN(v) && typeof v === "number"
+    );
+
+    return points;
+  },
+
+  mean() {
+    return this.sma(...arguments);
+  },
+
+  bbands({ dataModel }, { source, length, multiplier }) {
+    source = dataModel.model === "ohlc" ? "close" : source;
+
+    const points = this.getDataArray(arguments[0], {
+      lookback: length,
+      source,
+    }).filter((v) => !isNaN(v) && typeof v === "number");
+
+    const basis = math.mean(points);
+    const dev = math.times(math.stdev(points, basis), multiplier);
+
+    return [basis, math.add(basis, dev), math.sub(basis, dev)];
+  },
+
+  // rsi({ dataModel, setVar, getVar }, { source, length }) {
+  //   source = dataModel.model === "ohlc" ? "close" : source;
+
+  //   let totalGain = 0;
+  //   let totalLoss = 0;
+  //   const points = this.getDataArray(arguments[0], {
+  //     lookback: length,
+  //     source,
+  //   }).filter((v) => !isNaN(v) && typeof v === "number");
+
+  //   for (let i = 0; i < points.length; i++) {
+  //     const v = points[i] - points[i + 1];
+
+  //     if (point >= 0) totalGain += v;
+  //     else totalLoss += v;
+  //   }
+
+  //   let avgGain = new Decimal(totalGain).dividedBy(14);
+  //   let avgLoss = new Decimal(totalLoss).dividedBy(14);
+
+  //   setVar({ name: "avgGain", value: avgGain });
+  //   setVar({ name: "avgLoss", value: avgLoss });
+
+  //   const rsi = new Decimal(100).minus(
+  //     new Decimal(100).dividedBy(avgGain.dividedBy(avgLoss).plus(1))
+  //   );
+
+  //   const lastRsi = getVar({ name: "rsi", lookback: 1 });
+
+  //   return
+  // },
 
   declareGlobal({ globals }, { name, value }) {
     if (!globals[name]) globals[name] = value;

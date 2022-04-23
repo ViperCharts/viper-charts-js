@@ -10,7 +10,10 @@ class Dataset extends EventEmitter {
     this.name = name;
     this.timeframe = timeframe;
     this.data = data;
+    this.pendingRequests = {};
     this.subscribers = {};
+    this.minTime = Infinity;
+    this.maxTime = -Infinity;
     this.dependencies = new Set();
   }
 
@@ -37,6 +40,13 @@ class Dataset extends EventEmitter {
       if (typeof time === "string") {
         time = new Date(time).getTime();
         timestamps.add(time);
+
+        if (time < this.minTime) {
+          this.minTime = time;
+        }
+        if (time > this.maxTime) {
+          this.maxTime = time;
+        }
       }
 
       if (!this.data[time]) {
@@ -55,9 +65,6 @@ class Dataset extends EventEmitter {
     for (const chartId in this.subscribers) {
       const chart = this.$global.charts[chartId];
 
-      // Load the visible data for this chart range
-      chart.setVisibleRange();
-
       // Calculate all indicator data for new time additions
       for (const renderingQueueId in this.subscribers[chartId]) {
         chart.computedState.calculateOneSet({
@@ -68,6 +75,8 @@ class Dataset extends EventEmitter {
             name: this.name,
             timeframe: this.timeframe,
             data: this.data,
+            minTime: this.minTime,
+            maxTime: this.maxTime,
           },
         });
       }
@@ -82,7 +91,12 @@ class Dataset extends EventEmitter {
     subscribers[renderingQueueId] = dependencies;
 
     // Add to cached dependencies set
-    dependencies.forEach((d) => this.dependencies.add(d));
+    dependencies.forEach((d) => {
+      this.dependencies.add(d);
+      this.pendingRequests[d] = 0;
+    });
+
+    this.fireEvent("pending-requests", this.pendingRequests);
 
     this.subscribers[chartId] = subscribers;
   }
@@ -107,6 +121,8 @@ class Dataset extends EventEmitter {
       delete this.$global.data.datasets[this.getId()];
     }
 
+    const oldDependencies = Array.from(this.dependencies.keys());
+
     // Rebuild dependency set
     this.dependencies.clear();
     for (const chartId in this.subscribers) {
@@ -118,6 +134,19 @@ class Dataset extends EventEmitter {
         }
       }
     }
+
+    // Check if a dependency was removed, if so remove from data store
+    for (const old of oldDependencies) {
+      if (!this.dependencies.has(old)) {
+        delete this.pendingRequests[old];
+
+        for (const time in this.data) {
+          delete this.data[time][old];
+        }
+      }
+    }
+
+    this.fireEvent("pending-requests", this.pendingRequests);
 
     return this.subscribers[chartId] || {};
   }
@@ -142,6 +171,11 @@ export default class DataState extends EventEmitter {
     this.fireEvent("set-all-data-sources", this.sources);
   }
 
+  getDataSource(source, name) {
+    source = this.sources[source];
+    return source.find((a) => a.name === name);
+  }
+
   addOrGetDataset({ source, name, timeframe, data = {} }) {
     let dataset;
     const datasetId = `${source}:${name}:${timeframe}`;
@@ -163,17 +197,33 @@ export default class DataState extends EventEmitter {
     const id = dataset.getId();
     const now = Date.now();
 
-    const requestedPoint = [Infinity, -Infinity];
+    const requestedPoint = [Infinity, -Infinity, new Set()];
+    const dependencies = Array.from(dataset.dependencies.keys());
 
     // Loop through each requested timestamp and check if any are not found
     for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
       // Check if greater than now
       if (timestamp > now) break;
 
+      const missingData = [];
+
       // Check if in data state
-      if (dataset.data[timestamp] !== undefined) continue;
+      if (dataset.data[timestamp] === undefined) {
+        missingData = dependencies;
+        dataset.data[timestamp] = {};
+      } else {
+        // Check all models for missing data
+        for (const d of dependencies) {
+          if (dataset.data[timestamp][d] === undefined) {
+            missingData.push(d);
+          }
+        }
+      }
+
+      if (!missingData.length) continue;
 
       // Add to state
+      missingData.forEach((m) => requestedPoint[2].add(m));
       if (timestamp < requestedPoint[0]) {
         requestedPoint[0] = timestamp;
       }
@@ -187,6 +237,7 @@ export default class DataState extends EventEmitter {
       return;
     }
 
+    requestedPoint[2] = Array.from(requestedPoint[2].keys());
     this.allRequestedPoints[id] = requestedPoint;
   }
 
@@ -202,40 +253,46 @@ export default class DataState extends EventEmitter {
 
     // Loop through all requested timestamps and mark their dataset data points as fetched
     for (const id of datasetIds) {
-      const [start, end] = allRequestedPoints[id];
-      console.log(new Date(end));
+      const [start, end, dataModels] = allRequestedPoints[id];
       const dataset = this.datasets[id];
       const { timeframe } = dataset;
 
       // This is so data does not get requested again
       for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
-        dataset.data[timestamp] = null;
+        for (const dataModel of dataModels) {
+          dataset.data[timestamp][dataModel] = null;
+        }
       }
     }
 
     // Build array with requested sources, names, timeframes, and start & end times
     let requests = [];
     for (const id of datasetIds) {
-      let [start, end] = allRequestedPoints[id];
+      let [start, end, dataModels] = allRequestedPoints[id];
       const dataset = this.datasets[id];
       const { source, name, timeframe } = dataset;
 
       // Loop from end to start timeframe on timeframe * 300 interval to batch requests to max of 300 data points per
-      for (let i = (end - start) / (timeframe * 300); i > 0; i--) {
+      let i = start === end ? 1 : (end - start) / (timeframe * 300);
+      for (; i > 0; i--) {
         const leftBound = i <= 1 ? start : end - timeframe * 300;
+
+        dataModels.forEach((m) => dataset.pendingRequests[m]++);
 
         requests.push({
           id,
           source,
           name,
-          dataModels: Array.from(dataset.dependencies.keys()),
+          dataModels,
           timeframe,
           start: leftBound,
           end,
         });
 
-        end -= timeframe * 100;
+        end -= timeframe * 300;
       }
+
+      dataset.fireEvent("pending-requests", dataset.pendingRequests);
     }
 
     // Sort by latest timestamps
@@ -247,8 +304,12 @@ export default class DataState extends EventEmitter {
       // If dataset was deleted since request was fired
       if (!dataset) return;
 
+      dataset.pendingRequests[model]--;
+
       // Update data
       dataset.updateDataset.bind(dataset)(updates, model);
+
+      dataset.fireEvent("pending-requests", dataset.pendingRequests);
     };
 
     this.$global.api.onRequestHistoricalData({

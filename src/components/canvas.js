@@ -37,6 +37,11 @@ export default class Canvas {
     );
   }
 
+  setCursor(cursor = "") {
+    this.cursor = cursor;
+    this.canvas.style.cursor = cursor;
+  }
+
   setCanvasElement(canvas) {
     this.ctx = canvas.getContext("2d");
 
@@ -116,6 +121,17 @@ export default class Canvas {
     this.ctx.moveTo(Math.floor(coords[0]), Math.floor(coords[1]));
     this.ctx.lineTo(Math.floor(coords[2]), Math.floor(coords[3]));
     this.ctx.stroke();
+    this.ctx.closePath();
+  }
+
+  drawPolygon(color, coords) {
+    this.ctx.beginPath();
+    this.ctx.fillStyle = color;
+    this.ctx.moveTo(coords[0], coords[1]);
+    for (let i = 2; i < coords.length; i += 2) {
+      this.ctx.lineTo(coords[i], coords[i + 1]);
+    }
+    this.ctx.fill();
     this.ctx.closePath();
   }
 

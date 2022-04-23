@@ -1,6 +1,6 @@
+import _ from "lodash";
+
 import Canvas from "../canvas.js";
-import Background from "./background.js";
-import Grid from "./grid.js";
 import Crosshair from "./crosshair.js";
 import LastPriceLine from "./last_price_line.js";
 
@@ -13,6 +13,14 @@ export default class Main {
     this.scrollListener = null;
     this.mousemoveListener = null;
     this.mouseleaveListener = null;
+
+    this.layerToMove = -1;
+    this.change = { x: 0, y: 0 };
+
+    this.debounceSetVisibleRange = _.throttle(
+      this.calculateNewVisibleRange.bind(this),
+      16
+    );
   }
 
   init() {
@@ -20,8 +28,6 @@ export default class Main {
     this.setCanvasElement(subcharts.main.current);
 
     // Add indicators to it
-    new Background({ $state: this.$state, canvas: this.canvas });
-    new Grid({ $state: this.$state, canvas: this.canvas });
     new LastPriceLine({ $state: this.$state, canvas: this.canvas });
     new Crosshair({ $state: this.$state, canvas: this.canvas });
 
@@ -112,18 +118,21 @@ export default class Main {
    */
   onScroll(e) {
     e.preventDefault();
+    let { deltaX, deltaY, offsetX, offsetY } = e;
+
+    const { id: chartId } = this.$state.chart;
+    const { main } = this.$state.global.layout.chartDimensions[chartId];
+    const { width } = main;
 
     // If horizontal scroll, move range
-    if (e.deltaX !== 0) {
+    if (deltaX !== 0) {
       const { pixelsPerElement: ppe, timeframe } = this.$state.chart;
-      const { width } =
-        this.$state.global.layout.chartDimensions[this.$state.chart.id].main;
 
-      const d = e.deltaX;
+      const d = deltaX;
       const change =
         (d > 0 ? d * 100 : -d * -100) * (width / ppe) * (timeframe / 60000);
 
-      let { start, end } = this.$state.chart.range;
+      let { start, end } = this.$state.chart.ranges.x;
       start += change;
       end += change;
 
@@ -131,10 +140,53 @@ export default class Main {
     }
 
     // If vertical scroll
-    if (e.deltaY !== 0) {
-      const d = e.deltaY;
-      const change = -(d > 0 ? -d * -50 : d * 50);
-      this.$state.chart.resizeXRange(change, this.canvas.width);
+    else if (deltaY !== 0) {
+      const layerId = this.$state.chart.getLayerByYCoord(offsetY);
+      const layer = this.$state.chart.ranges.y[layerId];
+      let { start, end } = this.$state.chart.ranges.x;
+      let { min, max } = layer.range;
+
+      // If zoom on Y axis
+      if (
+        this.$state.global.events.keys.Control ||
+        this.$state.global.events.keys.Shift
+      ) {
+        layer.lockedYScale = false;
+        const { top, height } = main.layers[layerId];
+
+        const topP = (offsetY - top) / height;
+        const bottomP = 1 - topP;
+        const range = max - min;
+
+        if (this.$state.global.events.keys.Shift) {
+          deltaY = -deltaY;
+        }
+
+        if (deltaY < 0) {
+          max -= (range * topP) / 10;
+          min += (range * bottomP) / 10;
+        } else {
+          max += (range * topP) / 10;
+          min -= (range * bottomP) / 10;
+        }
+      }
+
+      if (!this.$state.global.events.keys.Shift) {
+        const leftP = offsetX / width;
+        const rightP = 1 - leftP;
+
+        const range = end - start;
+
+        if (deltaY > 0) {
+          start -= (range * leftP) / 10;
+          end += (range * rightP) / 10;
+        } else {
+          start += (range * leftP) / 10;
+          end -= (range * rightP) / 10;
+        }
+      }
+
+      this.$state.chart.setVisibleRange({ start, end, min, max }, layerId);
     }
   }
 
@@ -154,29 +206,53 @@ export default class Main {
     this.$state.global.crosshair.visible = true;
   }
 
-  onWindowMouseMove({ movementX, movementY }) {
+  onWindowMouseMove({ movementX, movementY, layerY }) {
     // If mouse down on child canvas
-    if (!this.canvas.isMouseDown) return;
+    if (!this.canvas.isMouseDown) {
+      this.layerToMove = -1;
+      return;
+    }
 
-    let { start, end, min, max } = this.$state.chart.range;
+    if (this.layerToMove === -1) {
+      const layerId = this.$state.chart.getLayerByYCoord(layerY);
+      this.layerToMove = layerId;
+    }
+
+    this.change.x += movementX;
+    this.change.y += movementY;
+
+    this.debounceSetVisibleRange();
+  }
+
+  calculateNewVisibleRange() {
+    const { x, y } = this.change;
+    this.change = { x: 0, y: 0 };
+
+    const { id } = this.$state.chart;
+    const { layers } = this.$state.global.layout.chartDimensions[id].main;
+
+    let { start, end } = this.$state.chart.ranges.x;
+    const layer = this.$state.chart.ranges.y[this.layerToMove];
+    if (!layer) return;
+    let { min, max } = layer.range;
 
     // Get how many candles moved
-    const candlesMoved = movementX / this.$state.chart.pixelsPerElement;
+    const candlesMoved = x / this.$state.chart.pixelsPerElement;
     const timeMoved = this.$state.chart.timeframe * candlesMoved;
 
     start -= timeMoved;
     end -= timeMoved;
 
-    if (!this.$state.chart.settings.lockedYScale && movementY !== 0) {
-      const yInView = max - min;
-      // Pixels per tick
-      const ppt = yInView / this.canvas.height;
-      const y = movementY;
-      const movement = y * ppt;
-      min += movement;
-      max += movement;
+    if (!this.$state.chart.ranges.y[this.layerToMove].lockedYScale) {
+      const pixelsPerTick = layers[this.layerToMove].height / (max - min);
+      const priceMoved = y / pixelsPerTick;
+      min += priceMoved;
+      max += priceMoved;
     }
 
-    this.$state.chart.setVisibleRange({ start, end, min, max });
+    this.$state.chart.setVisibleRange(
+      { start, end, min, max },
+      this.layerToMove
+    );
   }
 }

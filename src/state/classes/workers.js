@@ -105,7 +105,6 @@ class ComputedStateMessenger {
           params: {
             renderingQueueId,
             timestamps,
-            scaleType: this.chart.settings.scaleType,
             visibleRange: this.chart.range,
             timeframe: this.chart.timeframe,
             chartDimensions: {
@@ -114,7 +113,6 @@ class ComputedStateMessenger {
               xScale: chartDimensions.xScale,
             },
             pixelsPerElement: this.chart.pixelsPerElement,
-            settings: this.chart.settings,
           },
         },
       });
@@ -137,7 +135,7 @@ class ComputedStateMessenger {
 
     this.isGeneratingAllInstrutions = true;
 
-    const { instructions, visibleRange, pixelsPerElement, maxDecimalPlaces } =
+    const { instructions, visibleRanges, pixelsPerElement, maxDecimalPlaces } =
       await new Promise((resolve) => {
         const id = this.$global.workers.addToResolveQueue(resolve);
 
@@ -151,8 +149,7 @@ class ComputedStateMessenger {
             resolveId: id,
             chartId: this.chart.id,
             params: {
-              scaleType: this.chart.settings.scaleType,
-              requestedRange: this.chart.range,
+              requestedRanges: this.chart.ranges,
               timeframe: this.chart.timeframe,
               chartDimensions: {
                 main: chartDimensions.main,
@@ -160,7 +157,6 @@ class ComputedStateMessenger {
                 xScale: chartDimensions.xScale,
               },
               pixelsPerElement: this.chart.pixelsPerElement,
-              settings: this.chart.settings,
             },
           },
         });
@@ -168,7 +164,7 @@ class ComputedStateMessenger {
 
     this.chart.onGenerateAllInstructions({
       instructions,
-      visibleRange,
+      visibleRanges,
       pixelsPerElement,
       maxDecimalPlaces,
     });
@@ -179,6 +175,28 @@ class ComputedStateMessenger {
       this.isRequestingToGenerateAllInstructions = false;
       setTimeout(() => this.generateAllInstructions());
     }
+  }
+
+  updateIndicators(updates) {
+    this.worker.postMessage({
+      type: "runComputedStateMethod",
+      data: {
+        method: "updateIndicators",
+        chartId: this.chart.id,
+        params: { updates },
+      },
+    });
+  }
+
+  emptySet({ renderingQueueId }) {
+    this.worker.postMessage({
+      type: "runComputedStateMethod",
+      data: {
+        method: "emptySet",
+        chartId: this.chart.id,
+        params: { renderingQueueId },
+      },
+    });
   }
 
   emptyAllSets() {
@@ -192,18 +210,20 @@ class ComputedStateMessenger {
     });
   }
 
-  removeFromQueue({ renderingQueueId }) {
+  removeFromQueue({ renderingQueueIds }) {
     this.worker.postMessage({
       type: "runComputedStateMethod",
       data: {
         method: "removeFromQueue",
         chartId: this.chart.id,
-        params: { renderingQueueId },
+        params: { renderingQueueIds },
       },
     });
 
     const { canvas } = this.chart.subcharts.main;
-    canvas.RE.removeFromRenderingOrder(renderingQueueId);
+    for (const id of renderingQueueIds) {
+      canvas.RE.removeFromRenderingOrder(id);
+    }
   }
 }
 

@@ -91,6 +91,21 @@ export default {
     return -Math.floor(perc * height - height);
   },
 
+  /**
+   * Get a price for a given height and visible range
+   * @param {number} min
+   * @param {number} max
+   * @param {number} height
+   * @param {number} yCoord
+   * @returns
+   */
+  getPriceByYCoord(min, max, height, yCoord) {
+    const range = max - min;
+    const screenPerc = 1 - yCoord / height;
+    const rangeOffset = screenPerc * range;
+    return min + rangeOffset;
+  },
+
   wipeObject(object) {
     for (const key in object) {
       delete object[key];

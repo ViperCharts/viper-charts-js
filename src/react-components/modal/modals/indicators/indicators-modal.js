@@ -18,9 +18,11 @@ export default {
 
       this.chart = this.$global.charts[this.$global.selectedChartId];
       this.group = this.chart.datasetGroups[props.data.datasetGroupId];
+      const { source, name } = this.group.datasets[0];
+      this.dataSource = this.$global.data.getDataSource(source, name);
 
       this.state = {
-        model: this.group.datasets[0].models[0],
+        model: this.dataSource.models[0],
       };
     }
 
@@ -28,22 +30,11 @@ export default {
       this.setState({ model });
     }
 
-    addIndicator(indicatorId, offchart = false) {
-      let chart = this.chart;
-
-      if (offchart) {
-        chart = this.$global.createChart({
-          pixelsPerElement: chart.pixelsPerElement,
-          range: chart.range,
-          settings: {
-            syncRange: true,
-          },
-        });
-      }
-
+    async addIndicator(indicatorId, offchart = false) {
       // Add the indicator to dataset group
-      chart.addIndicator(indicatorId, this.group.id, this.state.model, {
+      this.chart.addIndicator(indicatorId, this.group.id, this.state.model, {
         visible: true,
+        layerId: !offchart ? Object.keys(this.chart.ranges.y)[0] : "new",
       });
     }
 
@@ -58,7 +49,7 @@ export default {
         // Display horizontal grid of dataModels from source
         <div className="indicators-modal">
           <div className="dataset-models">
-            {this.group.datasets[0].models.map((model) => (
+            {this.dataSource.models.map((model) => (
               <button
                 onClick={() => this.setModel(model)}
                 key={model.id}
@@ -104,13 +95,22 @@ export default {
               .filter(this.isIndicatorSupported.bind(this))
               .map((indicator) => {
                 return (
-                  <button
-                    onClick={() => this.addIndicator(indicator.id)}
+                  <div
+                    className="indicator-list-item grouped-list-item"
                     key={indicator.id}
-                    className="grouped-list-item"
                   >
-                    {indicator.name}
-                  </button>
+                    <button
+                      onClick={() => this.addIndicator(indicator.id)}
+                      className="add-indicator-btn-main"
+                    >
+                      {indicator.name}
+                    </button>
+                    <button
+                      onClick={() => this.addIndicator(indicator.id, true)}
+                    >
+                      Off Chart
+                    </button>
+                  </div>
                 );
               })}
           </div>

@@ -33,6 +33,31 @@ const bases = {
     },
   },
 
+  volumeBySide: {
+    version: "1.0.0",
+    name: "Volume By Side",
+    dependencies: ["volumeBySide"],
+    draw({ buyVolume, sellVolume, plotBox }) {
+      const delta = buyVolume - sellVolume;
+      const total = buyVolume + sellVolume;
+
+      plotBox({
+        top: total,
+        bottom: 0,
+        width: 0.9,
+        center: true,
+        color: delta >= 0 ? "#C4FF4966" : "#FE3A6466",
+      });
+      plotBox({
+        top: Math.abs(delta),
+        bottom: 0,
+        width: 0.9,
+        center: true,
+        color: delta >= 0 ? "#C4FF49" : "#FE3A64",
+      });
+    },
+  },
+
   footprint: {
     version: "1.0.0",
     name: "Footprint",
@@ -97,11 +122,11 @@ const indicators = {
     version: "1.0.0",
     name: "MA Slope",
     dependencies: ["value"],
-    draw({ plot, sma, setVar, getVar }) {
+    draw({ plot, sma, math, setVar, getVar }) {
       const ma20 = sma({ source: "value", length: 20 });
       setVar({ name: "ma20", value: ma20 });
 
-      const slope = ma20 - getVar({ name: "value", lookback: 1 });
+      const slope = math.sub(ma20, getVar({ name: "ma20", lookback: 1 }));
 
       plot({
         value: slope,
@@ -109,6 +134,108 @@ const indicators = {
         color: this.color,
         linewidth: 2,
         ylabel: true,
+      });
+    },
+  },
+
+  // rsi: {
+  //   version: "1.0.0",
+  //   name: "Relative Strength Index",
+  //   dependencies: ["value"],
+  //   draw({ plot }) {
+
+  //   }
+  // },
+
+  bbands: {
+    version: "1.0.0",
+    name: "Bollinger Bands",
+    dependencies: ["value"],
+    draw({ plot, fill, bbands }) {
+      const [middle, upper, lower] = bbands({
+        source: "value",
+        length: 20,
+        multiplier: 2,
+      });
+
+      fill({
+        value1: upper,
+        value2: lower,
+        color: "#5142f511",
+      });
+      plot({
+        value: middle,
+        color: "#ba7d13",
+        linewidth: 1,
+      });
+      plot({
+        value: upper,
+        color: "#5142f5",
+        linewidth: 1,
+      });
+      plot({
+        value: lower,
+        color: "#5142f5",
+        linewidth: 1,
+      });
+    },
+  },
+
+  bbw: {
+    version: "1.0.0",
+    name: "Bollinger Bands Width",
+    dependencies: ["value"],
+    draw({ plot, bbands, math }) {
+      const [middle, upper, lower] = bbands({
+        source: "value",
+        length: 20,
+        multiplier: 2,
+      });
+
+      plot({
+        value: +math.divide(math.sub(upper, lower), middle).toFixed(4),
+        color: this.color,
+        linewidth: 2,
+        ylabel: true,
+      });
+    },
+  },
+
+  cvd: {
+    version: "1.0.0",
+    name: "Cumulative Volume Delta",
+    dependencies: ["volumeBySide"],
+    draw({ plot, buyVolume, sellVolume, cum }) {
+      const delta = buyVolume - sellVolume;
+
+      const buy = cum({ source: "buyVolume" });
+      const sell = cum({ source: "sellVolume" });
+
+      let value = delta;
+      for (let i = 0; i < buy.length; i++) {
+        value += buy[i] - sell[i];
+      }
+
+      plot({
+        value: +value.toFixed(4),
+        color: this.color,
+        linewidth: 2,
+        ylabel: true,
+      });
+    },
+  },
+
+  "delta-bars": {
+    version: "1.0.0",
+    name: "Delta Bars",
+    dependencies: ["value"],
+    draw({ plotBox, value }) {
+      plotBox({
+        top: value >= 0 ? value : 0,
+        bottom: value >= 0 ? 0 : value,
+        width: 0.9,
+        center: true,
+        color: value >= 0 ? "#C4FF49" : "#FE3A64",
       });
     },
   },
@@ -156,21 +283,21 @@ const indicators = {
       plotBox({
         top: Math.floor(bpt),
         bottom: 0,
-        width: 1,
+        width: 0.9,
         center: true,
         color: "#C4FF4966",
       });
       plotBox({
         top: 0,
         bottom: -Math.ceil(spt),
-        width: 1,
+        width: 0.9,
         center: true,
         color: "#FE3A6466",
       });
       plotBox({
         top: delta > 0 ? Math.floor(delta) : 0,
         bottom: delta > 0 ? 0 : Math.floor(delta),
-        width: 1,
+        width: 0.9,
         center: true,
         color: delta > 0 ? "#C4FF49" : "#FE3A64",
       });

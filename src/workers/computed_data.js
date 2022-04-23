@@ -7,6 +7,7 @@ import Calculations from "./calculations.js";
 import Generators from "./generators.js";
 
 import EventEmitter from "../events/event_emitter";
+import math from "../viper_script/math.js";
 
 class ComputedSet {
   constructor({ $state, timeframe, data = {} }) {
@@ -14,8 +15,6 @@ class ComputedSet {
 
     this.data = data;
     this.timeframe = timeframe;
-    this.min = Infinity;
-    this.max = -Infinity;
     this.visibleMin = Infinity;
     this.visibleMax = -Infinity;
     this.visibleScaleMin = Infinity;
@@ -105,17 +104,29 @@ export default class ComputedData extends EventEmitter {
 
     // Check if set has requires lookback or lookforwardw
     if (set.maxLookback) {
+      let n = set.maxLookback;
+
       const last = +timestamps[timestamps.length - 1];
+      if (n === Infinity) {
+        n = (dataset.maxTime - last) / dataset.timeframe;
+      }
+
       const start = last + timeframe;
-      const end = last + timeframe * set.maxLookback;
+      const end = last + timeframe * n;
       timestamps = [
         ...timestamps,
         ...Utils.getAllTimestampsIn(start, end, timeframe),
       ];
     }
     if (set.maxLookforward) {
+      let n = set.maxLookforward;
+
       const first = +timestamps[0];
-      const start = first - timeframe * set.maxLookforward;
+      if (n === Infinity) {
+        n = (first - dataset.minTime) / dataset.timeframe;
+      }
+
+      const start = first - timeframe * n;
       const end = first - timeframe;
       timestamps = [
         ...Utils.getAllTimestampsIn(start, end, timeframe),
@@ -174,7 +185,9 @@ export default class ComputedData extends EventEmitter {
             addSetItem,
             time: iteratedTime,
             timeframe,
+            dataset,
             data: dataset.data,
+            dataModel: indicator.model,
             globals,
             computedState: this.computedState[renderingQueueId],
           },
@@ -195,16 +208,23 @@ export default class ComputedData extends EventEmitter {
       let data = point[indicator.model.id];
 
       if (
+        point[indicator.model.id] === undefined ||
+        point[indicator.model.id] === null
+      ) {
+        continue;
+      }
+
+      if (
         indicator.dependencies[0] === "value" &&
         indicator.model.model === "ohlc"
       ) {
-        if (point[indicator.model.id] === undefined) continue;
         data = { value: point[indicator.model.id].close };
       }
 
       indicator.draw({
         ...data,
         ...funcWraps,
+        math,
         times: {
           iteratedTime,
           timeframe,
@@ -230,19 +250,28 @@ export default class ComputedData extends EventEmitter {
       return;
     }
 
-    const item = this.queue.get(renderingQueueId);
-    item.visible = visible;
-    this.queue.set(renderingQueueId, item);
+    const indicator = this.queue.get(renderingQueueId);
+    indicator.visible = visible;
+    this.queue.set(renderingQueueId, indicator);
 
     // Re calculate max decimal places when sets have changed
     this.calculateMaxDecimalPlaces();
 
     // If hiding indicator, delete main and yScale plot instructions
-    if (!item.visible) {
-      delete this.instructions.main.layers[0][renderingQueueId];
+    if (!indicator.visible) {
+      delete this.instructions.main.values[renderingQueueId];
       delete this.instructions.main.plots[renderingQueueId];
       delete this.instructions.yScale.plots[renderingQueueId];
       this.mainThread.updateInstructions(this.instructions);
+    }
+  }
+
+  updateIndicators({ updates = {} }) {
+    for (const id in updates) {
+      const indicator = this.queue.get(id);
+      for (const prop in updates[id]) {
+        indicator[prop] = updates[id][prop];
+      }
     }
   }
 
@@ -255,7 +284,7 @@ export default class ComputedData extends EventEmitter {
     this.calculateMaxDecimalPlaces();
 
     // Delete instructions
-    delete this.instructions.main.layers[0][renderingQueueId];
+    delete this.instructions.main.values[renderingQueueId];
     delete this.instructions.main.plots[renderingQueueId];
     delete this.instructions.yScale.plots[renderingQueueId];
     this.mainThread.updateInstructions(this.instructions);
@@ -273,36 +302,38 @@ export default class ComputedData extends EventEmitter {
    * @param {string} params.renderingQueueId The id in the sets object
    * @returns
    */
-  removeFromQueue({ renderingQueueId }) {
-    if (!this.queue.has(renderingQueueId)) {
-      console.error(`${renderingQueueId} was not found in rendering queue`);
-      return false;
+  removeFromQueue({ renderingQueueIds }) {
+    for (const renderingQueueId of renderingQueueIds) {
+      if (!this.queue.has(renderingQueueId)) {
+        console.error(`${renderingQueueId} was not found in rendering queue`);
+        continue;
+      }
+
+      this.queue.delete(renderingQueueId);
+      this.emptySet({ renderingQueueId });
     }
-
-    this.queue.delete(renderingQueueId);
-    this.emptySet({ renderingQueueId });
-
-    delete this.instructions.main.layers[0][renderingQueueId];
-    delete this.instructions.yScale.plots[renderingQueueId];
   }
 
   generateAllInstructions({
-    scaleType,
-    requestedRange,
+    requestedRanges,
     timeframe,
     chartDimensions,
     pixelsPerElement,
-    settings,
   }) {
     // Calculate max and min of all plotted sets
     const timestamps = Utils.getAllTimestampsIn(
-      requestedRange.start,
-      requestedRange.end,
+      requestedRanges.x.start,
+      requestedRanges.x.end,
       timeframe
     );
 
-    let min = Infinity;
-    let max = -Infinity;
+    const layerMinsAndMaxs = {};
+    for (const layerId in requestedRanges.y) {
+      layerMinsAndMaxs[layerId] = {
+        min: Infinity,
+        max: -Infinity,
+      };
+    }
 
     // Calculate min and max of all sets in visible range that are visible
     for (const id in this.sets) {
@@ -322,15 +353,17 @@ export default class ComputedData extends EventEmitter {
       this.sets[id].visibleMin = setMin;
       this.sets[id].visibleMax = setMax;
 
+      const layer = requestedRanges.y[indicator.layerId];
+
       // If percentage chart, calculate scale based on first plotted value
-      if (settings.scaleType === "percent") {
+      if (layer.scaleType === "percent") {
         const first = Calculations.getFirstValue(this.sets[id], timestamps);
-        scaleMin = ((setMin - first) / first) * 100;
-        scaleMax = ((setMax - first) / first) * 100;
+        scaleMin = ((setMin - first) / Math.abs(first)) * 100;
+        scaleMax = ((setMax - first) / Math.abs(first)) * 100;
       }
 
       // If normalizes chart, calcualte based on 0-100 range
-      if (settings.scaleType === "normalized") {
+      if (layer.scaleType === "normalized") {
         scaleMin = 0;
         scaleMax = 100;
       }
@@ -338,25 +371,50 @@ export default class ComputedData extends EventEmitter {
       this.sets[id].visibleScaleMin = scaleMin;
       this.sets[id].visibleScaleMax = scaleMax;
 
-      if (scaleMin < min) min = scaleMin;
-      if (scaleMax > max) max = scaleMax;
+      if (!layerMinsAndMaxs[indicator.layerId]) {
+        layerMinsAndMaxs[indicator.layerId] = {
+          min: Infinity,
+          max: -Infinity,
+        };
+      }
+
+      if (scaleMin < layerMinsAndMaxs[indicator.layerId].min) {
+        layerMinsAndMaxs[indicator.layerId].min = scaleMin;
+      }
+      if (scaleMax > layerMinsAndMaxs[indicator.layerId].max) {
+        layerMinsAndMaxs[indicator.layerId].max = scaleMax;
+      }
     }
 
-    this.min = min;
-    this.max = max;
+    const visibleRanges = {
+      x: {
+        start: requestedRanges.x.start,
+        end: requestedRanges.x.end,
+      },
+      y: {},
+    };
 
     // Calculate the visible range based on chart settings.
-    // Generaters will have access to this.visibleRange
-    const visibleRange = Calculations.getVisibleRange.bind(this)(
-      requestedRange,
-      settings,
-      min,
-      max
-    );
+    for (const layerId in layerMinsAndMaxs) {
+      const { y } = Calculations.getVisibleRange.bind(this)(
+        {
+          x: requestedRanges.x,
+          y: requestedRanges.y[layerId],
+        },
+        layerMinsAndMaxs[layerId].min,
+        layerMinsAndMaxs[layerId].max
+      );
+      visibleRanges.y[layerId] = {
+        min: y.range.min,
+        max: y.range.max,
+      };
+    }
+
+    const { start, end } = visibleRanges.x;
 
     pixelsPerElement = Calculations.calculatePixelsPerElement(
-      visibleRange.start,
-      visibleRange.end,
+      start,
+      end,
       timeframe,
       chartDimensions.main.width
     );
@@ -366,12 +424,7 @@ export default class ComputedData extends EventEmitter {
 
     // Get array of x coords for each timestamp on x axis
     const timestampXCoords = timestamps.map((time) =>
-      Utils.getXCoordByTimestamp(
-        visibleRange.start,
-        visibleRange.end,
-        chartDimensions.main.width,
-        time
-      )
+      Utils.getXCoordByTimestamp(start, end, chartDimensions.main.width, time)
     );
 
     // Loop through all sets and generate main and yScale instructions for plots
@@ -382,49 +435,62 @@ export default class ComputedData extends EventEmitter {
       // If indicator is not visible, dont generate instrutions
       if (!indicator.visible) continue;
 
-      // Generate main instructions for set depending on scale type
-      const mainLayerGenerate = Generators.main.layers[scaleType];
-      instructions.main.layers[0][id] = mainLayerGenerate(
-        set,
-        timestamps,
-        timestampXCoords,
-        pixelsPerElement,
-        visibleRange,
-        chartDimensions
-      );
+      const { scaleType } = requestedRanges.y[indicator.layerId];
 
-      const yScaleLayerGenerate = Generators.yScale.plots[scaleType];
-      const [yScale, main] = yScaleLayerGenerate(
+      // Generate main instructions for set depending on scale type
+      instructions.main.values[id] = {
+        layerId: indicator.layerId,
+        values: Generators.main.values(
+          set,
+          timestamps,
+          indicator,
+          timestampXCoords,
+          pixelsPerElement,
+          visibleRanges.y[indicator.layerId],
+          chartDimensions
+        ),
+      };
+
+      const [yScale, main] = Generators.yScale.plots(
         set,
         timestamps,
         indicator,
         chartDimensions,
-        visibleRange
+        visibleRanges.y[indicator.layerId],
+        scaleType
       );
 
-      instructions.yScale.plots[id] = yScale;
-      instructions.main.plots[id] = main;
+      instructions.yScale.plots[id] = {
+        layerId: indicator.layerId,
+        values: yScale,
+      };
+      instructions.main.plots[id] = {
+        layerId: indicator.layerId,
+        values: main,
+      };
     }
 
     // Calculate x and y scales
-    instructions.yScale.scales = Generators.yScale.scales();
+    instructions.yScale.scales = Generators.yScale.scales(
+      visibleRanges.y,
+      chartDimensions,
+      requestedRanges.y
+    );
     instructions.xScale.scales = Generators.xScale.scales(
       pixelsPerElement,
       timeframe,
-      visibleRange
+      visibleRanges.x,
+      chartDimensions
     );
 
     this.instructions = instructions;
 
     // TODO this is a temporary implementation
     let maxDecimalPlaces = this.maxDecimalPlaces;
-    if (settings.scaleType !== "default") {
-      maxDecimalPlaces = 2;
-    }
 
     return {
       instructions,
-      visibleRange,
+      visibleRanges,
       pixelsPerElement,
       maxDecimalPlaces,
     };

@@ -17,3 +17,8 @@
   background: rgb(160, 160, 160);
   color: rgb(75, 75, 75);
 }
+
+.viper button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

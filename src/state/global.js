@@ -27,8 +27,6 @@ export default class GlobalState extends EventEmitter {
     this.data = new DataState({ $global: this });
     this.events = new EventsState({ $global: this });
     this.workers = new WorkerState({ $global: this });
-
-    window.deleteSelectedChart = this.deleteSelectedChart.bind(this);
   }
 
   async init() {
@@ -43,7 +41,6 @@ export default class GlobalState extends EventEmitter {
 
   createChart(state = {}) {
     const chart = new ChartState({
-      name: "Untitled Chart",
       ...state,
       $global: this,
     });
@@ -52,6 +49,11 @@ export default class GlobalState extends EventEmitter {
     this.setSelectedChartId(chart.id);
     this.fireEvent("charts-change", this.charts);
     return this.charts[chart.id];
+  }
+
+  resetSelectedChart() {
+    const chart = this.charts[this.selectedChartId];
+    chart.setInitialVisibleRange();
   }
 
   deleteSelectedChart() {

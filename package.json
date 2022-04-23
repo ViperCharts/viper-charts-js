@@ -43,6 +43,8 @@
     "worker-loader": "^3.0.8"
   },
   "dependencies": {
+    "decimal.js": "^10.3.1",
+    "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
