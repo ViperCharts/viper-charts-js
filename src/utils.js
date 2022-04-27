@@ -27,7 +27,9 @@ export default {
   },
 
   randomHexColor() {
-    return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    return `#${Math.floor(Math.random() * 16777215).toString(
+      16
+    )}00000`.substring(0, 7);
   },
 
   /**
