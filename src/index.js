@@ -4,9 +4,7 @@ import ViperCharts from "./viper";
 let Viper;
 
 (async () => {
-  const res = await fetch(
-    "https://api.staging.vipercharts.com/api/markets/get"
-  );
+  const res = await fetch("http://localhost:3001/api/markets/get");
   if (!res.ok) {
     alert("An error occurred when fetching available markets.");
     return;
@@ -25,39 +23,29 @@ let Viper;
   });
 
   async function onRequestHistoricalData({ requests, callback }) {
-    for (let {
-      id,
-      source,
-      name,
-      dataModels,
-      timeframe,
-      start,
-      end,
-    } of requests) {
+    const { timeframe, start, end } = requests[0];
+    const timeseries = [];
+
+    for (let { source, name, dataModels } of requests) {
       for (const dataModel of dataModels) {
-        let path = "timeseries/get";
-
-        if (dataModel === "footprint") {
-          path = "footprint/get";
-        }
-
-        const res = await fetch(
-          `https://api.staging.vipercharts.com/api/${path}?source=${source}&ticker=${name}&dataModel=${dataModel}&timeframe=${timeframe}&start=${start}&end=${end}`
-        );
-
-        if (!res.ok) {
-          callback(id, {});
-          return;
-        }
-
-        const { success, data } = await res.json();
-        if (!success) {
-          callback(id, {});
-          return;
-        }
-
-        callback(id, data, dataModel);
+        timeseries.push({ source, ticker: name, dataModel });
       }
+    }
+
+    const res = await fetch(
+      `http://localhost:3001/api/timeseries/get?sources=${JSON.stringify(
+        timeseries
+      )}&timeframe=${timeframe}&start=${start}&end=${end}`
+    );
+
+    const { success, data } = await res.json();
+    if (!success) {
+      return;
+    }
+
+    for (const id in data) {
+      const { source, ticker, timeframe, dataModel } = data[id];
+      callback(`${source}:${ticker}:${timeframe}`, data[id].data, dataModel);
     }
   }
 
@@ -66,9 +54,7 @@ let Viper;
   }
 
   async function onRequestTemplates() {
-    const res = await fetch(
-      "https://api.staging.vipercharts.com/api/templates/get"
-    );
+    const res = await fetch("http://localhost:3001/api/templates/get");
     return (await res.json()).data;
   }
 })();
