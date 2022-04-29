@@ -32,11 +32,16 @@ let Viper;
       }
     }
 
-    const res = await fetch(
-      `http://localhost:3001/api/timeseries/get?sources=${JSON.stringify(
-        timeseries
-      )}&timeframe=${timeframe}&start=${start}&end=${end}`
-    );
+    const res = await fetch(`http://localhost:3001/api/timeseries/get`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        timeframe,
+        start,
+        end,
+        sources: timeseries,
+      }),
+    });
 
     const { success, data } = await res.json();
     if (!success) {
