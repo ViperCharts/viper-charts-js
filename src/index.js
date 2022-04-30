@@ -32,25 +32,33 @@ let Viper;
       }
     }
 
-    const res = await fetch(`http://localhost:3001/api/timeseries/get`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        timeframe,
-        start,
-        end,
-        sources: timeseries,
-      }),
-    });
+    for (let i = 0; i < timeseries.length; i += 25) {
+      (async () => {
+        const res = await fetch(`http://localhost:3001/api/timeseries/get`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            timeframe,
+            start,
+            end,
+            sources: timeseries.slice(i, i + 25),
+          }),
+        });
 
-    const { success, data } = await res.json();
-    if (!success) {
-      return;
-    }
+        const { success, data } = await res.json();
+        if (!success) {
+          return;
+        }
 
-    for (const id in data) {
-      const { source, ticker, timeframe, dataModel } = data[id];
-      callback(`${source}:${ticker}:${timeframe}`, data[id].data, dataModel);
+        for (const id in data) {
+          const { source, ticker, timeframe, dataModel } = data[id];
+          callback(
+            `${source}:${ticker}:${timeframe}`,
+            data[id].data,
+            dataModel
+          );
+        }
+      })();
     }
   }
 
