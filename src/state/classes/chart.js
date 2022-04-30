@@ -182,7 +182,7 @@ export default class ChartState extends EventEmitter {
     return this.datasetGroups[id];
   }
 
-  updateDatasetGroup(datasetGroupId, newDatasets) {
+  updateDatasetGroup(datasetGroupId, newDatasets, { updateUI = true }) {
     const group = this.datasetGroups[datasetGroupId];
 
     const oldId = `${group.datasets[0].source}:${group.datasets[0].name}`;
@@ -222,7 +222,9 @@ export default class ChartState extends EventEmitter {
     this.computedState.updateIndicators(indicatorUpdates);
 
     // Update chart UI
-    this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
+    if (updateUI) {
+      this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
+    }
     this.$global.settings.onChartDatasetGroupsChange(
       this.id,
       this.datasetGroups
@@ -240,7 +242,8 @@ export default class ChartState extends EventEmitter {
     indicator,
     datasetGroupId,
     model,
-    { visible = true, layerId = Object.keys(this.ranges.y)[0] }
+    { visible = true, layerId = Object.keys(this.ranges.y)[0] },
+    { updateUI = true }
   ) {
     // If indicator passed was a string, assume its indicator id
     if (typeof indicator === "string") {
@@ -310,7 +313,9 @@ export default class ChartState extends EventEmitter {
     this.datasetGroups[group.id] = group;
 
     // Update chart UI
-    this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
+    if (updateUI) {
+      this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
+    }
 
     // Request data points for dataset
     this.$global.data.requestDataPoints({

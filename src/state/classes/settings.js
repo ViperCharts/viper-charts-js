@@ -47,10 +47,14 @@ export default class SettingsState extends EventEmitter {
                 synced,
                 indicators,
               } of Object.values(state.datasetGroups)) {
-                const group = chart.createDatasetGroup(datasets, {
-                  visible,
-                  synced,
-                });
+                const group = chart.createDatasetGroup(
+                  datasets,
+                  {
+                    visible,
+                    synced,
+                  },
+                  { updateUI: false }
+                );
 
                 for (const indicator of Object.values(indicators)) {
                   chart.addIndicator(
@@ -60,6 +64,9 @@ export default class SettingsState extends EventEmitter {
                     {
                       visible: indicator.visible,
                       layerId: indicator.layerId,
+                    },
+                    {
+                      updateUI: false,
                     }
                   );
                 }
