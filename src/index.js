@@ -4,7 +4,9 @@ import ViperCharts from "./viper";
 let Viper;
 
 (async () => {
-  const res = await fetch("http://localhost:3001/api/markets/get");
+  const res = await fetch(
+    "https://api.staging.vipercharts.com/api/markets/get"
+  );
   if (!res.ok) {
     alert("An error occurred when fetching available markets.");
     return;
@@ -34,16 +36,19 @@ let Viper;
 
     for (let i = 0; i < timeseries.length; i += 25) {
       (async () => {
-        const res = await fetch(`http://localhost:3001/api/timeseries/get`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            timeframe,
-            start,
-            end,
-            sources: timeseries.slice(i, i + 25),
-          }),
-        });
+        const res = await fetch(
+          `https://api.staging.vipercharts.com/api/timeseries/get`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              timeframe,
+              start,
+              end,
+              sources: timeseries.slice(i, i + 25),
+            }),
+          }
+        );
 
         const { success, data } = await res.json();
         if (!success) {
@@ -67,7 +72,9 @@ let Viper;
   }
 
   async function onRequestTemplates() {
-    const res = await fetch("http://localhost:3001/api/templates/get");
+    const res = await fetch(
+      "https://api.staging.vipercharts.com/api/templates/get"
+    );
     return (await res.json()).data;
   }
 })();

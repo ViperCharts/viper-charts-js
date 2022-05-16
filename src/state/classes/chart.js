@@ -182,7 +182,9 @@ export default class ChartState extends EventEmitter {
     return this.datasetGroups[id];
   }
 
-  updateDatasetGroup(datasetGroupId, newDatasets, { updateUI = true }) {
+  updateDatasetGroup(datasetGroupId, newDatasets, options = {}) {
+    const { updateUI = true } = options;
+
     const group = this.datasetGroups[datasetGroupId];
 
     const oldId = `${group.datasets[0].source}:${group.datasets[0].name}`;
@@ -243,8 +245,10 @@ export default class ChartState extends EventEmitter {
     datasetGroupId,
     model,
     { visible = true, layerId = Object.keys(this.ranges.y)[0] },
-    { updateUI = true }
+    options = {}
   ) {
+    const { updateUI = true } = options;
+
     // If indicator passed was a string, assume its indicator id
     if (typeof indicator === "string") {
       indicator = PlotTypes.getIndicatorById(indicator);
