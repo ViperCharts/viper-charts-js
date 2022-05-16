@@ -44,7 +44,7 @@ export default class Sources extends React.Component {
 
   updateSearchResults(search = "") {
     const results = [];
-    const regex = new RegExp(search, "ig");
+    const regex = new RegExp(search.replace(/[\W_]+/g, "."), "ig");
 
     for (const { match, matches } of this.state.keywords) {
       for (const str of matches) {
