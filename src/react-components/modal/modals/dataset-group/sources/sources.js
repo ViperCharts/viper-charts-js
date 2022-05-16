@@ -44,12 +44,14 @@ export default class Sources extends React.Component {
 
   updateSearchResults(search = "") {
     const results = [];
-    const regex = new RegExp(search);
+    const regex = new RegExp(search, "ig");
 
-    for (const { keywords, match } of this.state.keywords) {
-      if (regex.test(keywords.join(":"))) {
-        console.log(match);
-        results.push(match);
+    for (const { match, matches } of this.state.keywords) {
+      for (const str of matches) {
+        if (regex.test(str)) {
+          results.push(match);
+          break;
+        }
       }
     }
 
