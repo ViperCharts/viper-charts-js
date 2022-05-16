@@ -4,7 +4,9 @@ import ViperCharts from "./viper";
 let Viper;
 
 (async () => {
-  const res = await fetch("https://demo-api.vipercharts.com/sources");
+  const res = await fetch(
+    "https://api.staging.vipercharts.com/api/markets/get"
+  );
   if (!res.ok) {
     alert("An error occurred when fetching available markets.");
     return;
@@ -15,33 +17,64 @@ let Viper;
   // Actual chart stuff
   Viper = new ViperCharts({
     element: document.getElementById("chart"),
-    sources,
-    settings: JSON.parse(
-      localStorage.getItem("settings") ||
-        '{"layout":[{"id":"t02ks9pmxx7","chartId":"jsmtlxwdh9","top":0,"left":0,"width":100,"height":100,"children":[]}],"charts":{"jsmtlxwdh9":{"name":"Untitled Chart","timeframe":3600000,"range":{"start":1643578536685.5278,"end":1644519600000,"min":35777.15,"max":46003.85},"pixelsPerElement":4.299816959998681,"datasetGroups":{"d4tpj06ktj":{"id":"d4tpj06ktj","visible":true,"datasets":[{"source":"FTX","name":"BTC-PERP","timeframes":[60000,300000,900000,3600000,86400000]}],"indicators":{"bq7bicnvx0d":{"id":"candlestick","name":"Candlestick","visible":true,"datasetId":"FTX:BTC-PERP","color":"#128cdf","renderingQueueId":"bq7bicnvx0d"},"drq2078luda":{"id":"sma","name":"SMA","visible":true,"datasetId":"FTX:BTC-PERP","color":"#5ea09b","renderingQueueId":"drq2078luda"}},"synced":{}}},"settings":{"syncRange":false,"syncWithCrosshair":"","lockedYScale":true,"scaleType":"default"}}},"global":{"maxCharts":null,"gridEdit":true}}'
-    ),
+    sources: sources.data,
+    settings: JSON.parse(localStorage.getItem("settings")),
     onRequestHistoricalData,
     onSaveViperSettings,
+    onRequestTemplates,
   });
 
   async function onRequestHistoricalData({ requests, callback }) {
-    for (let { id, source, name, timeframe, start, end } of requests) {
-      const res = await fetch(
-        `https://demo-api.vipercharts.com/candles?source=${source}&name=${name}&timeframe=${timeframe}&start=${start}&end=${end}`
-      );
+    const { timeframe, start, end } = requests[0];
+    const timeseries = [];
 
-      if (!res.ok) {
-        callback(id, {});
-        return;
+    for (let { source, name, dataModels } of requests) {
+      for (const dataModel of dataModels) {
+        timeseries.push({ source, ticker: name, dataModel });
       }
+    }
 
-      const data = await res.json();
+    for (let i = 0; i < timeseries.length; i += 25) {
+      (async () => {
+        const res = await fetch(
+          `https://api.staging.vipercharts.com/api/timeseries/get`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              timeframe,
+              start,
+              end,
+              sources: timeseries.slice(i, i + 25),
+            }),
+          }
+        );
 
-      callback(id, data);
+        const { success, data } = await res.json();
+        if (!success) {
+          return;
+        }
+
+        for (const id in data) {
+          const { source, ticker, timeframe, dataModel } = data[id];
+          callback(
+            `${source}:${ticker}:${timeframe}`,
+            data[id].data,
+            dataModel
+          );
+        }
+      })();
     }
   }
 
   function onSaveViperSettings(settings) {
     localStorage.setItem("settings", JSON.stringify(settings));
+  }
+
+  async function onRequestTemplates() {
+    const res = await fetch(
+      "https://api.staging.vipercharts.com/api/templates/get"
+    );
+    return (await res.json()).data;
   }
 })();

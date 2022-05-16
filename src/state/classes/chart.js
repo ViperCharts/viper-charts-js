@@ -172,12 +172,73 @@ export default class ChartState extends EventEmitter {
     return this.datasetGroups[id];
   }
 
+  updateDatasetGroup(datasetGroupId, newDatasets, options = {}) {
+    const { updateUI = true } = options;
+    const group = this.datasetGroups[datasetGroupId];
+
+    const oldId = `${group.datasets[0].source}:${group.datasets[0].name}`;
+    const oldDataset = this.datasets[oldId];
+
+    const newDataset = this.$global.data.addOrGetDataset({
+      source: newDatasets[0].source,
+      name: newDatasets[0].name,
+      timeframe: this.timeframe,
+    });
+    const newId = newDataset.getTimeframeAgnosticId();
+
+    let subscribers = [];
+    const indicatorUpdates = {};
+
+    // Update array on dataset group
+    for (const id in group.indicators) {
+      subscribers = oldDataset.removeSubscriber(this.id, id);
+      const indicator = group.indicators[id];
+      indicator.datasetId = newId;
+      indicatorUpdates[id] = { datasetId: newId };
+      newDataset.addSubscriber(this.id, id, [indicator.model.id]);
+      this.computedState.emptySet({ renderingQueueId: id });
+    }
+
+    // If no more indicators on chart consuming this dataset, delete from memory
+    if (!Object.keys(subscribers).length) {
+      delete this.datasets[oldId];
+    }
+
+    this.datasets[newId] = newDataset;
+    group.datasets = newDatasets.map((d) => ({
+      source: d.source,
+      name: d.name,
+    }));
+
+    this.computedState.updateIndicators(indicatorUpdates);
+
+    // Update chart UI
+    if (updateUI) {
+      this.$global.ui.charts[this.id].updateDatasetGroups(this.datasetGroups);
+    }
+    this.$global.settings.onChartDatasetGroupsChange(
+      this.id,
+      this.datasetGroups
+    );
+
+    this.computedState.generateAllInstructions();
+  }
+
   /**
    * Add an indicator to this chart by id or by object
    * @param {string|indicator} indicator The indicator to add
    * @param {*} options
    */
-  async addIndicator(indicator, datasetGroupId, { visible = true }) {
+  async addIndicator(
+    indicator,
+    datasetGroupId,
+    model,
+    { visible = true, layerId = Object.keys(this.ranges.y)[0] },
+    options = {}
+  ) {
+    const { updateUI = true } = options;
+
+    // If indicator passed was a string, assume its indicator id
     if (typeof indicator === "string") {
       indicator = Indicators[indicator];
     }
