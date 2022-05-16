@@ -1,7 +1,4 @@
 import Canvas from "../canvas.js";
-import Background from "./background.js";
-import Overlay from "./overlay.js";
-import TimeSelected from "./time_selected.js";
 
 export default class TimeScale {
   constructor({ $state }) {
@@ -24,19 +21,6 @@ export default class TimeScale {
       position: "bottom",
     });
 
-    this.background = new Background({
-      canvas: this.canvas,
-      color: "#080019",
-    });
-    this.timeScaleOverlay = new TimeScaleOverlay({
-      $state: this.$state,
-      canvas: this.canvas,
-    });
-    this.timeSelected = new TimeSelected({
-      $state: this.$state,
-      canvas: this.canvas,
-    });
-
     this.onResizeChartListener = (({ xScale }) => {
       this.canvas.setWidth(xScale.width);
       this.canvas.setHeight(xScale.height);
@@ -45,6 +29,21 @@ export default class TimeScale {
       `resize-${this.$state.chart.id}`,
       this.onResizeChartListener
     );
+
+    this.mouseMoveListener = this.onWindowMouseMove.bind(this);
+    this.$state.global.events.addEventListener(
+      "mousemove",
+      this.mouseMoveListener
+    );
+  }
+
+  onWindowMouseMove({ movementX }) {
+    if (!this.canvas.isMouseDown) return;
+    if (movementX === 0) return;
+
+    const m = movementX;
+    const change = -(m > 0 ? -m * -10 : m * 10);
+    this.$state.chart.resizeXRange(change);
   }
 
   destroy() {
@@ -52,29 +51,9 @@ export default class TimeScale {
       `resize-${this.$state.chart.id}`,
       this.onResizeChartListener
     );
-  }
-}
-
-class TimeScaleOverlay extends Overlay {
-  constructor({ $state, canvas }) {
-    super({ canvas, type: "single" });
-
-    this.$state = $state;
-
-    this.init(this.draw.bind(this));
-  }
-
-  /**
-   * Draw canvas function, this is a placeholder
-   */
-  draw() {
-    for (const time of this.$state.chart.instructions.xScale.scales) {
-      const d = new Date(time);
-      this.canvas.drawTextAtPriceAndTime(
-        "#A7A8B3",
-        [time, 15],
-        "" + `${d.getHours()}:${`0${d.getMinutes()}`.slice(-2)}`
-      );
-    }
+    this.$state.global.events.removeEventListener(
+      "mousemove",
+      this.mouseMoveListener
+    );
   }
 }

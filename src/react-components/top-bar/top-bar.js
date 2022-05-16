@@ -18,6 +18,7 @@ export default class TopBar extends React.Component {
         Constants.MINUTE5,
         Constants.MINUTE15,
         Constants.HOUR,
+        Constants.HOUR4,
         Constants.DAY,
       ],
       timeframeLabels: {},
@@ -167,6 +168,14 @@ export default class TopBar extends React.Component {
         ) : null}
 
         {this.renderTimeframes()}
+
+        <button
+          onClick={() => this.$global.ui.app.setModal("templates")}
+          className="top-bar-item"
+        >
+          <i className="gg-layout-grid"></i>
+          Templates
+        </button>
 
         <div className="top-bar-seperator"></div>
 

@@ -65,6 +65,67 @@ const TIMEFRAMES = {
   y: YEAR,
 };
 
+const MONTHS = [
+  {
+    short: "Jan",
+    long: "January",
+  },
+  {
+    short: "Feb",
+    long: "February",
+  },
+  {
+    short: "Mar",
+    long: "March",
+  },
+  {
+    short: "Apr",
+    long: "April",
+  },
+  {
+    short: "May",
+    long: "May",
+  },
+  {
+    short: "Jun",
+    long: "June",
+  },
+  {
+    short: "Jul",
+    long: "July",
+  },
+  {
+    short: "Aug",
+    long: "August",
+  },
+  {
+    short: "Sep",
+    long: "September",
+  },
+  {
+    short: "Oct",
+    long: "October",
+  },
+  {
+    short: "Nov",
+    long: "November",
+  },
+  {
+    short: "Dec",
+    long: "December",
+  },
+];
+
+function getTimeframeText(timeframe) {
+  const keys = Object.keys(TIMEFRAMES);
+  for (let i = 0; i < keys.length; i++) {
+    if (timeframe / TIMEFRAMES[keys[i]] < 1) {
+      const key = keys[i - 1];
+      return `${timeframe / TIMEFRAMES[key]}${key}`;
+    }
+  }
+}
+
 export default {
   MILLISECOND,
   MILLISECOND100,
@@ -81,4 +142,6 @@ export default {
   YEAR,
   TIMESCALES,
   TIMEFRAMES,
+  MONTHS,
+  getTimeframeText,
 };

@@ -3,13 +3,33 @@ export default {
     return Math.random().toString(36).substr(2, 13);
   },
 
+  /**
+   * Get min and max from array
+   * (this is used over Math.min and Math.max because they can result in callstack overflow on large arrays)
+   * @param {[]number} arr
+   * @returns [min, max]
+   */
+  getMinAndMax(arr) {
+    let len = arr.length;
+    let max = -Infinity;
+    let min = Infinity;
+
+    while (len--) {
+      max = arr[len] > max ? arr[len] : max;
+      min = arr[len] < min ? arr[len] : min;
+    }
+    return [min, max];
+  },
+
   getAbsoluteMax(value, max) {
     if (value < 0) return Math.min(value, -max);
     return Math.max(value, max);
   },
 
   randomHexColor() {
-    return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    return `#${Math.floor(Math.random() * 16777215).toString(
+      16
+    )}00000`.substring(0, 7);
   },
 
   /**
@@ -71,6 +91,21 @@ export default {
     const yFromMin = price - min;
     const perc = yFromMin / yInView;
     return -Math.floor(perc * height - height);
+  },
+
+  /**
+   * Get a price for a given height and visible range
+   * @param {number} min
+   * @param {number} max
+   * @param {number} height
+   * @param {number} yCoord
+   * @returns
+   */
+  getPriceByYCoord(min, max, height, yCoord) {
+    const range = max - min;
+    const screenPerc = 1 - yCoord / height;
+    const rangeOffset = screenPerc * range;
+    return min + rangeOffset;
   },
 
   wipeObject(object) {

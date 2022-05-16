@@ -1,6 +1,6 @@
 import EventEmitter from "../../events/event_emitter";
 
-import Indicators from "../../components/indicators";
+import PlotTypes from "../../components/plot_types";
 
 export default class SettingsState extends EventEmitter {
   constructor({ $global }) {
@@ -23,7 +23,7 @@ export default class SettingsState extends EventEmitter {
   setSettings(settings) {
     let layout = [];
 
-    if (settings.layout instanceof Array) {
+    if (settings && settings.layout instanceof Array) {
       layout = settings.layout;
 
       if (typeof settings.charts === "object") {
@@ -47,18 +47,28 @@ export default class SettingsState extends EventEmitter {
                 synced,
                 indicators,
               } of Object.values(state.datasetGroups)) {
-                const group = chart.createDatasetGroup(datasets, {
-                  visible,
-                  synced,
-                });
+                const group = chart.createDatasetGroup(
+                  datasets,
+                  {
+                    visible,
+                    synced,
+                  },
+                  { updateUI: false }
+                );
 
                 for (const indicator of Object.values(indicators)) {
-                  const [source, name] = indicator.datasetId.split(":");
-                  chart.addIndicator(Indicators[indicator.id], group.id, {
-                    source,
-                    name,
-                    visible: indicator.visible,
-                  });
+                  chart.addIndicator(
+                    PlotTypes.getIndicatorById(indicator.id),
+                    group.id,
+                    indicator.model,
+                    {
+                      visible: indicator.visible,
+                      layerId: indicator.layerId,
+                    },
+                    {
+                      updateUI: false,
+                    }
+                  );
                 }
               }
             });
@@ -67,7 +77,7 @@ export default class SettingsState extends EventEmitter {
       }
     }
 
-    if (typeof settings.global === "object") {
+    if (settings && typeof settings.global === "object") {
       for (const property in settings.global) {
         this.settings.global[property] = settings.global[property];
       }
@@ -80,12 +90,7 @@ export default class SettingsState extends EventEmitter {
     state = {
       name: "",
       timeframe: 0,
-      range: {
-        start: 0,
-        end: 0,
-        min: 0,
-        max: 0,
-      },
+      ranges: { x: {}, y: {} },
       pixelsPerElement: 0,
       datasetGroups: {},
       settings: {},
@@ -106,13 +111,18 @@ export default class SettingsState extends EventEmitter {
     this.$global.api.onSaveViperSettings(this.settings);
   }
 
-  onChartChangeRangeOrTimeframe(id, { range, timeframe, pixelsPerElement }) {
+  onChartChangeRangeOrTimeframe(id, { ranges, timeframe, pixelsPerElement }) {
     const chart = this.settings.charts[id];
     if (!chart) {
       console.error(`Chart id ${id} not found in Viper settings state`);
       return;
     }
-    if (range) chart.range = range;
+    if (ranges) {
+      for (const id in ranges.y) {
+        ranges.y[id].indicators = {};
+      }
+      chart.ranges = ranges;
+    }
     if (timeframe) chart.timeframe = timeframe;
     if (pixelsPerElement) chart.pixelsPerElement = pixelsPerElement;
     this.$global.api.onSaveViperSettings(this.settings);

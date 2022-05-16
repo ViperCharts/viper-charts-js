@@ -37,9 +37,7 @@ class App extends React.Component {
   }
 
   addChart(chart) {
-    const charts = this.state.charts;
-    charts[chart.id] = chart;
-    this.setState(() => (this.state.charts = charts));
+    this.setState({ charts: { ...this.state.charts, [chart.id]: chart } });
   }
 
   setModal(modal, modalData = {}) {
@@ -49,32 +47,23 @@ class App extends React.Component {
   setContextMenu(e, id, data = {}) {
     e.stopPropagation();
     e.preventDefault();
-    const pos = [e.clientX, e.clientY];
+    let pos = [0, 0];
 
-    this.setState(() => {
-      this.state.contextmenu = { id, pos: [0, 0], data };
-    });
-    this.forceUpdate(() => {
-      const { clientWidth: elWidth, clientHeight: elHeight } =
-        this.contextMenusElement.current;
-      const { clientWidth: appWidth, clientHeight: appHeight } =
-        this.appElement.current;
+    this.setState({ contextmenu: { id, pos, data } }, () => {
+      const elWidth = this.contextMenusElement.current.clientWidth;
+      const elHeight = this.contextMenusElement.current.clientHeight;
+      const appWidth = this.appElement.current.clientWidth;
+      const appHeight = this.appElement.current.clientHeight;
 
-      pos[0] = Math.min(pos[0], appWidth - elWidth);
-      pos[1] = Math.min(pos[1], appHeight - elHeight);
+      pos[0] = Math.min(e.clientX, appWidth - elWidth);
+      pos[1] = Math.min(e.clientY, appHeight - elHeight);
 
-      this.setState(() => {
-        this.state.contextmenu.pos = pos;
-      });
-      this.forceUpdate();
+      this.setState({ contextmenu: { id, pos, data } });
     });
   }
 
   closeContextMenu() {
-    this.setState(() => {
-      this.state.contextmenu = { id: "", pos: [], data: {} };
-    });
-    this.forceUpdate();
+    this.setState({ contextmenu: { id: "", pos: [], data: {} } });
   }
 
   render() {
@@ -98,24 +87,23 @@ class App extends React.Component {
         />
 
         {modal.length ? <Modal $global={this.$global} id={modal} /> : null}
-        {contextmenu.id.length ? (
-          <div
-            style={{
-              position: "absolute",
-              top: contextmenu.pos[1],
-              left: contextmenu.pos[0],
-              zIndex: 1000,
-            }}
-            ref={this.contextMenusElement}
-          >
-            <ContextMenus
-              $global={this.$global}
-              id={contextmenu.id}
-              pos={contextmenu.pos}
-              data={contextmenu.data}
-            />
-          </div>
-        ) : null}
+        <div
+          style={{
+            position: "absolute",
+            top: contextmenu.pos[1],
+            left: contextmenu.pos[0],
+            zIndex: 1000,
+            visibility: this.state.contextmenu.id.length ? "visible" : "none",
+          }}
+          ref={this.contextMenusElement}
+        >
+          <ContextMenus
+            $global={this.$global}
+            id={contextmenu.id}
+            pos={contextmenu.pos}
+            data={contextmenu.data}
+          />
+        </div>
 
         <TopBar $global={this.$global} />
         <div ref={this.chartsElement} style={{ width: "100%", height: "100%" }}>

@@ -33,9 +33,52 @@ class ChartDimension {
     this.main = {
       width: width - this.yScale.width,
       height: height - this.xScale.height,
+      layers: {},
     };
     this.xScale.width = width - this.yScale.width;
     this.yScale.height = height - this.xScale.height;
+    this.updateLayers();
+  }
+
+  updateLayers() {
+    const { y } = this.$global.charts[this.id].ranges;
+
+    const ids = Object.keys(y);
+    if (!ids.length) return;
+
+    let top = 0;
+    let total = 0;
+    let fullscreenId = "";
+    const layers = {};
+
+    for (const id of ids) {
+      const layer = y[id];
+      layers[id] = { top: 0, height: 0 };
+
+      if (layer.fullscreen) {
+        fullscreenId = id;
+      }
+      if (layer.visible) {
+        total += layer.heightUnit;
+      }
+    }
+
+    if (!fullscreenId.length) {
+      for (const id of ids) {
+        const layer = y[id];
+
+        layers[id].top = top;
+        layers[id].height = layer.visible
+          ? this.main.height * (layer.heightUnit / total)
+          : 0;
+
+        top += layers[id].height;
+      }
+    } else {
+      layers[fullscreenId].height = this.main.height;
+    }
+
+    this.main.layers = layers;
   }
 
   setYScaleWidth(width) {
@@ -86,6 +129,90 @@ export default class LayoutState extends EventEmitter {
     }
 
     this.setLayout(layout);
+  }
+
+  /**
+   * Box or chart id
+   * @param {string} id Box id or chart id
+   * @param {string} side
+   * @param {number} newSidePercent
+   * @param {object} chartState
+   * @returns
+   */
+  addChartBoxToSide(id, side, newSidePercent = 50, chartState = {}) {
+    // Find the box by id
+    const loop = (box) => {
+      if (box.id === id || box.chartId === id) return box;
+      for (const child of box.children) {
+        const box = loop(child);
+        if (box) return box;
+      }
+    };
+
+    const box = loop(this.layout[0]);
+    if (!box) {
+      console.error(
+        `No box with box id of chart id of ${id} found in layout config`
+      );
+      return;
+    }
+
+    const box1 = {
+      id: Utils.uniqueId(),
+      top: 0,
+      left: 0,
+      width: 100,
+      height: 100,
+      chartId: box.chartId,
+      children: [],
+    };
+    const box2 = {
+      side,
+      id: Utils.uniqueId(),
+      top: 0,
+      left: 0,
+      width: 100,
+      height: 100,
+      children: [],
+    };
+
+    const oldSidePercent = 100 - newSidePercent;
+
+    if (side === "left") {
+      box1.side = "right";
+      box1.left = oldSidePercent;
+      box1.width = oldSidePercent;
+      box2.width = newSidePercent;
+    } else if (side === "top") {
+      box1.side = "bottom";
+      box1.top = oldSidePercent;
+      box1.height = oldSidePercent;
+      box2.height = newSidePercent;
+    } else if (side === "right") {
+      box1.side = "left";
+      box2.left = oldSidePercent;
+      box1.width = oldSidePercent;
+      box2.width = newSidePercent;
+    } else if (side === "bottom") {
+      box1.side = "top";
+      box2.top = oldSidePercent;
+      box1.height = oldSidePercent;
+      box2.height = newSidePercent;
+    }
+
+    const chart = this.$global.createChart(chartState);
+    box2.chartId = chart.id;
+    delete box.chartId;
+
+    if (side === "top" || side === "left") {
+      box.children = [box2, box1];
+    } else {
+      box.children = [box1, box2];
+    }
+
+    this.setLayout(this.layout);
+
+    return { box, box1, box2, chart };
   }
 
   setLayout(layout) {

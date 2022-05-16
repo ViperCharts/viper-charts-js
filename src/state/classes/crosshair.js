@@ -42,8 +42,21 @@ export default class CrosshairState extends EventEmitter {
 
       this.crosshairs[chart.id] = {
         x: chart.getXCoordByTimestamp(this.timestamp),
-        y: chart.getYCoordByPrice(this.price),
+        y: {},
       };
+
+      // Loop through all layers on chart and draw crosshair config for each
+      const { layers } = this.$global.layout.chartDimensions[chartId].main;
+      for (const id in chart.ranges.y) {
+        const { top, height } = layers[id];
+
+        const yCoord = chart.getYCoordByPrice(this.price, id);
+        if (yCoord < top || yCoord > top + height) {
+          continue;
+        }
+
+        this.crosshairs[chart.id].y[id] = yCoord;
+      }
     }
   }
 
@@ -64,11 +77,8 @@ export default class CrosshairState extends EventEmitter {
       timestamp += chart.timeframe - remainder;
     }
 
-    const range = chart.range.max - chart.range.min;
-    const screenPerc =
-      y / this.$global.layout.chartDimensions[chart.id].main.height;
-    const rangeOffset = (1 - screenPerc) * range;
-    const price = chart.range.min + rangeOffset;
+    const layerId = chart.getLayerByYCoord(y);
+    const price = chart.getPriceByYCoord(y, layerId);
 
     this.timestamp = timestamp;
     this.price = Utils.toFixed(price, chart.maxDecimalPlaces);

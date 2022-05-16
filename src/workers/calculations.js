@@ -1,3 +1,5 @@
+import Utils from "../utils.js";
+
 export default {
   /**
    * Loop through all points of a set and get the min and max values
@@ -21,7 +23,7 @@ export default {
       }
     }
 
-    return [Math.min(...values), Math.max(...values)];
+    return Utils.getMinAndMax(values);
   },
 
   /**
@@ -41,15 +43,15 @@ export default {
     }
   },
 
-  getVisibleRange(requestedRange, settings, min, max) {
+  getVisibleRange({ x, y }, min, max) {
     // If scale is locked, set min and max to min and max of all sets (visible range)
-    if (settings.lockedYScale) {
+    if (y.lockedYScale) {
       const ySpread5P = (max - min) * 0.05;
-      requestedRange.min = min - ySpread5P;
-      requestedRange.max = max + ySpread5P;
+      y.range.min = min - ySpread5P;
+      y.range.max = max + ySpread5P;
     }
 
-    return requestedRange;
+    return { x, y };
   },
 
   calculatePixelsPerElement(start, end, timeframe, width) {

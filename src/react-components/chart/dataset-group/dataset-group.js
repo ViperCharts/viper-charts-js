@@ -10,11 +10,48 @@ export default class DatsetGroup extends React.Component {
 
     this.$global = props.$global;
 
+    const { datasets } = this.props.datasetGroup;
     this.chart = this.$global.charts[props.chartId];
+    this.datasetId = `${datasets[0].source}:${datasets[0].name}:${this.chart.timeframe}`;
+    this.dataset = this.$global.data.datasets[this.datasetId];
 
     this.state = {
       isMouseOver: false,
+      pendingRequests: this.dataset.pendingRequests,
     };
+
+    this.pendingRequestsListener = this.dataset.addEventListener(
+      "pending-requests",
+      (pr) => this.setState({ pendingRequests: pr })
+    );
+
+    this.timeframeChangeListener = this.chart.addEventListener(
+      "set-timeframe",
+      (timeframe) => {
+        const datasetId = this.dataset.getTimeframeAgnosticId();
+        this.dataset.removeEventListener(
+          "pending-requests",
+          this.pendingRequestsListener
+        );
+        this.datasetId = `${datasetId}:${timeframe}`;
+        this.dataset = this.$global.data.datasets[this.datasetId];
+        this.pendingRequestsListener = this.dataset.addEventListener(
+          "pending-requests",
+          (pr) => this.setState({ pendingRequests: pr })
+        );
+      }
+    );
+  }
+
+  componentWillUnmount() {
+    this.dataset.removeEventListener(
+      "pending-requests",
+      this.pendingRequestsListener
+    );
+    this.chart.removeEventListener(
+      "set-timeframe",
+      this.timeframeChangeListener
+    );
   }
 
   toggleVisibility() {
@@ -26,7 +63,7 @@ export default class DatsetGroup extends React.Component {
   }
 
   render() {
-    const { datasetGroup, chartId } = this.props;
+    const { datasetGroup, chartId, isSelected } = this.props;
     const v = datasetGroup.visible;
     const dataset = datasetGroup.datasets[0];
     const indicatorIds = Object.keys(datasetGroup.indicators);
@@ -42,7 +79,9 @@ export default class DatsetGroup extends React.Component {
             datasetGroupId: datasetGroup.id,
           })
         }
-        className={`dataset-group v-noselect ${v ? "" : "invisible"}`}
+        className={`dataset-group v-noselect ${
+          isSelected ? "dataset-group-selected" : ""
+        } ${v ? "" : "invisible"}`}
       >
         <div className="dataset-group-info">
           <div className="dataset-group-title">
@@ -62,16 +101,20 @@ export default class DatsetGroup extends React.Component {
           </div>
         </div>
 
-        {indicatorIds.map((id) => (
-          <Indicator
-            $global={this.$global}
-            chartId={chartId}
-            datasetGroupId={datasetGroup.id}
-            indicator={datasetGroup.indicators[id]}
-            renderingQueueId={id}
-            key={id}
-          />
-        ))}
+        {indicatorIds.map((id) => {
+          const indicator = datasetGroup.indicators[id];
+          return (
+            <Indicator
+              $global={this.$global}
+              chartId={chartId}
+              datasetGroupId={datasetGroup.id}
+              indicator={indicator}
+              pendingRequests={this.state.pendingRequests[indicator.model.id]}
+              renderingQueueId={id}
+              key={id}
+            />
+          );
+        })}
       </div>
     );
   }

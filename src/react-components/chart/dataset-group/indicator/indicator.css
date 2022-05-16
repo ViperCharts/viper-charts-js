@@ -16,10 +16,21 @@
   opacity: 0.5;
 }
 
-.indicator-title {
+.indicator-model {
   color: rgb(172, 172, 172);
   margin: 0px 4px;
   font-size: 10px;
+}
+
+.indicator-name {
+  color: rgb(126, 126, 126);
+  font-size: 10px;
+}
+
+.indicator-loading {
+  color: rgb(126, 126, 126);
+  font-size: 8px;
+  padding: 0px 4px;
 }
 
 .indicator-controls {

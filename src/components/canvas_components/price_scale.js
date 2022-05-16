@@ -1,5 +1,4 @@
 import Canvas from "../canvas.js";
-import Background from "./background.js";
 
 // TODO rename to PriceScale
 export default class TimeScale {
@@ -7,6 +6,8 @@ export default class TimeScale {
     this.$state = $state;
 
     this.canvas = null;
+
+    this.layerToMove = -1;
   }
 
   init() {
@@ -63,16 +64,27 @@ export default class TimeScale {
     );
   }
 
-  onWindowMouseMove({ movementY }) {
-    if (!this.canvas.isMouseDown) return;
+  onWindowMouseMove({ movementY, layerY }) {
+    if (!this.canvas.isMouseDown) {
+      this.layerToMove = -1;
+      return;
+    }
     if (movementY === 0) return;
-    this.$state.chart.updateSettings({ lockedYScale: false });
-    const { range } = this.$state.chart;
-    const delta = range.max - range.min;
+
+    const { chart } = this.$state;
+
+    if (this.layerToMove === -1) {
+      const layerId = chart.getLayerByYCoord(layerY);
+      this.layerToMove = layerId;
+    }
+
+    let { min, max } = chart.ranges.y[this.layerToMove].range;
+    const delta = max - min;
     const delta10P = delta * 0.01;
     const change = -movementY * delta10P;
-    range.min += change;
-    range.max -= change;
-    this.$state.chart.setVisibleRange(range);
+    min += change;
+    max -= change;
+    chart.ranges.y[this.layerToMove].lockedYScale = false;
+    chart.setVisibleRange({ min, max }, this.layerToMove);
   }
 }
