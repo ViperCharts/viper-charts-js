@@ -16,7 +16,7 @@ export default class Sources extends React.Component {
     this.onClickSource = props.onClickSource;
 
     this.setAllDataSourcesListener = ((all) => {
-      this.setState({ sources: all });
+      this.setState({ sources: all, keywords: getKeywords(all) });
       this.updateSearchResults(this.state.search);
     }).bind(this);
     this.$global.data.addEventListener(
@@ -115,8 +115,6 @@ function getKeywords(sources) {
       });
     }
   }
-
-  console.log(keywords);
 
   return keywords;
 }
