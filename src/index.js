@@ -3,10 +3,13 @@ import ViperCharts from "./viper";
 
 let Viper;
 
+const apiURL =
+  process.env.NODE_ENV === "production"
+    ? "https://api.staging.vipercharts.com"
+    : "http://localhost:3001";
+
 (async () => {
-  const res = await fetch(
-    "https://api.staging.vipercharts.com/api/markets/get"
-  );
+  const res = await fetch(`${apiURL}/api/markets/get`);
   if (!res.ok) {
     alert("An error occurred when fetching available markets.");
     return;
@@ -36,19 +39,16 @@ let Viper;
 
     for (let i = 0; i < timeseries.length; i += 25) {
       (async () => {
-        const res = await fetch(
-          `https://api.staging.vipercharts.com/api/timeseries/get`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              timeframe,
-              start,
-              end,
-              sources: timeseries.slice(i, i + 25),
-            }),
-          }
-        );
+        const res = await fetch(`${apiURL}/api/timeseries/get`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            timeframe,
+            start,
+            end,
+            sources: timeseries.slice(i, i + 25),
+          }),
+        });
 
         const { success, data } = await res.json();
         if (!success) {
@@ -72,9 +72,7 @@ let Viper;
   }
 
   async function onRequestTemplates() {
-    const res = await fetch(
-      "https://api.staging.vipercharts.com/api/templates/get"
-    );
+    const res = await fetch(`${apiURL}/api/templates/get`);
     return (await res.json()).data;
   }
 })();
