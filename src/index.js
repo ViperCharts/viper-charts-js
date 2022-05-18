@@ -3,9 +3,10 @@ import ViperCharts from "./viper";
 
 let Viper;
 
-const apiURL = (process.env.NODE_ENV = "production"
-  ? "https://api.staging.vipercharts.com"
-  : "http://localhost:3001");
+const apiURL =
+  process.env.NODE_ENV === "production"
+    ? "https://api.staging.vipercharts.com"
+    : "http://localhost:3001";
 
 (async () => {
   const res = await fetch(`${apiURL}/api/markets/get`);
