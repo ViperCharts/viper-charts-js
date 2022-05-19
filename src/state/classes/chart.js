@@ -184,7 +184,6 @@ export default class ChartState extends EventEmitter {
 
   updateDatasetGroup(datasetGroupId, newDatasets, options = {}) {
     const { updateUI = true } = options;
-
     const group = this.datasetGroups[datasetGroupId];
 
     const oldId = `${group.datasets[0].source}:${group.datasets[0].name}`;

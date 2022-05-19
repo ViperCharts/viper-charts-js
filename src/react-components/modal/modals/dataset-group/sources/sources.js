@@ -10,12 +10,13 @@ export default class Sources extends React.Component {
       sources: this.$global.data.sources,
       search: this.props.search,
       searchResults: [],
+      keywords: getKeywords(this.$global.data.sources),
     };
 
     this.onClickSource = props.onClickSource;
 
     this.setAllDataSourcesListener = ((all) => {
-      this.setState({ sources: all });
+      this.setState({ sources: all, keywords: getKeywords(all) });
       this.updateSearchResults(this.state.search);
     }).bind(this);
     this.$global.data.addEventListener(
@@ -42,26 +43,14 @@ export default class Sources extends React.Component {
   }
 
   updateSearchResults(search = "") {
-    const { sources } = this.state;
-
-    // Filter by dataset id
     const results = [];
-    const regex = new RegExp(search.split("").join(".*"));
+    const regex = new RegExp(search.replace(/[\W_]+/g, "."), "ig");
 
-    for (const sourceId of Object.keys(sources)) {
-      const source = sources[sourceId];
-
-      for (const dataset of source) {
-        const { name } = dataset;
-
-        const dataModelsStr = dataset.models.map((m) => m.name).join(", ");
-        const id = `${sourceId} ${name} ${dataModelsStr}`.toLowerCase();
-
-        if (search.length === 0 || regex.test(id)) {
-          results.push({
-            dataset,
-            dataModelsStr,
-          });
+    for (const { match, matches } of this.state.keywords) {
+      for (const str of matches) {
+        if (regex.test(str)) {
+          results.push(match);
+          break;
         }
       }
     }
@@ -78,11 +67,13 @@ export default class Sources extends React.Component {
             onChange={this.onSearchInput.bind(this)}
             type="text"
             placeholder="Search for a data source here..."
-            style={{ textTransform: "uppercase" }}
+            style={{
+              textTransform: this.state.search.length ? "uppercase" : "none",
+            }}
           />
         </div>
         <div className="datasets">
-          {this.state.searchResults.map(({ dataset, dataModelsStr }) => (
+          {this.state.searchResults.map((dataset) => (
             <button
               onClick={() => this.onClickSource(dataset)}
               className="dataset grouped-list-item"
@@ -92,11 +83,38 @@ export default class Sources extends React.Component {
                 {dataset.source}
                 <span style={{ opacity: "0.75" }}>{dataset.name}</span>
               </h3>
-              <i style={{ opacity: "0.5" }}>{dataModelsStr}</i>
+              <i style={{ opacity: "0.5" }}>
+                {dataset.models.map((m) => m.name).join(", ")}
+              </i>
             </button>
           ))}
         </div>
       </div>
     );
   }
+}
+
+function getKeywords(sources) {
+  const keywords = [];
+
+  for (const sourceId in sources) {
+    const markets = sources[sourceId];
+
+    for (const market of markets) {
+      const { source, name, models } = market;
+
+      const matches = [];
+
+      for (const model of models) {
+        matches.push(`${source}:${name}:${model.name}`.replaceAll(/\W:/g, ""));
+      }
+
+      keywords.push({
+        matches,
+        match: market,
+      });
+    }
+  }
+
+  return keywords;
 }
