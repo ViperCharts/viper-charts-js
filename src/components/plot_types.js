@@ -41,20 +41,24 @@ const bases = {
       const delta = buyVolume - sellVolume;
       const total = buyVolume + sellVolume;
 
-      plotBox({
-        top: total,
-        bottom: 0,
-        width: 0.9,
-        center: true,
-        color: delta >= 0 ? "#C4FF4966" : "#FE3A6466",
-      });
-      plotBox({
-        top: Math.abs(delta),
-        bottom: 0,
-        width: 0.9,
-        center: true,
-        color: delta >= 0 ? "#C4FF49" : "#FE3A64",
-      });
+      if (total !== 0) {
+        plotBox({
+          top: total,
+          bottom: 0,
+          width: 0.9,
+          center: true,
+          color: delta >= 0 ? "#C4FF4966" : "#FE3A6466",
+        });
+      }
+      if (delta !== 0) {
+        plotBox({
+          top: Math.abs(delta),
+          bottom: 0,
+          width: 0.9,
+          center: true,
+          color: delta >= 0 ? "#C4FF49" : "#FE3A64",
+        });
+      }
     },
   },
 
@@ -205,13 +209,11 @@ const indicators = {
     version: "1.0.0",
     name: "Cumulative Volume Delta",
     dependencies: ["volumeBySide"],
-    draw({ plot, buyVolume, sellVolume, cum }) {
-      const delta = buyVolume - sellVolume;
-
+    draw({ plot, buyVolume, sellVolume, cum, times }) {
       const buy = cum({ source: "buyVolume" });
       const sell = cum({ source: "sellVolume" });
 
-      let value = delta;
+      let value = 0;
       for (let i = 0; i < buy.length; i++) {
         value += buy[i] - sell[i];
       }
