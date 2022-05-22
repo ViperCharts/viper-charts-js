@@ -350,9 +350,6 @@ export default class ComputedData extends EventEmitter {
       let scaleMin = setMin;
       let scaleMax = setMax;
 
-      this.sets[id].visibleMin = setMin;
-      this.sets[id].visibleMax = setMax;
-
       const layer = requestedRanges.y[indicator.layerId];
 
       // If percentage chart, calculate scale based on first plotted value
@@ -368,6 +365,16 @@ export default class ComputedData extends EventEmitter {
         scaleMax = 100;
       }
 
+      // If min and max are equal, add +1 and -1 boundary to it so line data will render
+      if (scaleMin === scaleMax) {
+        scaleMin -= 1;
+        scaleMax += 1;
+        setMin -= 1;
+        setMax += 1;
+      }
+
+      this.sets[id].visibleMin = setMin;
+      this.sets[id].visibleMax = setMax;
       this.sets[id].visibleScaleMin = scaleMin;
       this.sets[id].visibleScaleMax = scaleMax;
 
