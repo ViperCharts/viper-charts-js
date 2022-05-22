@@ -209,7 +209,7 @@ const indicators = {
     version: "1.0.0",
     name: "Cumulative Volume Delta",
     dependencies: ["volumeBySide"],
-    draw({ plot, buyVolume, sellVolume, cum, times }) {
+    draw({ plot, cum }) {
       const buy = cum({ source: "buyVolume" });
       const sell = cum({ source: "sellVolume" });
 
