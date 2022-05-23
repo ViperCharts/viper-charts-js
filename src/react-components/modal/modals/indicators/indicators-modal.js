@@ -23,6 +23,7 @@ export default {
 
       this.state = {
         model: this.dataSource.models[0],
+        childModel: null,
       };
     }
 
@@ -30,7 +31,11 @@ export default {
       this.setState({ model });
     }
 
-    async addIndicator(indicatorId, offchart = false) {
+    setChildModel(childModel) {
+      this.setState({ childModel });
+    }
+
+    addIndicator(indicatorId, offchart = false) {
       // Add the indicator to dataset group
       this.chart.addIndicator(indicatorId, this.group.id, this.state.model, {
         visible: true,
@@ -38,36 +43,116 @@ export default {
       });
     }
 
+    addModelGroup(offchart = false) {
+      // Loop through all dataModels and add default indicator for each
+      for (const model of this.state.model.model) {
+        this.chart.addIndicator(
+          model.indicators[0],
+          this.group.id,
+          {
+            id: `${this.state.model.id}:${model.id}`,
+            name: model.name,
+            model: model.model,
+          },
+          {
+            visible: true,
+            layerId: !offchart ? Object.keys(this.chart.ranges.y)[0] : "new",
+          }
+        );
+      }
+    }
+
     isIndicatorSupported({ dependencies }) {
-      if (dependencies[0] === "value" && this.state.model.model === "ohlc")
-        return true;
-      return this.state.model.model === dependencies[0];
+      const dataModel = this.state.model;
+      const { model } = dataModel;
+
+      const validateModel = (m) => {
+        if (dependencies[0] === "value" && m === "ohlc") {
+          return true;
+        }
+
+        return m === dependencies[0];
+      };
+
+      // If is model ID, match model ID to dataset model ID
+      if (typeof model === "string") {
+        return validateModel(model);
+      }
+
+      // If dataModel has children
+      if (Array.isArray(model)) {
+        if (this.state.childModel === null) return false;
+        return validateModel(this.state.childModel.model);
+      }
+
+      throw new Error(
+        "Unreachable code reached. dataModel is not a valid type."
+      );
     }
 
     render() {
+      const bases = Object.values(PlotTypes.bases).filter(
+        this.isIndicatorSupported.bind(this)
+      );
+      const indicators = Object.values(PlotTypes.indicators).filter(
+        this.isIndicatorSupported.bind(this)
+      );
+
       return (
         // Display horizontal grid of dataModels from source
         <div className="indicators-modal">
           <div className="dataset-models">
-            {this.dataSource.models.map((model) => (
-              <button
-                onClick={() => this.setModel(model)}
-                key={model.id}
-                className={`button ${
-                  model.id === this.state.model.id ? "button-selected" : ""
-                }`}
-                style={{ padding: "6px", marginRight: "6px" }}
-              >
-                {model.name}
-              </button>
-            ))}
+            <div>
+              {this.dataSource.models.map((model) => (
+                <button
+                  onClick={() => this.setModel(model)}
+                  key={model.id}
+                  className={`button ${
+                    model.id === this.state.model.id ? "button-selected" : ""
+                  }`}
+                  style={{ padding: "6px", marginRight: "6px" }}
+                >
+                  {model.name}
+                </button>
+              ))}
+            </div>
+
+            {Array.isArray(this.state.model.model) ? (
+              <div className="dataset-models-children">
+                Child Datasets
+                <div>
+                  <button
+                    onClick={() => this.setChildModel(null)}
+                    className={`button ${
+                      this.state.childModel === null ? "button-selected" : ""
+                    }`}
+                    style={{ padding: "6px", marginRight: "6px" }}
+                  >
+                    All
+                  </button>
+                  {this.state.model.model.map((model) => (
+                    <button
+                      onClick={() => this.setChildModel(model)}
+                      key={model.id}
+                      className={`button button-sm ${
+                        model.id === this.state.childModel?.id
+                          ? "button-selected"
+                          : ""
+                      }`}
+                      style={{ padding: "6px", marginRight: "6px" }}
+                    >
+                      {model.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
 
-          <div style={{ margin: "12px 0px" }}>
-            <span>Bases</span>
-            {Object.values(PlotTypes.bases)
-              .filter(this.isIndicatorSupported.bind(this))
-              .map((indicator) => {
+          {bases.length ? (
+            <div style={{ margin: "12px 0px" }}>
+              <span>Bases</span>
+              {bases.map((indicator) => {
                 return (
                   <div
                     className="indicator-list-item grouped-list-item"
@@ -87,13 +172,13 @@ export default {
                   </div>
                 );
               })}
-          </div>
+            </div>
+          ) : null}
 
-          <div>
-            <span>Indicators</span>
-            {Object.values(PlotTypes.indicators)
-              .filter(this.isIndicatorSupported.bind(this))
-              .map((indicator) => {
+          {indicators.length ? (
+            <div>
+              <span>Indicators</span>
+              {indicators.map((indicator) => {
                 return (
                   <div
                     className="indicator-list-item grouped-list-item"
@@ -113,7 +198,25 @@ export default {
                   </div>
                 );
               })}
-          </div>
+            </div>
+          ) : null}
+
+          {Array.isArray(this.state.model.model) &&
+          this.state.childModel === null ? (
+            <div>
+              <div className="indicator-list-item grouped-list-item">
+                <button
+                  onClick={() => this.addModelGroup()}
+                  className="add-indicator-btn-main"
+                >
+                  Add Group
+                </button>
+                <button onClick={() => this.addModelGroup(true)}>
+                  Off Chart
+                </button>
+              </div>
+            </div>
+          ) : null}
         </div>
       );
     }
