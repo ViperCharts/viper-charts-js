@@ -39,6 +39,8 @@ const apiURL =
 
     for (let i = 0; i < timeseries.length; i += 25) {
       (async () => {
+        const sources = timeseries.slice(i, i + 25);
+
         const res = await fetch(`${apiURL}/api/timeseries/get`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -46,22 +48,22 @@ const apiURL =
             timeframe,
             start,
             end,
-            sources: timeseries.slice(i, i + 25),
+            sources,
           }),
         });
 
-        const { success, data } = await res.json();
-        if (!success) {
-          return;
-        }
+        const { data } = await res.json();
 
-        for (const id in data) {
-          const { source, ticker, timeframe, dataModel } = data[id];
-          callback(
-            `${source}:${ticker}:${timeframe}`,
-            data[id].data,
-            dataModel
-          );
+        for (const { source, ticker, dataModel } of sources) {
+          const setId = `${source}:${ticker}:${timeframe}`;
+          const resId = `${source}:${ticker}:${dataModel}`;
+
+          let d = {};
+          if (data[resId]) {
+            d = data[resId].data;
+          }
+
+          callback(setId, d, dataModel);
         }
       })();
     }

@@ -8,7 +8,7 @@ export default class Sources extends React.Component {
 
     this.state = {
       sources: this.$global.data.sources,
-      search: this.props.search,
+      search: this.props.search || "",
       searchResults: [],
       keywords: getKeywords(this.$global.data.sources),
     };
