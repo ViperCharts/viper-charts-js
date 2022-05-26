@@ -331,6 +331,8 @@ export default class ChartState extends EventEmitter {
       this.id,
       this.datasetGroups
     );
+
+    return indicator;
   }
 
   addLayer(heightUnit) {
