@@ -44,26 +44,17 @@ export default {
     }
 
     async addModelGroup(offchart = false) {
-      let layerId = !offchart ? Object.keys(this.chart.ranges.y)[0] : "new";
+      const indicators = [];
 
-      // Loop through all dataModels and add default indicator for each
+      // Get all indicators for model
       for (const model of this.state.model.model) {
-        const indicator = await this.chart.addIndicator(
-          model.indicators[0],
-          this.group.id,
-          {
-            id: `${this.state.model.id}:${model.id}`,
-            name: model.name,
-            model: model.model,
-          },
-          {
-            visible: true,
-            layerId,
-          }
-        );
-
-        if (layerId === "new") layerId = indicator.layerId;
+        indicators.push(PlotTypes.getIndicatorById(model.indicators[0]));
       }
+
+      this.chart.addIndicator(indicators, this.group.id, this.state.model, {
+        visible: true,
+        layerId: !offchart ? Object.keys(this.chart.ranges.y)[0] : "new",
+      });
     }
 
     isIndicatorSupported({ dependencies }) {
