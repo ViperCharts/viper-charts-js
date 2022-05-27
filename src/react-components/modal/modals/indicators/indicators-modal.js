@@ -112,8 +112,6 @@ export default {
         this.isIndicatorSupported.bind(this)
       );
 
-      console.log(this.state);
-
       return (
         // Display horizontal grid of dataModels from source
         <div className="indicators-modal">
