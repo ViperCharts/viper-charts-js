@@ -204,7 +204,52 @@ export default class ChartState extends EventEmitter {
       subscribers = oldDataset.removeSubscriber(this.id, id);
       const indicator = group.indicators[id];
       indicator.datasetId = newId;
-      indicatorUpdates[id] = { datasetId: newId };
+
+      for (const source in this.$global.data.sources) {
+        if (source === newDataset.source) {
+          const datasets = this.$global.data.sources[source];
+
+          const dataset = datasets.find(({ name }) => name === newDataset.name);
+          if (!dataset) {
+            throw new Error(
+              `Couldn't find dataset ${datasetId} in sources model.`
+            );
+          }
+
+          const model = JSON.parse(
+            JSON.stringify(
+              dataset.models.find(({ id }) => id === indicator.model.id)
+            )
+          );
+          if (!model) {
+            throw new Error(
+              `Couldn't find dataModel ${indicator.model.id} on dataset ${datasetId}`
+            );
+          }
+
+          if (Array.isArray(model.model)) {
+            const childModel = model.model.find(
+              ({ id }) => id === indicator.model.childId
+            );
+
+            if (!childModel) {
+              throw new Error(
+                `Couldn't find childModel ${indicator.model.childId}`
+              );
+            }
+
+            model.model = childModel;
+            model.label = childModel.label;
+            model.childId = childModel.id;
+          }
+
+          indicator.model = model;
+
+          break;
+        }
+      }
+
+      indicatorUpdates[id] = { datasetId: newId, model: indicator.model };
       newDataset.addSubscriber(this.id, id, [indicator.model.id]);
       this.computedState.emptySet({ renderingQueueId: id });
     }

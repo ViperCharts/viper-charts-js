@@ -264,7 +264,6 @@ export default {
             font: "bold 10px Arial",
           });
 
-          console.log(indicator);
           const text = `${indicator.model.label}`;
           const textWidth = text.length * 7;
 

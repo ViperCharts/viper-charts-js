@@ -61,8 +61,6 @@ export default {
           }
         );
 
-        console.log(layerId);
-
         if (layerId === "new") layerId = indicator.layerId;
       }
     }
