@@ -36,8 +36,19 @@ export default {
     }
 
     addIndicator(indicatorId, offchart = false) {
+      let { model } = this.state;
+
+      // If adding child model
+      if (this.state.childModel) {
+        model = {
+          ...this.state.childModel,
+          id: model.id,
+          childId: this.state.childModel.id,
+        };
+      }
+
       // Add the indicator to dataset group
-      this.chart.addIndicator(indicatorId, this.group.id, this.state.model, {
+      this.chart.addIndicator(indicatorId, this.group.id, model, {
         visible: true,
         layerId: !offchart ? Object.keys(this.chart.ranges.y)[0] : "new",
       });
@@ -100,6 +111,8 @@ export default {
       const indicators = Object.values(PlotTypes.indicators).filter(
         this.isIndicatorSupported.bind(this)
       );
+
+      console.log(this.state);
 
       return (
         // Display horizontal grid of dataModels from source
