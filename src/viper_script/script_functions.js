@@ -111,7 +111,9 @@ export default {
     const item = data[timestamp];
     if (!item) return undefined;
     if (!item[dataModel.id]) return undefined;
-    return item[dataModel.id][source];
+    return !dataModel.childId
+      ? item[dataModel.id][source]
+      : item[dataModel.id][dataModel.childId][source];
   },
 
   getDataArray(
@@ -125,7 +127,11 @@ export default {
       const item = data[timestamp];
       if (!item) continue;
       if (!item[dataModel.id]) continue;
-      items.push(item[dataModel.id][source]);
+      items.push(
+        !dataModel.childId
+          ? item[dataModel.id][source]
+          : item[dataModel.id][dataModel.childId][source]
+      );
     }
     return items;
   },

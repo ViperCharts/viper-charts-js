@@ -357,6 +357,10 @@ export default class ChartState extends EventEmitter {
     return id;
   }
 
+  addDataModelGroup() {
+    const id = Utils.uniqueId();
+  }
+
   /**
    * Toggle layer fullscreen
    * @param {string} layerId

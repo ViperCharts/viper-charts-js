@@ -203,9 +203,8 @@ export default class ComputedData extends EventEmitter {
       // If item exists at iterated time, delete it
       delete set.data[iteratedTime];
 
-      const point = dataset.data[iteratedTime];
+      let point = dataset.data[iteratedTime];
       if (point === undefined || point === null) continue;
-      let data = point[indicator.model.id];
 
       if (
         point[indicator.model.id] === undefined ||
@@ -214,11 +213,18 @@ export default class ComputedData extends EventEmitter {
         continue;
       }
 
+      let data = point[indicator.model.id];
+
+      // If this dataModel is a child model
+      if (indicator.model.childId) {
+        data = data[indicator.model.childId];
+      }
+
       if (
         indicator.dependencies[0] === "value" &&
         indicator.model.model === "ohlc"
       ) {
-        data = { value: point[indicator.model.id].close };
+        data = { value: data.close };
       }
 
       indicator.draw({
