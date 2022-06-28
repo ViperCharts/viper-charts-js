@@ -254,7 +254,7 @@ const indicators = {
         plotBox({
           top: price + spread,
           bottom: price,
-          width: Math.abs(delta),
+          width: Math.abs(delta) / 3,
           color: delta >= 0 ? "#C4FF49" : "#FE3A64",
         });
       }
