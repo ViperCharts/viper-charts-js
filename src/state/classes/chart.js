@@ -209,7 +209,7 @@ export default class ChartState extends EventEmitter {
         if (source === newDataset.source) {
           const datasets = this.$global.data.sources[source];
 
-          const dataset = datasets.find(({ name }) => name === newDataset.name);
+          const dataset = datasets[newDataset.name];
           if (!dataset) {
             throw new Error(
               `Couldn't find dataset ${datasetId} in sources model.`
@@ -217,9 +217,7 @@ export default class ChartState extends EventEmitter {
           }
 
           const model = JSON.parse(
-            JSON.stringify(
-              dataset.models.find(({ id }) => id === indicator.model.id)
-            )
+            JSON.stringify(dataset.models[indicator.model.id])
           );
           if (!model) {
             throw new Error(

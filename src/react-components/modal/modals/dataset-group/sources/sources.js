@@ -84,7 +84,9 @@ export default class Sources extends React.Component {
                 <span style={{ opacity: "0.75" }}>{dataset.name}</span>
               </h3>
               <i style={{ opacity: "0.5" }}>
-                {dataset.models.map((m) => m.name).join(", ")}
+                {Object.values(dataset.models)
+                  .map((m) => m.name)
+                  .join(", ")}
               </i>
             </button>
           ))}
@@ -97,21 +99,22 @@ export default class Sources extends React.Component {
 function getKeywords(sources) {
   const keywords = [];
 
-  for (const sourceId in sources) {
-    const markets = sources[sourceId];
+  for (const source in sources) {
+    const datasets = sources[source];
 
-    for (const market of markets) {
-      const { source, name, models } = market;
+    for (const name in datasets) {
+      const { models } = datasets[name];
 
       const matches = [];
 
-      for (const model of models) {
+      for (const modelId in models) {
+        const model = models[modelId];
         matches.push(`${source}:${name}:${model.name}`.replaceAll(/\W:/g, ""));
       }
 
       keywords.push({
         matches,
-        match: market,
+        match: datasets[name],
       });
     }
   }

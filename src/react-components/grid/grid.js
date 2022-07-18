@@ -162,8 +162,6 @@ export default class Grid extends React.Component {
   }
 
   renderBox(box, i) {
-    console.log(box);
-
     return (
       <div
         className="grid-box"

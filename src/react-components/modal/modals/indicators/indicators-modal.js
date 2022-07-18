@@ -22,7 +22,7 @@ export default {
       this.dataSource = this.$global.data.getDataSource(source, name);
 
       this.state = {
-        model: this.dataSource.models[0],
+        model: this.dataSource.models[Object.keys(this.dataSource.models)[0]],
         childModel: null,
       };
     }
@@ -117,7 +117,7 @@ export default {
         <div className="indicators-modal">
           <div className="dataset-models">
             <div>
-              {this.dataSource.models.map((model) => (
+              {Object.values(this.dataSource.models).map((model) => (
                 <button
                   onClick={() => this.setModel(model)}
                   key={model.id}

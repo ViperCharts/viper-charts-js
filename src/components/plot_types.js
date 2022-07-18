@@ -66,7 +66,7 @@ const bases = {
     version: "1.0.0",
     name: "Footprint",
     dependencies: ["footprint"],
-    draw({ spread, prices, plotBox, times }) {
+    draw({ spread, prices, plotBox }) {
       for (let price in prices) {
         price = +price;
         const { buy, sell } = prices[price];
@@ -74,7 +74,7 @@ const bases = {
           plotBox({
             top: price + spread,
             bottom: price,
-            width: buy / spread / 3,
+            width: buy / 3,
             color: "#C4FF49",
           });
         }
@@ -82,7 +82,7 @@ const bases = {
           plotBox({
             top: price + spread,
             bottom: price,
-            width: -sell / spread / 3,
+            width: -sell / 3,
             color: "#FE3A64",
           });
         }

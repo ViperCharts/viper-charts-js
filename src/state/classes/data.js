@@ -136,13 +136,21 @@ class Dataset extends EventEmitter {
     }
 
     // Check if a dependency was removed, if so remove from data store
-    for (const old of oldDependencies) {
-      if (!this.dependencies.has(old)) {
-        delete this.pendingRequests[old];
+    for (const dataModel of oldDependencies) {
+      if (!this.dependencies.has(dataModel)) {
+        delete this.pendingRequests[dataModel];
 
         for (const time in this.data) {
-          delete this.data[time][old];
+          delete this.data[time][dataModel];
         }
+
+        const { source, name, timeframe } = this;
+        this.$global.api.onRemoveDatasetModel({
+          source,
+          name,
+          timeframe,
+          dataModel,
+        });
       }
     }
 
@@ -172,8 +180,7 @@ export default class DataState extends EventEmitter {
   }
 
   getDataSource(source, name) {
-    source = this.sources[source];
-    return source.find((a) => a.name === name);
+    return this.sources[source][name];
   }
 
   addOrGetDataset({ source, name, timeframe, data = {} }) {
@@ -203,7 +210,7 @@ export default class DataState extends EventEmitter {
     // Loop through each requested timestamp and check if any are not found
     for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
       // Check if greater than now
-      if (timestamp > now) break;
+      if (timestamp > now - (now % timeframe) + timeframe) break;
 
       const missingData = [];
 
@@ -298,23 +305,8 @@ export default class DataState extends EventEmitter {
     // Sort by latest timestamps
     requests = requests.sort((a, b) => b.end - a.end);
 
-    const callback = (id, updates = {}, model) => {
-      const dataset = this.datasets[id];
-
-      // If dataset was deleted since request was fired
-      if (!dataset) return;
-
-      dataset.pendingRequests[model]--;
-
-      // Update data
-      dataset.updateDataset.bind(dataset)(updates, model);
-
-      dataset.fireEvent("pending-requests", dataset.pendingRequests);
-    };
-
     this.$global.api.onRequestHistoricalData({
       requests,
-      callback: callback.bind(this),
     });
   }
 }
