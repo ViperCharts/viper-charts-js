@@ -550,7 +550,6 @@ export default class ChartState extends EventEmitter {
 
     // TODO only do this if there are live datasets
     this.newTimeInterval = setInterval(() => {
-      console.log("new candle!");
       let { start, end } = this.ranges.x;
 
       // If chart hasnt translated to new time yet and latest time falls into visible range
