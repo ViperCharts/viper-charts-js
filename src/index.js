@@ -3,15 +3,44 @@ import ViperCharts from "./viper";
 
 let Viper;
 
-// Datasets / dataModels we are subscribed to so we can pull every 5 seconds
-const subscriptions = new Set();
+const socket = new WebSocket("ws://157.245.30.175:3000");
+socket.addEventListener("open", () => {
+  console.log("Connected to viper socket");
+
+  // Ping the server every 15 seconds
+  setInterval(() => {
+    socket.send(JSON.stringify({ event: "ping" }));
+  }, 15e3);
+});
+socket.addEventListener("disconnect", () =>
+  console.log("Disconnected from Viper API")
+);
+socket.addEventListener("message", ({ data }) => {
+  data = JSON.parse(data);
+  console.log(data);
+  if (data.event === "updates") {
+    for (const datasetId in data.data) {
+      const [source, name, timeframe, dataModel] = datasetId.split(":");
+      console.log(source, name, timeframe, dataModel, data.data[datasetId]);
+
+      const d = {};
+      for (const time in data.data[datasetId]) {
+        d[new Date(+time).toISOString()] = data.data[datasetId][time];
+      }
+
+      Viper.addData({ source, name, timeframe, dataModel }, d);
+    }
+  }
+});
 
 const apiURL =
   process.env.NODE_ENV === "production"
     ? "https://api.staging.vipercharts.com"
-    : "http://localhost:3001";
+    : "http://157.245.30.175:3000";
 
 (async () => {
+  console.log("Hello");
+
   const res = await fetch(`${apiURL}/api/markets/get`);
   if (!res.ok) {
     alert("An error occurred when fetching available markets.");
@@ -32,12 +61,29 @@ const apiURL =
   });
 
   async function onRequestHistoricalData({ requests }) {
-    const { timeframe, start, end } = requests[0];
+    const now = Date.now();
     const timeseries = [];
 
-    for (let { source, name, dataModels } of requests) {
+    for (let { source, name, timeframe, dataModels, start, end } of requests) {
       for (const dataModel of dataModels) {
-        timeseries.push({ source, ticker: name, dataModel });
+        timeseries.push({
+          source,
+          name,
+          dataModel,
+          timeframe,
+          start,
+          end,
+        });
+
+        // If end time is greater than current time, subscribe to real time data
+        if (end >= now) {
+          socket.send(
+            JSON.stringify({
+              event: "subscribe",
+              data: { source, name, timeframe, dataModel },
+            })
+          );
+        }
       }
     }
 
@@ -49,32 +95,36 @@ const apiURL =
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            timeframe,
-            start,
-            end,
             sources,
           }),
         });
 
         const { data } = await res.json();
 
-        for (const { source, ticker, dataModel } of sources) {
-          const resId = `${source}:${ticker}:${dataModel}`;
+        for (let { source, name, timeframe, dataModel } of sources) {
+          timeframe = +timeframe;
+          const resId = `${source}:${name}:${timeframe}:${dataModel}`;
 
-          let d = {};
+          const d = {};
           if (data[resId]) {
-            d = data[resId].data;
+            for (const ts in data[resId].data) {
+              d[new Date(+ts).toISOString()] = data[resId].data[ts];
+            }
           }
 
-          subscriptions.add(`${source}:${ticker}:${timeframe}:${dataModel}`);
-          Viper.addData({ source, name: ticker, timeframe, dataModel }, d);
+          Viper.addData({ source, name, timeframe, dataModel }, d);
         }
       })();
     }
   }
 
   function onRemoveDatasetModel({ source, name, timeframe, dataModel }) {
-    subscriptions.delete(`${source}:${name}:${timeframe}:${dataModel}`);
+    socket.send(
+      JSON.stringify({
+        event: "unsubscribe",
+        data: { source, name, timeframe, dataModel },
+      })
+    );
   }
 
   function onSaveViperSettings(settings) {
@@ -85,39 +135,4 @@ const apiURL =
     const res = await fetch(`${apiURL}/api/templates/get`);
     return (await res.json()).data;
   }
-
-  setInterval(() => {
-    const arr = Array.from(subscriptions.values());
-    if (!arr.length) return;
-
-    const tfReqs = {};
-
-    for (const sub of arr) {
-      const [source, name, timeframe, dataModel] = sub.split(":");
-      if (!tfReqs[timeframe]) tfReqs[timeframe] = [];
-      tfReqs[timeframe].push({ source, name, dataModel });
-    }
-
-    const now = Date.now();
-    for (let timeframe in tfReqs) {
-      timeframe = +timeframe;
-      const requests = [];
-
-      const start = now - (now % timeframe);
-      const end = start + timeframe;
-
-      for (const { source, name, dataModel } of tfReqs[timeframe]) {
-        requests.push({
-          source,
-          name,
-          timeframe,
-          dataModels: [dataModel],
-          start,
-          end,
-        });
-      }
-
-      onRequestHistoricalData({ requests });
-    }
-  }, 5000);
 })();

@@ -165,4 +165,64 @@ export default {
     // Using the HSP value, determine whether the color is light or dark
     return hsp > 127.5;
   },
+
+  aZ: (v, length = 2) => `0000000000000000${v}`.substr(-length),
+
+  DateWrapper: class DateWrapper {
+    constructor(value) {
+      this.value = new Date(value);
+    }
+
+    time() {
+      return this.value.getTime();
+    }
+
+    ms() {
+      return this.value.getMilliseconds();
+    }
+    s() {
+      return this.value.getSeconds();
+    }
+    m() {
+      return this.value.getMinutes();
+    }
+    h() {
+      return this.value.getHours();
+    }
+    d() {
+      return Math.floor(this.value.getTime() / (6e4 * 60 * 24));
+    }
+  },
+
+  /**
+   * Get formatted string based on how many months,days,hours,minutes,seconds,
+   * and milliseconds are left in time
+   * @param {int} now Milliseconds since epoch
+   * @param {int} tf Timeframe interval in ms
+   */
+  formatTimeLeft(now, tf) {
+    const { aZ } = this;
+
+    // Milliseconds left in time
+    const ms = tf - (now % tf);
+    const d = new this.DateWrapper(ms);
+
+    // If less than 1min left
+    if (ms < 6e4) {
+      return `${aZ(d.s())}.${aZ(d.ms(), 4)}`;
+    }
+
+    // If less than 1 hour left
+    if (ms < 6e4 * 60) {
+      return `${aZ(d.m())}m:${aZ(d.s())}s`;
+    }
+
+    // If less than 1d left
+    if (ms < 6e4 * 60 * 24) {
+      return `${aZ(d.h())}h:${aZ(d.m())}m`;
+    }
+
+    // Else
+    return `${aZ(d.d())}d:${aZ(d.h())}h`;
+  },
 };
