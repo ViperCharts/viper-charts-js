@@ -39,14 +39,15 @@ class Dataset extends EventEmitter {
 
       if (typeof time === "string") {
         time = new Date(time).getTime();
-        timestamps.add(time);
+      }
 
-        if (time < this.minTime) {
-          this.minTime = time;
-        }
-        if (time > this.maxTime) {
-          this.maxTime = time;
-        }
+      timestamps.add(time);
+
+      if (time < this.minTime) {
+        this.minTime = time;
+      }
+      if (time > this.maxTime) {
+        this.maxTime = time;
       }
 
       if (!this.data[time]) {

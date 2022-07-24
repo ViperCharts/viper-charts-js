@@ -11,7 +11,7 @@ import PriceScale from "../../components/canvas_components/price_scale.js";
 import EventEmitter from "../../events/event_emitter";
 import Instructions from "../../models/instructions.js";
 
-import _ from "lodash";
+import _, { isNil } from "lodash";
 
 export default class ChartState extends EventEmitter {
   constructor({
@@ -102,6 +102,10 @@ export default class ChartState extends EventEmitter {
   }
 
   destroy() {
+    if (this.newTimeInterval !== null) {
+      clearInterval(this.newTimeInterval);
+    }
+
     this.$global.removeEventListener(
       `resize-${this.id}`,
       this.onResizeListener
@@ -473,6 +477,8 @@ export default class ChartState extends EventEmitter {
     this.datasets = {};
     this.timeframe = timeframe;
 
+    this.setNewTimeInterval();
+
     // Clear all computed indicator results
     this.computedState.emptyAllSets();
 
@@ -526,6 +532,38 @@ export default class ChartState extends EventEmitter {
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, { timeframe });
 
     this.fireEvent("set-timeframe", timeframe);
+  }
+
+  /**
+   * Set an interval to run when next time opens
+   */
+  setNewTimeInterval() {
+    // Clear interval if it exists
+    if (this.newTimeInterval !== null) {
+      clearInterval(this.newTimeInterval);
+      this.newTimeInterval = null;
+    }
+
+    const now = Date.now();
+    const currTime = now - (now % this.timeframe);
+    const when = currTime + this.timeframe;
+
+    // TODO only do this if there are live datasets
+    this.newTimeInterval = setInterval(() => {
+      console.log("new candle!");
+      let { start, end } = this.ranges.x;
+
+      // If chart hasnt translated to new time yet and latest time falls into visible range
+      if (start < currTime && end >= currTime) {
+        this.setVisibleRange({
+          start: start + this.timeframe,
+          end: end + this.timeframe,
+        });
+      }
+
+      // Exit context and call same method to run setInterval appropriately
+      setTimeout(this.setNewTimeInterval.bind(this), 0);
+    }, when - now);
   }
 
   /**

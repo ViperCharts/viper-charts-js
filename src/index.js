@@ -17,11 +17,9 @@ socket.addEventListener("disconnect", () =>
 );
 socket.addEventListener("message", ({ data }) => {
   data = JSON.parse(data);
-  console.log(data);
   if (data.event === "updates") {
     for (const datasetId in data.data) {
       const [source, name, timeframe, dataModel] = datasetId.split(":");
-      console.log(source, name, timeframe, dataModel, data.data[datasetId]);
 
       const d = {};
       for (const time in data.data[datasetId]) {
@@ -39,8 +37,6 @@ const apiURL =
     : "http://157.245.30.175:3000";
 
 (async () => {
-  console.log("Hello");
-
   const res = await fetch(`${apiURL}/api/markets/get`);
   if (!res.ok) {
     alert("An error occurred when fetching available markets.");
