@@ -32,9 +32,10 @@ socket.addEventListener("message", ({ data }) => {
 });
 
 const apiURL =
-  process.env.NODE_ENV === "production"
-    ? "https://api.staging.vipercharts.com"
-    : "http://157.245.30.175:3000";
+  // process.env.NODE_ENV === "production"
+  //   ? "https://api.staging.vipercharts.com"
+  // : "http://157.245.30.175:3000";
+  "http://157.245.30.175:3000";
 
 (async () => {
   const res = await fetch(`${apiURL}/api/markets/get`);

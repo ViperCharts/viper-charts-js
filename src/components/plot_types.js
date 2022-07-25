@@ -76,6 +76,7 @@ const bases = {
             bottom: price,
             width: buy / 3,
             color: "#C4FF49",
+            text: buy,
           });
         }
         if (sell) {
@@ -84,6 +85,7 @@ const bases = {
             bottom: price,
             width: -sell / 3,
             color: "#FE3A64",
+            text: sell,
           });
         }
       }
@@ -310,14 +312,14 @@ const indicators = {
     version: "1.0.0",
     name: "Volume Profile Session",
     dependencies: ["footprint"],
-    draw({ spread, prices, plotBox }) {
+    draw({ spread, prices, plotBox, math }) {
       let max = 0;
       const pricesCopy = {};
 
       for (const price in prices) {
         const { buy, sell } = prices[price];
-        const total = buy + sell;
-        const delta = buy - sell;
+        const total = math.add(buy, sell);
+        const delta = math.sub(buy, sell);
 
         pricesCopy[price] = {
           total,
@@ -343,6 +345,7 @@ const indicators = {
           bottom: price,
           width: (Math.abs(delta) / max) * 0.9,
           color: delta >= 0 ? "#C4FF49" : "#FE3A64",
+          text: `T:${total} D:${delta}`,
         });
       }
     },

@@ -269,7 +269,11 @@ export default class RenderingEngine {
           } else if (a.type === "single-line") {
             this.canvas.drawLine(a.color, [a.x, a.y, a.x2, a.y2]);
           } else if (a.type === "text") {
-            this.canvas.drawText(a.color, [a.x, a.y], a.text, { font: a.font });
+            this.canvas.drawText(a.color, [a.x, a.y], a.text, {
+              font: a.font,
+              textAlign: a.textAlign,
+              stroke: a.stroke,
+            });
           }
         };
 

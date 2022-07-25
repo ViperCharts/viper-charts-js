@@ -79,12 +79,17 @@ export default class Canvas {
     options = {
       textAlign: "center",
       font: "10px Arial",
+      stroke: false,
       ...options,
     };
     this.ctx.textAlign = options.textAlign;
     this.ctx.font = options.font;
     this.ctx.fillStyle = color;
-    this.ctx.fillText(text, x, y);
+    if (!options.stroke) {
+      this.ctx.fillText(text, x, y);
+    } else {
+      this.ctx.strokeText(text, x, y);
+    }
   }
 
   /**

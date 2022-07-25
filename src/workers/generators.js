@@ -4,6 +4,7 @@ import Helpers from "./helpers.js";
 
 import Decimal from "decimal.js";
 import constants from "../constants";
+import utils from "../utils.js";
 
 export default {
   main: {
@@ -141,15 +142,35 @@ export default {
             const y1 = getY(series[0]);
             const y2 = getY(series[1]);
             const w = pixelsPerElement * values.width;
+            const h = y2 - y1;
+            const text = values.text;
 
             instructions[time].push({
               type: "box",
               x: x - offset,
               y: y1,
               w,
-              h: y2 - y1,
+              h,
               color: values.colors.color,
             });
+
+            if (text && h > 8 && pixelsPerElement > 8) {
+              // Is negative?
+              const n = values.width < 0;
+              const p = pixelsPerElement;
+              const fs = Math.floor(Math.min(p / 10, h / 3, 30));
+              const x1 = n ? x - p / 10 : x + p / 10;
+
+              instructions[time].push({
+                type: "text",
+                x: x1,
+                y: y1 + h / 2,
+                color: "#fff",
+                text,
+                font: `Bold ${fs}px Arial`,
+                textAlign: n ? "right" : "left",
+              });
+            }
           } else if (type === "candle") {
             const y1 = getY(series[0]);
             const y2 = getY(series[1]);
@@ -373,18 +394,38 @@ export default {
 
       const start = visibleRange.start - (visibleRange.start % xTimeStep);
       for (let time = start; time < visibleRange.end; time += xTimeStep) {
-        const d = new Date(time);
+        const d = new utils.DateWrapper(time);
 
         let text = "";
         if ((time / Constants.DAY) % 1 === 0) {
-          const date = d.getDate();
+          const date = d.value.getDate();
           if (date === 1) {
-            text = `${constants.MONTHS[date].short}`;
+            text = `${constants.MONTHS[d.value.getMonth()].short}`;
           } else {
             text = `${date}`;
           }
         } else {
-          text = `${d.getHours()}:${`0${d.getMinutes()}`.slice(-2)}`;
+          const { aZ } = utils;
+
+          // If less than 1min tf
+          if (timeframe < 6e4) {
+            text = `${aZ(d.m())}:${aZ(d.s())}`;
+          }
+
+          // If less than 1h tf
+          else if (timeframe < 6e4 * 60) {
+            text = `${aZ(d.h())}:${aZ(d.m())}`;
+          }
+
+          // If less than 1d tf
+          else if (timeframe < 6e4 * 60 * 24) {
+            text = `${aZ(d.h())}:${aZ(d.m())}`;
+          }
+
+          // Else
+          else {
+            text = `${aZ(d.d())}d:${aZ(d.h())}h`;
+          }
         }
 
         scales.push({

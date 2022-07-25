@@ -32,6 +32,7 @@ export default {
       center = false,
       title,
       color = "#FFF",
+      text,
       ylabel = false,
     }
   ) {
@@ -41,6 +42,7 @@ export default {
       title,
       center,
       colors: { color },
+      text,
       ylabel,
     });
   },
