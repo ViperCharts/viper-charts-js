@@ -30,6 +30,7 @@ import PlotTypes from "./components/plot_types.js";
 //   sources?: DatasetSourceMap; // Dataset sources map / object
 //   settings?: Settings; // Initial settings
 //   onRequestHistoricalData?: ({ requests: [any], callback: Function }) => void; // Resolve requests for historical data
+//   onRemoveDatasetModel?: Function // called when a user no longer requests data from this dataset:dataModel:timeframe
 //   onSaveViperSettings?: Function; //
 // };
 
@@ -53,6 +54,7 @@ export default class Viper extends EventEmitter {
       sources,
       settings = {},
       onRequestHistoricalData = async () => {},
+      onRemoveDatasetModel = () => {},
       onSaveViperSettings = () => {},
       onRequestTemplates = () => {},
     } = params;
@@ -67,6 +69,7 @@ export default class Viper extends EventEmitter {
     this.$global = new GlobalState();
     this.$global.api = this;
     this.onRequestHistoricalData = onRequestHistoricalData;
+    this.onRemoveDatasetModel = onRemoveDatasetModel;
     this.onSaveViperSettings = onSaveViperSettings;
     this.onRequestTemplates = onRequestTemplates;
 
@@ -126,11 +129,28 @@ export default class Viper extends EventEmitter {
     this.$global.data.setAllDataSources(all);
   }
 
-  /**
-   * Update dataset
-   */
-  updateDataset(id, data) {
-    this.$global.data.datasets[id].updateData(data);
+  addData({ source, name, timeframe, dataModel }, updates = {}, options = {}) {
+    const { noResolve = false, updateVisibleRange = false } = options;
+
+    const id = `${source}:${name}:${timeframe}`;
+    const dataset = this.$global.data.datasets[id];
+
+    // If dataset was deleted since request was fired
+    if (!dataset) return;
+
+    // Update data
+    dataset.updateDataset.bind(dataset)(updates, dataModel);
+
+    if (!noResolve) {
+      dataset.pendingRequests[dataModel]--;
+      dataset.fireEvent("pending-requests", dataset.pendingRequests);
+    }
+
+    if (updateVisibleRange) {
+      for (const chartId in dataset.subscribers) {
+        // dataset.subscribers[chartId].setVisibleRange({})
+      }
+    }
   }
 
   /**

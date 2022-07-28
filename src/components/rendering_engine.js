@@ -50,6 +50,9 @@ export default class RenderingEngine {
     this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     if (this.type === "yScale") {
+      const now = Date.now();
+      let isShowingCountdown = false;
+
       // Draw background
       this.canvas.drawBox("#080019", [
         0,
@@ -85,6 +88,25 @@ export default class RenderingEngine {
         this.canvas.drawText(text.color, [text.x, text.y], text.text, {
           font: text.font,
         });
+
+        // Draw realtime countdown to next timeframe
+        if (!isShowingCountdown) {
+          const timeLeftY = box.y + box.h;
+          const timeLeft = Utils.formatTimeLeft(
+            now,
+            this.$state.chart.timeframe
+          );
+          this.canvas.drawBox(box.color, [box.x, timeLeftY, box.w, box.h]);
+          this.canvas.drawText(
+            text.color,
+            [text.x, timeLeftY + box.h / 2],
+            timeLeft,
+            {
+              font: text.font,
+            }
+          );
+          isShowingCountdown = true;
+        }
       }
 
       maxWidth = Math.max((maxWidth += 10), 50);
@@ -247,7 +269,11 @@ export default class RenderingEngine {
           } else if (a.type === "single-line") {
             this.canvas.drawLine(a.color, [a.x, a.y, a.x2, a.y2]);
           } else if (a.type === "text") {
-            this.canvas.drawText(a.color, [a.x, a.y], a.text, { font: a.font });
+            this.canvas.drawText(a.color, [a.x, a.y], a.text, {
+              font: a.font,
+              textAlign: a.textAlign,
+              stroke: a.stroke,
+            });
           }
         };
 

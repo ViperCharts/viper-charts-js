@@ -41,20 +41,24 @@ const bases = {
       const delta = buyVolume - sellVolume;
       const total = buyVolume + sellVolume;
 
-      plotBox({
-        top: total,
-        bottom: 0,
-        width: 0.9,
-        center: true,
-        color: delta >= 0 ? "#C4FF4966" : "#FE3A6466",
-      });
-      plotBox({
-        top: Math.abs(delta),
-        bottom: 0,
-        width: 0.9,
-        center: true,
-        color: delta >= 0 ? "#C4FF49" : "#FE3A64",
-      });
+      if (total !== 0) {
+        plotBox({
+          top: total,
+          bottom: 0,
+          width: 0.9,
+          center: true,
+          color: delta >= 0 ? "#C4FF4966" : "#FE3A6466",
+        });
+      }
+      if (delta !== 0) {
+        plotBox({
+          top: Math.abs(delta),
+          bottom: 0,
+          width: 0.9,
+          center: true,
+          color: delta >= 0 ? "#C4FF49" : "#FE3A64",
+        });
+      }
     },
   },
 
@@ -62,7 +66,7 @@ const bases = {
     version: "1.0.0",
     name: "Footprint",
     dependencies: ["footprint"],
-    draw({ spread, prices, plotBox, times }) {
+    draw({ spread, prices, plotBox }) {
       for (let price in prices) {
         price = +price;
         const { buy, sell } = prices[price];
@@ -70,16 +74,18 @@ const bases = {
           plotBox({
             top: price + spread,
             bottom: price,
-            width: buy / spread / 3,
+            width: buy / 3,
             color: "#C4FF49",
+            text: buy,
           });
         }
         if (sell) {
           plotBox({
             top: price + spread,
             bottom: price,
-            width: -sell / spread / 3,
+            width: -sell / 3,
             color: "#FE3A64",
+            text: sell,
           });
         }
       }
@@ -205,13 +211,11 @@ const indicators = {
     version: "1.0.0",
     name: "Cumulative Volume Delta",
     dependencies: ["volumeBySide"],
-    draw({ plot, buyVolume, sellVolume, cum }) {
-      const delta = buyVolume - sellVolume;
-
+    draw({ plot, cum }) {
       const buy = cum({ source: "buyVolume" });
       const sell = cum({ source: "sellVolume" });
 
-      let value = delta;
+      let value = 0;
       for (let i = 0; i < buy.length; i++) {
         value += buy[i] - sell[i];
       }
@@ -252,7 +256,7 @@ const indicators = {
         plotBox({
           top: price + spread,
           bottom: price,
-          width: Math.abs(delta),
+          width: Math.abs(delta) / 3,
           color: delta >= 0 ? "#C4FF49" : "#FE3A64",
         });
       }
@@ -308,14 +312,14 @@ const indicators = {
     version: "1.0.0",
     name: "Volume Profile Session",
     dependencies: ["footprint"],
-    draw({ spread, prices, plotBox }) {
+    draw({ spread, prices, plotBox, math }) {
       let max = 0;
       const pricesCopy = {};
 
       for (const price in prices) {
         const { buy, sell } = prices[price];
-        const total = buy + sell;
-        const delta = buy - sell;
+        const total = math.add(buy, sell);
+        const delta = math.sub(buy, sell);
 
         pricesCopy[price] = {
           total,
@@ -341,6 +345,7 @@ const indicators = {
           bottom: price,
           width: (Math.abs(delta) / max) * 0.9,
           color: delta >= 0 ? "#C4FF49" : "#FE3A64",
+          text: `T:${total} D:${delta}`,
         });
       }
     },

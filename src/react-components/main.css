@@ -13,6 +13,10 @@
   text-align: left;
 }
 
+.viper .button-sm {
+  font-size: 0.75rem;
+}
+
 .viper .button-selected {
   background: rgb(160, 160, 160);
   color: rgb(75, 75, 75);

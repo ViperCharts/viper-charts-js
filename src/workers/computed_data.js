@@ -203,9 +203,8 @@ export default class ComputedData extends EventEmitter {
       // If item exists at iterated time, delete it
       delete set.data[iteratedTime];
 
-      const point = dataset.data[iteratedTime];
+      let point = dataset.data[iteratedTime];
       if (point === undefined || point === null) continue;
-      let data = point[indicator.model.id];
 
       if (
         point[indicator.model.id] === undefined ||
@@ -214,11 +213,18 @@ export default class ComputedData extends EventEmitter {
         continue;
       }
 
+      let data = point[indicator.model.id];
+
+      // If this dataModel is a child model
+      if (indicator.model.childId) {
+        data = data[indicator.model.childId];
+      }
+
       if (
         indicator.dependencies[0] === "value" &&
         indicator.model.model === "ohlc"
       ) {
-        data = { value: point[indicator.model.id].close };
+        data = { value: data.close };
       }
 
       indicator.draw({
@@ -350,9 +356,6 @@ export default class ComputedData extends EventEmitter {
       let scaleMin = setMin;
       let scaleMax = setMax;
 
-      this.sets[id].visibleMin = setMin;
-      this.sets[id].visibleMax = setMax;
-
       const layer = requestedRanges.y[indicator.layerId];
 
       // If percentage chart, calculate scale based on first plotted value
@@ -368,6 +371,16 @@ export default class ComputedData extends EventEmitter {
         scaleMax = 100;
       }
 
+      // If min and max are equal, add +1 and -1 boundary to it so line data will render
+      if (scaleMin === scaleMax) {
+        scaleMin -= 1;
+        scaleMax += 1;
+        setMin -= 1;
+        setMax += 1;
+      }
+
+      this.sets[id].visibleMin = setMin;
+      this.sets[id].visibleMax = setMax;
       this.sets[id].visibleScaleMin = scaleMin;
       this.sets[id].visibleScaleMax = scaleMax;
 

@@ -11,7 +11,7 @@ import PriceScale from "../../components/canvas_components/price_scale.js";
 import EventEmitter from "../../events/event_emitter";
 import Instructions from "../../models/instructions.js";
 
-import _ from "lodash";
+import _, { isNil } from "lodash";
 
 export default class ChartState extends EventEmitter {
   constructor({
@@ -102,6 +102,10 @@ export default class ChartState extends EventEmitter {
   }
 
   destroy() {
+    if (this.newTimeInterval !== null) {
+      clearInterval(this.newTimeInterval);
+    }
+
     this.$global.removeEventListener(
       `resize-${this.id}`,
       this.onResizeListener
@@ -182,7 +186,8 @@ export default class ChartState extends EventEmitter {
     return this.datasetGroups[id];
   }
 
-  updateDatasetGroup(datasetGroupId, newDatasets, { updateUI = true }) {
+  updateDatasetGroup(datasetGroupId, newDatasets, options = {}) {
+    const { updateUI = true } = options;
     const group = this.datasetGroups[datasetGroupId];
 
     const oldId = `${group.datasets[0].source}:${group.datasets[0].name}`;
@@ -203,7 +208,50 @@ export default class ChartState extends EventEmitter {
       subscribers = oldDataset.removeSubscriber(this.id, id);
       const indicator = group.indicators[id];
       indicator.datasetId = newId;
-      indicatorUpdates[id] = { datasetId: newId };
+
+      for (const source in this.$global.data.sources) {
+        if (source === newDataset.source) {
+          const datasets = this.$global.data.sources[source];
+
+          const dataset = datasets[newDataset.name];
+          if (!dataset) {
+            throw new Error(
+              `Couldn't find dataset ${datasetId} in sources model.`
+            );
+          }
+
+          const model = JSON.parse(
+            JSON.stringify(dataset.models[indicator.model.id])
+          );
+          if (!model) {
+            throw new Error(
+              `Couldn't find dataModel ${indicator.model.id} on dataset ${datasetId}`
+            );
+          }
+
+          if (Array.isArray(model.model)) {
+            const childModel = model.model.find(
+              ({ id }) => id === indicator.model.childId
+            );
+
+            if (!childModel) {
+              throw new Error(
+                `Couldn't find childModel ${indicator.model.childId}`
+              );
+            }
+
+            model.model = childModel;
+            model.label = childModel.label;
+            model.childId = childModel.id;
+          }
+
+          indicator.model = model;
+
+          break;
+        }
+      }
+
+      indicatorUpdates[id] = { datasetId: newId, model: indicator.model };
       newDataset.addSubscriber(this.id, id, [indicator.model.id]);
       this.computedState.emptySet({ renderingQueueId: id });
     }
@@ -243,8 +291,10 @@ export default class ChartState extends EventEmitter {
     datasetGroupId,
     model,
     { visible = true, layerId = Object.keys(this.ranges.y)[0] },
-    { updateUI = true }
+    options = {}
   ) {
+    const { updateUI = true } = options;
+
     // If indicator passed was a string, assume its indicator id
     if (typeof indicator === "string") {
       indicator = PlotTypes.getIndicatorById(indicator);
@@ -328,6 +378,8 @@ export default class ChartState extends EventEmitter {
       this.id,
       this.datasetGroups
     );
+
+    return indicator;
   }
 
   addLayer(heightUnit) {
@@ -350,6 +402,10 @@ export default class ChartState extends EventEmitter {
     });
 
     return id;
+  }
+
+  addDataModelGroup() {
+    const id = Utils.uniqueId();
   }
 
   /**
@@ -421,6 +477,8 @@ export default class ChartState extends EventEmitter {
     this.datasets = {};
     this.timeframe = timeframe;
 
+    this.setNewTimeInterval();
+
     // Clear all computed indicator results
     this.computedState.emptyAllSets();
 
@@ -474,6 +532,37 @@ export default class ChartState extends EventEmitter {
     this.$global.settings.onChartChangeRangeOrTimeframe(this.id, { timeframe });
 
     this.fireEvent("set-timeframe", timeframe);
+  }
+
+  /**
+   * Set an interval to run when next time opens
+   */
+  setNewTimeInterval() {
+    // Clear interval if it exists
+    if (this.newTimeInterval !== null) {
+      clearInterval(this.newTimeInterval);
+      this.newTimeInterval = null;
+    }
+
+    const now = Date.now();
+    const currTime = now - (now % this.timeframe);
+    const when = currTime + this.timeframe;
+
+    // TODO only do this if there are live datasets
+    this.newTimeInterval = setInterval(() => {
+      let { start, end } = this.ranges.x;
+
+      // If chart hasnt translated to new time yet and latest time falls into visible range
+      if (start < currTime && end >= currTime) {
+        this.setVisibleRange({
+          start: start + this.timeframe,
+          end: end + this.timeframe,
+        });
+      }
+
+      // Exit context and call same method to run setInterval appropriately
+      setTimeout(this.setNewTimeInterval.bind(this), 0);
+    }, when - now);
   }
 
   /**

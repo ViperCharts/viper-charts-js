@@ -52,6 +52,12 @@ const contextMenus = {
       this.chart.toggleLayerFullScreen(this.layerId);
     }
 
+    clearChart() {
+      for (const id in this.chart.datasetGroups) {
+        this.chart.removeDatasetGroup(id);
+      }
+    }
+
     deleteLayer() {
       this.chart.removeLayer(this.layerId);
     }
@@ -70,6 +76,7 @@ const contextMenus = {
             {this.layer.fullscreen ? <i className="gg-check"></i> : null}
             FullScreen
           </button>
+          <button onClick={this.clearChart.bind(this)}>Clear Chart</button>
           <button onClick={this.deleteLayer.bind(this)}>Delete Layer</button>
           <button
             onClick={this.deleteChart.bind(this)}

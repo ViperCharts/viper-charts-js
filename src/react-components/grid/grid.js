@@ -174,7 +174,7 @@ export default class Grid extends React.Component {
           height: `${box.height}%`,
         }}
       >
-        {this.$global.ui.isGridEditMode ? (
+        {this.$global.ui.isGridEditMode && !box.children.length ? (
           <div className="grid-box-controls">
             <div
               onClick={() => this.addBoxToSide(box.id, "left")}

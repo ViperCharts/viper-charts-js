@@ -1,6 +1,8 @@
 .dataset-models {
-  display: flex;
-  flex-wrap: wrap;
+}
+
+.dataset-models-children {
+  margin: 10px 0;
 }
 
 .indicator-list-item {
