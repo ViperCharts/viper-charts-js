@@ -1,6 +1,6 @@
 {
   "name": "@viper-charts/viper-charts",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A free and open-source cross market charting platform",
   "main": "dist/viper.bundle.js",
   "keywords": [
