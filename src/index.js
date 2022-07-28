@@ -1,43 +1,60 @@
 import "./style.css";
 import ViperCharts from "./viper";
 
+const apiURL =
+  process.env.NODE_ENV === "production"
+    ? "https://api.vipercharts.com"
+    : "http://localhost:3000";
+
+const wsURL =
+  process.env.NODE_ENV === "production"
+    ? "wss://api.vipercharts.com"
+    : "ws://localhost:3000";
+
 let Viper;
 
-const socket = new WebSocket("ws://157.245.30.175:3000");
-socket.addEventListener("open", () => {
-  console.log("Connected to viper socket");
+// Firefox is broken
+if (typeof InstallTrigger !== "undefined") {
+  alert(
+    "Sorry, but FireFox is currently not supported. Please use Chrome, Brave, Opera, or any other chromium browser. A fix is planned before launch."
+  );
+}
 
-  // Ping the server every 15 seconds
-  setInterval(() => {
-    socket.send(JSON.stringify({ event: "ping" }));
-  }, 15e3);
-});
-socket.addEventListener("disconnect", () =>
-  console.log("Disconnected from Viper API")
-);
-socket.addEventListener("message", ({ data }) => {
-  data = JSON.parse(data);
-  if (data.event === "updates") {
-    for (const datasetId in data.data) {
-      const [source, name, timeframe, dataModel] = datasetId.split(":");
+const subs = new Set();
 
-      const d = {};
-      for (const time in data.data[datasetId]) {
-        d[new Date(+time).toISOString()] = data.data[datasetId][time];
-      }
-
-      Viper.addData({ source, name, timeframe, dataModel }, d);
-    }
-  }
-});
-
-const apiURL =
-  // process.env.NODE_ENV === "production"
-  //   ? "https://api.staging.vipercharts.com"
-  // : "http://157.245.30.175:3000";
-  "http://157.245.30.175:3000";
+const socket = new WebSocket(wsURL);
 
 (async () => {
+  await new Promise((r) => {
+    socket.addEventListener("open", () => {
+      console.log("Connected to viper socket");
+      r();
+
+      // Ping the server every 15 seconds
+      setInterval(() => {
+        socket.send(JSON.stringify({ event: "ping" }));
+      }, 15e3);
+    });
+    socket.addEventListener("disconnect", () =>
+      console.log("Disconnected from Viper API")
+    );
+    socket.addEventListener("message", ({ data }) => {
+      data = JSON.parse(data);
+      if (data.event === "updates") {
+        for (const datasetId in data.data) {
+          const [source, name, timeframe, dataModel] = datasetId.split(":");
+
+          const d = {};
+          for (const time in data.data[datasetId]) {
+            d[new Date(+time).toISOString()] = data.data[datasetId][time];
+          }
+
+          Viper.addData({ source, name, timeframe, dataModel }, d);
+        }
+      }
+    });
+  });
+
   const res = await fetch(`${apiURL}/api/markets/get`);
   if (!res.ok) {
     alert("An error occurred when fetching available markets.");
@@ -63,6 +80,12 @@ const apiURL =
 
     for (let { source, name, timeframe, dataModels, start, end } of requests) {
       for (const dataModel of dataModels) {
+        // If start and end are the same, ignore
+        if (start === end) {
+          console.log(new Date(start), new Date(end));
+          continue;
+        }
+
         timeseries.push({
           source,
           name,
@@ -74,12 +97,17 @@ const apiURL =
 
         // If end time is greater than current time, subscribe to real time data
         if (end >= now) {
+          const id = `${source}:${name}:${timeframe}:${dataModel}`;
+          if (subs.has(id)) continue;
+
           socket.send(
             JSON.stringify({
               event: "subscribe",
               data: { source, name, timeframe, dataModel },
             })
           );
+
+          subs.add(id);
         }
       }
     }
@@ -122,6 +150,7 @@ const apiURL =
         data: { source, name, timeframe, dataModel },
       })
     );
+    subs.delete(`${source}:${name}:${timeframe}:${dataModel}`);
   }
 
   function onSaveViperSettings(settings) {

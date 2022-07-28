@@ -287,6 +287,9 @@ export default class DataState extends EventEmitter {
 
         dataModels.forEach((m) => dataset.pendingRequests[m]++);
 
+        // If start and end are the same, ignore
+        if (leftBound === end) continue;
+
         requests.push({
           id,
           source,
