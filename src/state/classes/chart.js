@@ -290,6 +290,8 @@ export default class ChartState extends EventEmitter {
     );
 
     this.computedState.generateAllInstructions();
+
+    this.fireEvent("update-dataset-group", group);
   }
 
   /**
