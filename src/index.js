@@ -38,8 +38,6 @@ async function main() {
     return sources;
   }
 
-  console.log(sources);
-
   Viper = new ViperCharts({
     element: document.getElementById("chart"),
     sources,
