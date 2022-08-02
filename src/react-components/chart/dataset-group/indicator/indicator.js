@@ -32,6 +32,7 @@ export default class Indicator extends React.Component {
   render() {
     const { indicator, pendingRequests } = this.props;
     const v = indicator.visible;
+    const nF = indicator.model.notFound;
 
     const mo = this.state.isMouseOver;
 
@@ -45,10 +46,21 @@ export default class Indicator extends React.Component {
             indicator,
           })
         }
-        className={`indicator v-noselect ${v ? "" : "invisible"}`}
+        className={`indicator v-noselect ${v ? "" : "invisible"} ${
+          nF ? "invisible not-found" : ""
+        }`}
       >
         <span className="indicator-model">{indicator.model.name}</span>
         <span className="indicator-name">{indicator.name}</span>
+        {nF && (
+          <span
+            className="not-found-text"
+            title="This data model is not available on this dataset"
+          >
+            N/A
+          </span>
+        )}
+
         {pendingRequests > 0 ? (
           <div className="indicator-loading">
             <svg

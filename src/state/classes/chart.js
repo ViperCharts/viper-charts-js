@@ -220,13 +220,20 @@ export default class ChartState extends EventEmitter {
             );
           }
 
-          const model = JSON.parse(
-            JSON.stringify(dataset.models[indicator.model.id])
-          );
-          if (!model) {
-            throw new Error(
-              `Couldn't find dataModel ${indicator.model.id} on dataset ${datasetId}`
-            );
+          // Check if same model exists on new dataset
+          let model = dataset.models[indicator.model.id];
+          if (model) {
+            model = JSON.parse(JSON.stringify(model));
+          } else {
+            /**
+             * Copy old model but set notFound to true to show on UI that this dataModel is not available for the selected set.
+             * This also prevents sending requests to servers for this dataset. The reason we copy the model here is for a more
+             * elegant user experience.
+             */
+            model = {
+              ...indicator.model,
+              notFound: true,
+            };
           }
 
           if (Array.isArray(model.model)) {
@@ -251,13 +258,17 @@ export default class ChartState extends EventEmitter {
         }
       }
 
-      indicatorUpdates[id] = { datasetId: newId, model: indicator.model };
-      newDataset.addSubscriber(this.id, id, [indicator.model.id]);
+      // If this dataModel was found on new dataset, add listeners
+      if (!indicator.model.notFound) {
+        indicatorUpdates[id] = { datasetId: newId, model: indicator.model };
+        newDataset.addSubscriber(this.id, id, [indicator.model.id]);
+      }
+
       this.computedState.emptySet({ renderingQueueId: id });
     }
 
     // If no more indicators on chart consuming this dataset, delete from memory
-    if (!Object.keys(subscribers).length) {
+    if (subscribers && !Object.keys(subscribers).length) {
       delete this.datasets[oldId];
     }
 
@@ -355,8 +366,10 @@ export default class ChartState extends EventEmitter {
       });
     }
 
-    // Subscribe to dataset updates
-    dataset.addSubscriber(this.id, renderingQueueId, [model.id]);
+    // Subscribe to dataset updates if the model is found on dataset
+    if (!indicator.model.notFound) {
+      dataset.addSubscriber(this.id, renderingQueueId, [model.id]);
+    }
     this.datasets[localId] = dataset;
 
     group.indicators[renderingQueueId] = indicator;
@@ -688,9 +701,13 @@ export default class ChartState extends EventEmitter {
 
     // Remove dataset listener and dataset if no more listeners;
     const dataset = this.datasets[indicator.datasetId];
-    const subscribers = dataset.removeSubscriber(this.id, renderingQueueId);
-    if (!Object.keys(subscribers).length) {
-      delete this.datasets[dataset.getTimeframeAgnosticId()];
+
+    if (!indicator.model.notFound) {
+      const subscribers = dataset.removeSubscriber(this.id, renderingQueueId);
+
+      if (!Object.keys(subscribers).length) {
+        delete this.datasets[dataset.getTimeframeAgnosticId()];
+      }
     }
 
     delete group.indicators[renderingQueueId];
