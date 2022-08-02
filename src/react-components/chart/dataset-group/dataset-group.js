@@ -35,6 +35,31 @@ export default class DatsetGroup extends React.Component {
         );
         this.datasetId = `${datasetId}:${timeframe}`;
         this.dataset = this.$global.data.datasets[this.datasetId];
+
+        this.dataset.removeEventListener(
+          "pending-requests",
+          this.pendingRequestsListener
+        );
+
+        this.pendingRequestsListener = this.dataset.addEventListener(
+          "pending-requests",
+          (pr) => this.setState({ pendingRequests: pr })
+        );
+      }
+    );
+
+    this.updateDatasetGroupListener = this.chart.addEventListener(
+      "update-dataset-group",
+      (group) => {
+        const { source, name } = group.datasets[0];
+        this.datasetId = `${source}:${name}:${this.dataset.timeframe}`;
+        this.dataset = this.$global.data.datasets[this.datasetId];
+
+        this.dataset.removeEventListener(
+          "pending-requests",
+          this.pendingRequestsListener
+        );
+
         this.pendingRequestsListener = this.dataset.addEventListener(
           "pending-requests",
           (pr) => this.setState({ pendingRequests: pr })
@@ -51,6 +76,10 @@ export default class DatsetGroup extends React.Component {
     this.chart.removeEventListener(
       "set-timeframe",
       this.timeframeChangeListener
+    );
+    this.chart.removeEventListener(
+      "update-dataset-group",
+      this.updateDatasetGroupListener
     );
   }
 
