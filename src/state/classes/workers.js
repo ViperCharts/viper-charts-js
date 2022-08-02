@@ -3,6 +3,8 @@ import Utils from "../../utils";
 
 import MyWorker from "worker-loader!../../workers/worker";
 
+const j = (d) => JSON.parse(JSON.stringify(d));
+
 class ComputedStateMessenger {
   constructor({ $global, chart, worker }) {
     this.$global = $global;
@@ -17,29 +19,33 @@ class ComputedStateMessenger {
     const { width, height } =
       this.$global.layout.chartDimensions[this.chart.id].main;
 
-    this.worker.postMessage({
-      type: "runComputedStateMethod",
-      data: {
-        chartId: this.chart.id,
-        method: "addPixelInstructionsOffset",
-        params: { newRange, oldRange, width, height },
-      },
-    });
+    this.worker.postMessage(
+      j({
+        type: "runComputedStateMethod",
+        data: {
+          chartId: this.chart.id,
+          method: "addPixelInstructionsOffset",
+          params: { newRange, oldRange, width, height },
+        },
+      })
+    );
   }
 
   async addToQueue({ indicator }) {
     const { renderingQueueId } = await new Promise((resolve) => {
       const id = this.$global.workers.addToResolveQueue(resolve);
 
-      this.worker.postMessage({
-        type: "runComputedStateMethod",
-        data: {
-          method: "addToQueue",
-          resolveId: id,
-          chartId: this.chart.id,
-          params: { indicator },
-        },
-      });
+      this.worker.postMessage(
+        j({
+          type: "runComputedStateMethod",
+          data: {
+            method: "addToQueue",
+            resolveId: id,
+            chartId: this.chart.id,
+            params: { indicator },
+          },
+        })
+      );
     });
 
     const { canvas } = this.chart.subcharts.main;
@@ -52,15 +58,17 @@ class ComputedStateMessenger {
     await new Promise((resolve) => {
       const id = this.$global.workers.addToResolveQueue(resolve);
 
-      this.worker.postMessage({
-        type: "runComputedStateMethod",
-        data: {
-          method: "setVisibility",
-          resolveId: id,
-          chartId: this.chart.id,
-          params: { renderingQueueId, visible },
-        },
-      });
+      this.worker.postMessage(
+        j({
+          type: "runComputedStateMethod",
+          data: {
+            method: "setVisibility",
+            resolveId: id,
+            chartId: this.chart.id,
+            params: { renderingQueueId, visible },
+          },
+        })
+      );
     });
 
     await this.generateAllInstructions();
@@ -70,19 +78,21 @@ class ComputedStateMessenger {
     await new Promise((resolve) => {
       const id = this.$global.workers.addToResolveQueue(resolve);
 
-      this.worker.postMessage({
-        type: "runComputedStateMethod",
-        data: {
-          method: "calculateOneSet",
-          resolveId: id,
-          chartId: this.chart.id,
-          params: {
-            renderingQueueId,
-            timestamps,
-            dataset,
+      this.worker.postMessage(
+        j({
+          type: "runComputedStateMethod",
+          data: {
+            method: "calculateOneSet",
+            resolveId: id,
+            chartId: this.chart.id,
+            params: {
+              renderingQueueId,
+              timestamps,
+              dataset,
+            },
           },
-        },
-      });
+        })
+      );
     });
 
     // Generate instructions for this set
@@ -96,26 +106,28 @@ class ComputedStateMessenger {
       const chartDimensions =
         this.$global.layout.chartDimensions[this.chart.id];
 
-      this.worker.postMessage({
-        type: "runComputedStateMethod",
-        data: {
-          method: "generateInstructions",
-          resolveId: id,
-          chartId: this.chart.id,
-          params: {
-            renderingQueueId,
-            timestamps,
-            visibleRange: this.chart.range,
-            timeframe: this.chart.timeframe,
-            chartDimensions: {
-              main: chartDimensions.main,
-              yScale: chartDimensions.yScale,
-              xScale: chartDimensions.xScale,
+      this.worker.postMessage(
+        j({
+          type: "runComputedStateMethod",
+          data: {
+            method: "generateInstructions",
+            resolveId: id,
+            chartId: this.chart.id,
+            params: {
+              renderingQueueId,
+              timestamps,
+              visibleRange: this.chart.range,
+              timeframe: this.chart.timeframe,
+              chartDimensions: {
+                main: chartDimensions.main,
+                yScale: chartDimensions.yScale,
+                xScale: chartDimensions.xScale,
+              },
+              pixelsPerElement: this.chart.pixelsPerElement,
             },
-            pixelsPerElement: this.chart.pixelsPerElement,
           },
-        },
-      });
+        })
+      );
     });
 
     // Set instructions to respective chart rendering engines
@@ -142,24 +154,26 @@ class ComputedStateMessenger {
         const chartDimensions =
           this.$global.layout.chartDimensions[this.chart.id];
 
-        this.worker.postMessage({
-          type: "runComputedStateMethod",
-          data: {
-            method: "generateAllInstructions",
-            resolveId: id,
-            chartId: this.chart.id,
-            params: {
-              requestedRanges: this.chart.ranges,
-              timeframe: this.chart.timeframe,
-              chartDimensions: {
-                main: chartDimensions.main,
-                yScale: chartDimensions.yScale,
-                xScale: chartDimensions.xScale,
+        this.worker.postMessage(
+          j({
+            type: "runComputedStateMethod",
+            data: {
+              method: "generateAllInstructions",
+              resolveId: id,
+              chartId: this.chart.id,
+              params: {
+                requestedRanges: this.chart.ranges,
+                timeframe: this.chart.timeframe,
+                chartDimensions: {
+                  main: chartDimensions.main,
+                  yScale: chartDimensions.yScale,
+                  xScale: chartDimensions.xScale,
+                },
+                pixelsPerElement: this.chart.pixelsPerElement,
               },
-              pixelsPerElement: this.chart.pixelsPerElement,
             },
-          },
-        });
+          })
+        );
       });
 
     this.chart.onGenerateAllInstructions({
@@ -178,47 +192,55 @@ class ComputedStateMessenger {
   }
 
   updateIndicators(updates) {
-    this.worker.postMessage({
-      type: "runComputedStateMethod",
-      data: {
-        method: "updateIndicators",
-        chartId: this.chart.id,
-        params: { updates },
-      },
-    });
+    this.worker.postMessage(
+      j({
+        type: "runComputedStateMethod",
+        data: {
+          method: "updateIndicators",
+          chartId: this.chart.id,
+          params: { updates },
+        },
+      })
+    );
   }
 
   emptySet({ renderingQueueId }) {
-    this.worker.postMessage({
-      type: "runComputedStateMethod",
-      data: {
-        method: "emptySet",
-        chartId: this.chart.id,
-        params: { renderingQueueId },
-      },
-    });
+    this.worker.postMessage(
+      j({
+        type: "runComputedStateMethod",
+        data: {
+          method: "emptySet",
+          chartId: this.chart.id,
+          params: { renderingQueueId },
+        },
+      })
+    );
   }
 
   emptyAllSets() {
-    this.worker.postMessage({
-      type: "runComputedStateMethod",
-      data: {
-        method: "emptyAllSets",
-        chartId: this.chart.id,
-        params: {},
-      },
-    });
+    this.worker.postMessage(
+      j({
+        type: "runComputedStateMethod",
+        data: {
+          method: "emptyAllSets",
+          chartId: this.chart.id,
+          params: {},
+        },
+      })
+    );
   }
 
   removeFromQueue({ renderingQueueIds }) {
-    this.worker.postMessage({
-      type: "runComputedStateMethod",
-      data: {
-        method: "removeFromQueue",
-        chartId: this.chart.id,
-        params: { renderingQueueIds },
-      },
-    });
+    this.worker.postMessage(
+      j({
+        type: "runComputedStateMethod",
+        data: {
+          method: "removeFromQueue",
+          chartId: this.chart.id,
+          params: { renderingQueueIds },
+        },
+      })
+    );
 
     const { canvas } = this.chart.subcharts.main;
     for (const id of renderingQueueIds) {
@@ -257,7 +279,7 @@ export default class WorkerState extends EventEmitter {
     let worker;
     if (process.env.NODE_ENV === "production") {
       // Load built production worker from static host. This is because its impossible to import Worker code directly in built NPM module
-      const scriptURL = `https://vipermainspace.fra1.digitaloceanspaces.com/public/viper.bundle.worker.js`;
+      const scriptURL = this.$global.api.workerScriptURL;
       const blob = new Blob([`importScripts("${scriptURL}")`], {
         type: "text/javascript",
       });
@@ -272,7 +294,7 @@ export default class WorkerState extends EventEmitter {
 
     const id = Utils.uniqueId();
 
-    worker.postMessage({ type: "id", data: id });
+    worker.postMessage(j({ type: "id", data: id }));
 
     this.workers[id] = worker;
   }
@@ -295,10 +317,12 @@ export default class WorkerState extends EventEmitter {
     // Get a worker
     const worker = this.workers[workerKeys[this.lastUsedWorkerIndex]];
 
-    worker.postMessage({
-      type: "addComputedState",
-      data: { chartId: chart.id },
-    });
+    worker.postMessage(
+      j({
+        type: "addComputedState",
+        data: { chartId: chart.id },
+      })
+    );
 
     const computedStateMessenger = new ComputedStateMessenger({
       $global: this.$global,

@@ -1,4 +1,5 @@
 import GlobalState from "./state/global.js";
+import packageJson from "../package.json";
 
 import EventEmitter from "./events/event_emitter";
 
@@ -57,6 +58,8 @@ export default class Viper extends EventEmitter {
       onRemoveDatasetModel = () => {},
       onSaveViperSettings = () => {},
       onRequestTemplates = () => {},
+
+      workerScriptURL = `https://vipermainspace.fra1.digitaloceanspaces.com/public/viper.bundle.worker.${packageJson.version}.js`,
     } = params;
 
     if (!element) {
@@ -72,6 +75,7 @@ export default class Viper extends EventEmitter {
     this.onRemoveDatasetModel = onRemoveDatasetModel;
     this.onSaveViperSettings = onSaveViperSettings;
     this.onRequestTemplates = onRequestTemplates;
+    this.workerScriptURL = workerScriptURL;
 
     await this.$global.init();
     this.setAllDataSources(sources);

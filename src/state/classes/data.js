@@ -106,7 +106,6 @@ class Dataset extends EventEmitter {
     const subscribers = this.subscribers[chartId];
 
     if (!subscribers) {
-      console.error("No subscribers from chart or subscribers active.");
       return;
     }
 

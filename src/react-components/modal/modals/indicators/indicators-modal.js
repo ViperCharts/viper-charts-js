@@ -170,6 +170,7 @@ export default {
                 return (
                   <div
                     className="indicator-list-item grouped-list-item"
+                    style={{ display: "flex" }}
                     key={indicator.id}
                   >
                     <button
@@ -197,6 +198,7 @@ export default {
                   <div
                     className="indicator-list-item grouped-list-item"
                     key={indicator.id}
+                    style={{ display: "flex" }}
                   >
                     <button
                       onClick={() => this.addIndicator(indicator.id)}
@@ -218,7 +220,10 @@ export default {
           {Array.isArray(this.state.model.model) &&
           this.state.childModel === null ? (
             <div>
-              <div className="indicator-list-item grouped-list-item">
+              <div
+                className="indicator-list-item grouped-list-item"
+                style={{ display: "flex" }}
+              >
                 <button
                   onClick={() => this.addModelGroup()}
                   className="add-indicator-btn-main"
