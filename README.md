@@ -30,29 +30,67 @@ The constructor for ViperCharts accepts an object with multiple properties. Here
 ```typescript
 type ViperParams = {
   element: HTMLElement; // The container element for Viper
-  sources?: DatasetSourceMap; // Dataset sources map / object
+  sources?: SourcesObject; // Dataset sources map / object
   settings?: { [key: string]: any }; // Settings
   onRequestHistoricalData?: Function; // Resolve requests for historical data
   onSaveViperSettings?: Function; // Called when viper settings (layout, charts, indicators) udpates (same layout as settings object)
 };
 
-type DatasetSourceMap = {
-  [key: string]: DatasetSource;
+type SourcesObject = {
+  [key: string]: [key: string]DatasetSource;
 };
 
 type DatasetSource = {
   source: string; // Dataset source (ex: COINBASE, FTX)
-  name: string; // Ticker (ex: BTC-USD, BTC-PERP)
-  maxItemsPerRequest: number; // Max candles to fetch per request (rate limiting)
-  timeframes: [number]; // Array of timeframes in milliseconds supported by dataset
+  name: string; // Dataset name (ex: BTC-USD, BTC-PERP)
+  models: [key: string]: DataModel // All supported data models
+  maxItemsPerRequest: number; // Max candles to fetch per request (rate limiting, not currently implemented)
+  timeframes: [number]; // Array of timeframes in milliseconds supported by dataset (not currently implemented)
 };
+
+type DataModel = {
+  id: string // Unique id for data model
+  name: string // Visible name for data model
+  model: string // Model type (ex: ohlc, volumeBySide, footprint) All model types located in the data_models.js file
+  label: string // Label used for plotting on Y axis
+}
 ``;
+```
+
+Here's an example sources map using the Binance Spot API
+
+```javascript
+const sources = {
+  BINANCE: {
+    BTCUSDT: {
+      source: "BINANCE",
+      name: "BTCUSDT",
+      models: {
+        price: {
+          id: "price",
+          model: "ohlc",
+          name: "Price",
+          label: "Binance:BTCUSDT"
+        }
+      }
+      maxItemsPerRequest: 500,
+      timeframes: [
+        60000,
+        60000 * 5,
+        60000 * 15,
+        60000 * 60,
+        60000 * 60 * 4,
+        60000 * 60 * 24,
+      ],
+    },
+  },
+};
 ```
 
 ## Examples
 
-For some examples, look at the /src/index.js and /src/onechart.js files. You can toggle between which to load in the index.html file.
+For some examples, look at the /src/index.js file.
 
 ## Demo
 
-Also, a public demo is available at [https://viper-beta.netlify.app/](https://viper-beta.netlify.app/)
+Also, a public demo is available at [https://viper-charts.netlify.app/](https://viper-charts.netlify.app/)
