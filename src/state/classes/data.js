@@ -200,15 +200,24 @@ export default class DataState extends EventEmitter {
   }
 
   requestDataPoints({ dataset, start, end }) {
-    const { timeframe } = dataset;
+    const { timeframe, maxItemsPerRequest = 300 } = dataset;
     const id = dataset.getId();
     const now = Date.now();
 
     const requestedPoint = [Infinity, -Infinity, new Set()];
     const dependencies = Array.from(dataset.dependencies.keys());
 
+    // Get left and right bound times based on batch interval of dataset
+    const batchSize = timeframe * maxItemsPerRequest;
+    const leftBound = start - (start % batchSize);
+    const rightBound = end - (end % batchSize) + batchSize;
+
     // Loop through each requested timestamp and check if any are not found
-    for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
+    for (const timestamp of Utils.getAllTimestampsIn(
+      leftBound,
+      rightBound,
+      timeframe
+    )) {
       // Check if greater than now
       if (timestamp > now - (now % timeframe) + timeframe) break;
 
@@ -277,12 +286,14 @@ export default class DataState extends EventEmitter {
     for (const id of datasetIds) {
       let [start, end, dataModels] = allRequestedPoints[id];
       const dataset = this.datasets[id];
-      const { source, name, timeframe } = dataset;
+      const { source, name, timeframe, maxItemsPerRequest = 300 } = dataset;
 
-      // Loop from end to start timeframe on timeframe * 300 interval to batch requests to max of 300 data points per
-      let i = start === end ? 1 : (end - start) / (timeframe * 300);
+      // Loop from end to start timeframe on timeframe * itemsPerRequest || 3000 to batch requests if multiple needed
+      let i =
+        start === end ? 1 : (end - start) / (timeframe * maxItemsPerRequest);
+
       for (; i > 0; i--) {
-        const leftBound = i <= 1 ? start : end - timeframe * 300;
+        const leftBound = i <= 1 ? start : end - timeframe * maxItemsPerRequest;
 
         dataModels.forEach((m) => dataset.pendingRequests[m]++);
 
@@ -299,7 +310,7 @@ export default class DataState extends EventEmitter {
           end,
         });
 
-        end -= timeframe * 300;
+        end -= timeframe * maxItemsPerRequest;
       }
 
       dataset.fireEvent("pending-requests", dataset.pendingRequests);

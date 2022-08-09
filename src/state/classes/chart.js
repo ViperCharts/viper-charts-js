@@ -383,10 +383,11 @@ export default class ChartState extends EventEmitter {
     }
 
     // Request data points for dataset
+    const bound = this.timeframe * 100; // Load an extra 100 candles from left and right side
     this.$global.data.requestDataPoints({
       dataset,
-      start: this.ranges.x.start,
-      end: this.ranges.x.end,
+      start: this.ranges.x.start - bound,
+      end: this.ranges.x.end + bound,
     });
 
     this.$global.settings.onChartDatasetGroupsChange(
@@ -524,10 +525,11 @@ export default class ChartState extends EventEmitter {
 
       this.datasets[dataset.getTimeframeAgnosticId()] = dataset;
 
+      const bound = this.timeframe * 100;
       this.$global.data.requestDataPoints({
         dataset,
-        start: this.ranges.x.start,
-        end: this.ranges.x.end,
+        start: this.ranges.x.start - bound,
+        end: this.ranges.x.end + bound,
       });
     }
 
@@ -813,10 +815,11 @@ export default class ChartState extends EventEmitter {
 
     // Check for any un-fetched data points in all subscribed datasets
     for (const datasetId in this.datasets) {
+      const bound = this.timeframe * 100;
       this.$global.data.requestDataPoints({
         dataset: this.datasets[datasetId],
-        start: this.ranges.x.start,
-        end: this.ranges.x.end,
+        start: this.ranges.x.start - bound,
+        end: this.ranges.x.end + bound,
       });
     }
   }
