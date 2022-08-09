@@ -1,6 +1,6 @@
 {
   "name": "@viper-charts/viper-charts",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "A free and open-source cross market charting platform",
   "main": "dist/viper.bundle.js",
   "keywords": [
@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "start": "webpack serve --config webpack.dev.js",
-    "build": "rm -rf dist/* && webpack --config webpack.prod.js",
+    "build": "rm -rf dist/* && webpack --config webpack.prod.js && cp dist/viper.bundle.*.worker.js .worker-releases/",
     "build-static": "rm -rf dist/* && webpack --config webpack.static.js"
   },
   "author": "Tryston Perry",
