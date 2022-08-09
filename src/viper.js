@@ -59,7 +59,7 @@ export default class Viper extends EventEmitter {
       onSaveViperSettings = () => {},
       onRequestTemplates = () => {},
 
-      workerScriptURL = `https://vipermainspace.fra1.digitaloceanspaces.com/public/viper.bundle.worker.${packageJson.version}.js`,
+      workerScriptURL = `https://cdn.jsdelivr.net/gh/ViperCharts/viper-charts-js@master/dist/viper.bundle.${packageJson.version}.worker.js`,
     } = params;
 
     if (!element) {
