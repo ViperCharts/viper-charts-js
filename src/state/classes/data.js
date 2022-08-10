@@ -200,12 +200,15 @@ export default class DataState extends EventEmitter {
   }
 
   requestDataPoints({ dataset, start, end }) {
-    const { timeframe, maxItemsPerRequest = 300 } = dataset;
+    const { timeframe } = dataset;
     const id = dataset.getId();
     const now = Date.now();
 
     const requestedPoint = [Infinity, -Infinity, new Set()];
     const dependencies = Array.from(dataset.dependencies.keys());
+
+    const { maxItemsPerRequest = 300 } =
+      this.sources[dataset.source][dataset.name];
 
     // Get left and right bound times based on batch interval of dataset
     const batchSize = timeframe * maxItemsPerRequest;
@@ -286,7 +289,8 @@ export default class DataState extends EventEmitter {
     for (const id of datasetIds) {
       let [start, end, dataModels] = allRequestedPoints[id];
       const dataset = this.datasets[id];
-      const { source, name, timeframe, maxItemsPerRequest = 300 } = dataset;
+      const { source, name, timeframe } = dataset;
+      const { maxItemsPerRequest = 300 } = this.sources[source][name];
 
       // Loop from end to start timeframe on timeframe * itemsPerRequest || 3000 to batch requests if multiple needed
       let i =
