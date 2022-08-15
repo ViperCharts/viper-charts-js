@@ -1,8 +1,12 @@
 import "./style.css";
 
+import Dexie from "dexie";
+
 // Import the library locally. In a production app, you would use:
 // import ViperCharts from "@viper-charts/viper-charts"
 import ViperCharts from "./viper";
+
+const db = createDB();
 
 let Viper;
 
@@ -41,10 +45,12 @@ async function main() {
   Viper = new ViperCharts({
     element: document.getElementById("chart"),
     sources,
-    settings: JSON.parse(localStorage.getItem("settings")),
+    settings: JSON.parse(localStorage.getItem("settings")) || {},
     onRequestHistoricalData,
     onSaveViperSettings,
     onRequestTemplates,
+    onSaveTemplate,
+    onDeleteTemplate,
   });
 }
 
@@ -91,6 +97,34 @@ function onSaveViperSettings(settings) {
   localStorage.setItem("settings", JSON.stringify(settings));
 }
 
-function onRequestTemplates() {
-  return [];
+async function onRequestTemplates() {
+  return await db.templates.where("id").above(0).toArray();
+}
+
+async function onSaveTemplate(id, { name, config }) {
+  // Check if template exists at id
+  const rows = await db.templates.where("id").equals(id).toArray();
+  const row = rows[0];
+
+  if (row) {
+    // If so, update it
+    await db.templates.update(id, { name, config });
+  } else {
+    // If not, create it
+    await db.templates.add({ name, config });
+  }
+
+  return await db.templates.orderBy("id").last();
+}
+
+async function onDeleteTemplate(id) {
+  await db.templates.delete(id);
+}
+
+function createDB() {
+  const db = new Dexie("viper");
+  db.version(1).stores({
+    templates: "++id,name,config",
+  });
+  return db;
 }

@@ -58,6 +58,8 @@ export default class Viper extends EventEmitter {
       onRemoveDatasetModel = () => {},
       onSaveViperSettings = () => {},
       onRequestTemplates = () => {},
+      onSaveTemplate = () => {},
+      onDeleteTemplate = () => {},
 
       workerScriptURL = `https://cdn.jsdelivr.net/gh/ViperCharts/viper-charts-js@master/.worker-releases/viper.bundle.${packageJson.version}.worker.js`,
     } = params;
@@ -75,10 +77,13 @@ export default class Viper extends EventEmitter {
     this.onRemoveDatasetModel = onRemoveDatasetModel;
     this.onSaveViperSettings = onSaveViperSettings;
     this.onRequestTemplates = onRequestTemplates;
+    this.onSaveTemplate = onSaveTemplate;
+    this.onDeleteTemplate = onDeleteTemplate;
     this.workerScriptURL = workerScriptURL;
 
     await this.$global.init();
     this.setAllDataSources(sources);
+
     this.$global.settings.setSettings(settings);
 
     this.Constants = Constants;
@@ -165,6 +170,7 @@ export default class Viper extends EventEmitter {
     this.$global.events.destroy();
     this.$global.layout.destroy();
     this.$global.ui.destroy();
+    this.$global.settings.destroy();
 
     // TODO Kill all workers
   }
