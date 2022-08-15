@@ -1,0 +1,54 @@
+.templates-model {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.templates-list {
+  flex-grow: 1;
+}
+
+.templates-add {
+}
+
+.templates-add form {
+  display: flex;
+}
+
+.templates-add form {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 2px;
+  background: rgb(75, 75, 75);
+  border: 0;
+  color: rgb(160, 160, 160);
+  font-size: 24px;
+  border-radius: 4px;
+}
+
+.templates-add form input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: rgb(189, 189, 189);
+}
+
+.templates-add form input:focus {
+  border: none;
+  outline: 0;
+}
+
+.templates-add form button {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  background: rgb(160, 160, 160);
+  color: white;
+  border-radius: 4px;
+  border: 0;
+  cursor: pointer;
+}
+
+.no-saved-templates {
+  text-align: center;
+  color: rgb(160, 160, 160);
+}
