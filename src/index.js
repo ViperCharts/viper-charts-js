@@ -97,19 +97,13 @@ function onSaveViperSettings(settings) {
 }
 
 async function onRequestTemplates() {
-  const templates = await db.templates.where("id").above(0).toArray();
-  console.log(templates);
-  return templates;
+  return await db.templates.where("id").above(0).toArray();
 }
 
 async function onSaveTemplate(id, { name, config }) {
-  console.log(id);
-
   // Check if template exists at id
   const rows = await db.templates.where("id").equals(id).toArray();
   const row = rows[0];
-
-  console.log(row);
 
   if (row) {
     // If so, update it
@@ -118,6 +112,8 @@ async function onSaveTemplate(id, { name, config }) {
     // If not, create it
     await db.templates.add({ name, config });
   }
+
+  return await db.templates.orderBy("id").last();
 }
 
 function createDB() {

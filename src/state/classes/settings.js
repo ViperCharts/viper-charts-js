@@ -28,8 +28,6 @@ export default class SettingsState extends EventEmitter {
           ({ id }) => id === this.settings.activeTemplateId
         );
 
-        console.log(this.templates, this.settings.activeTemplateId);
-
         template.config = {
           layout: this.layout,
           charts: this.charts,
@@ -38,6 +36,8 @@ export default class SettingsState extends EventEmitter {
           this.settings.activeTemplateId,
           template
         );
+
+        this.$global.api.onSaveViperSettings(this.settings);
 
         this.needsToUpdate = false;
       }
@@ -61,6 +61,7 @@ export default class SettingsState extends EventEmitter {
       this.settings.activeTemplateId = settings.activeTemplateId;
     }
 
+    this.needsToUpdate = true;
     this.loadTemplates();
   }
 
@@ -74,8 +75,6 @@ export default class SettingsState extends EventEmitter {
     let template = templates.find(
       ({ id }) => id === this.settings.activeTemplateId
     );
-
-    console.log(template);
 
     if (!template) {
       template = {

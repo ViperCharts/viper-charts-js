@@ -13,36 +13,52 @@ export default {
       this.$global = props.$global;
 
       this.state = {
-        templates: [],
+        templates: this.$global.settings.templates,
+        activeTemplateId: this.$global.settings.settings.activeTemplateId,
         isLoading: true,
         newTemplateName: "",
       };
     }
 
-    componentDidMount() {
-      this.getTemplates();
-    }
-
-    async getTemplates() {
-      this.setState({ isLoading: true });
-      const templates = await this.$global.api.onRequestTemplates();
-      this.setState({ templates, isLoading: false });
-    }
-
     loadTemplate(activeTemplateId) {
-      this.$global.settings.setSettings({ activeTemplateId });
+      this.$global.api.onSaveViperSettings({
+        ...this.$global.api.settings,
+        activeTemplateId,
+      });
       location.reload();
     }
 
-    addTemplate() {
-      const config = JSON.stringify(this.$global.settings.settings);
-      this.$global.api.onSaveTemplate(this.activeTemplateId, {
-        name: "My template",
-        config,
+    async addTemplate(e) {
+      e.preventDefault();
+
+      // Add to templates array
+      let template = {
+        id: -1,
+        name: this.state.newTemplateName,
+        config: {
+          layout: this.$global.settings.layout,
+          charts: this.$global.settings.charts,
+        },
+      };
+
+      template = await this.$global.api.onSaveTemplate(-1, template);
+
+      console.log(template);
+
+      // Update active template id
+      this.$global.settings.templates.push(template);
+      this.$global.settings.setSettings({ activeTemplateId: template.id });
+
+      this.setState({
+        tempaltes: this.$global.settings.templates,
+        activeTemplateId: this.$global.settings.settings.activeTemplateId,
+        newTemplateName: "",
       });
     }
 
     render() {
+      console.log(this.state.templates[0], this.state.activeTemplateId);
+
       return (
         <div className="templates-model">
           <div className="templates-list">
@@ -50,10 +66,12 @@ export default {
               this.state.templates.map((template, i) => (
                 <div className="indicator-list-item grouped-list-item" key={i}>
                   <button
-                    onClick={() => this.setTemplate(template)}
+                    onClick={() => this.loadTemplate(template.id)}
                     style={{ width: "100%" }}
                   >
                     {template.name}
+                    {template.id === this.state.activeTemplateId &&
+                      " (Selected)"}
                   </button>
                 </div>
               ))
@@ -64,8 +82,8 @@ export default {
             )}
           </div>
           <div className="templates-add">
-            <h3>Add a template</h3>
-            <form onSubmit={() => this.addTemplate()}>
+            <h3>Create New Template From Scratch</h3>
+            <form onSubmit={this.addTemplate.bind(this)}>
               <input
                 type="text"
                 value={this.state.newTemplateName}
@@ -74,7 +92,7 @@ export default {
                 }
                 placeholder="Enter your template name..."
               />
-              <button>Save Current Template</button>
+              <button>Create</button>
             </form>
           </div>
         </div>
