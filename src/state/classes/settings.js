@@ -250,4 +250,10 @@ export default class SettingsState extends EventEmitter {
 
     this.needsToUpdate = true;
   }
+
+  onDeleteTemplate(templateId) {
+    const i = this.templates.findIndex(({ id }) => id === templateId);
+    this.templates.splice(i, 1);
+    this.$global.api.onDeleteTemplate(templateId);
+  }
 }

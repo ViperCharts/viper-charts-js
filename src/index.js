@@ -50,6 +50,7 @@ async function main() {
     onSaveViperSettings,
     onRequestTemplates,
     onSaveTemplate,
+    onDeleteTemplate,
   });
 }
 
@@ -114,6 +115,10 @@ async function onSaveTemplate(id, { name, config }) {
   }
 
   return await db.templates.orderBy("id").last();
+}
+
+async function onDeleteTemplate(id) {
+  await db.templates.delete(id);
 }
 
 function createDB() {

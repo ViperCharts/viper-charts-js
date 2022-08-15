@@ -59,6 +59,7 @@ export default class Viper extends EventEmitter {
       onSaveViperSettings = () => {},
       onRequestTemplates = () => {},
       onSaveTemplate = () => {},
+      onDeleteTemplate = () => {},
 
       workerScriptURL = `https://cdn.jsdelivr.net/gh/ViperCharts/viper-charts-js@master/.worker-releases/viper.bundle.${packageJson.version}.worker.js`,
     } = params;
@@ -77,6 +78,7 @@ export default class Viper extends EventEmitter {
     this.onSaveViperSettings = onSaveViperSettings;
     this.onRequestTemplates = onRequestTemplates;
     this.onSaveTemplate = onSaveTemplate;
+    this.onDeleteTemplate = onDeleteTemplate;
     this.workerScriptURL = workerScriptURL;
 
     await this.$global.init();

@@ -36,14 +36,37 @@ export default {
         id: -1,
         name: this.state.newTemplateName,
         config: {
-          layout: this.$global.settings.layout,
-          charts: this.$global.settings.charts,
+          layout: [
+            {
+              id: "dxzu2xbsy2",
+              top: 0,
+              left: 0,
+              width: 100,
+              height: 100,
+              children: [],
+              chartId: "fupc7matbzp",
+            },
+          ],
+          charts: {
+            fupc7matbzp: {
+              name: "",
+              timeframe: 3.6e6,
+              ranges: {
+                x: {},
+                y: {},
+              },
+              pixelsPerElement: 10,
+              datasetGroups: {},
+              settings: {
+                syncRange: false,
+                syncWithCrosshair: "",
+              },
+            },
+          },
         },
       };
 
       template = await this.$global.api.onSaveTemplate(-1, template);
-
-      console.log(template);
 
       // Update active template id
       this.$global.settings.templates.push(template);
@@ -54,24 +77,47 @@ export default {
         activeTemplateId: this.$global.settings.settings.activeTemplateId,
         newTemplateName: "",
       });
+
+      this.$global.api.onSaveViperSettings({
+        ...this.$global.api.settings,
+        activeTemplateId: template.id,
+      });
+      location.reload();
+    }
+
+    async deleteTemplate(id) {
+      this.$global.settings.onDeleteTemplate(id);
+      this.setState({
+        templates: this.$global.settings.templates,
+      });
     }
 
     render() {
-      console.log(this.state.templates[0], this.state.activeTemplateId);
-
       return (
         <div className="templates-model">
           <div className="templates-list">
             {this.state.templates.length > 0 ? (
               this.state.templates.map((template, i) => (
-                <div className="indicator-list-item grouped-list-item" key={i}>
+                <div
+                  className="indicator-list-item grouped-list-item"
+                  style={{ display: "flex" }}
+                  key={template.id}
+                >
                   <button
                     onClick={() => this.loadTemplate(template.id)}
-                    style={{ width: "100%" }}
+                    className="add-indicator-btn-main"
                   >
                     {template.name}
-                    {template.id === this.state.activeTemplateId &&
-                      " (Selected)"}
+                    {this.state.activeTemplateId === template.id && (
+                      <i> (Selected)</i>
+                    )}
+                  </button>
+                  <button
+                    disabled={this.state.activeTemplateId === template.id}
+                    onClick={() => this.deleteTemplate(template.id)}
+                    title="You can't delete a template when it's selected"
+                  >
+                    Delete
                   </button>
                 </div>
               ))
