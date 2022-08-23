@@ -229,7 +229,6 @@ export default class DataState extends EventEmitter {
       // Check if in data state
       if (dataset.data[timestamp] === undefined) {
         missingData = dependencies;
-        dataset.data[timestamp] = {};
       } else {
         // Check all models for missing data
         for (const d of dependencies) {
@@ -257,6 +256,10 @@ export default class DataState extends EventEmitter {
     }
 
     requestedPoint[2] = Array.from(requestedPoint[2].keys());
+
+    requestedPoint[0] = Math.floor(requestedPoint[0] / batchSize) * batchSize;
+    requestedPoint[1] = Math.ceil(requestedPoint[1] / batchSize) * batchSize;
+
     this.allRequestedPoints[id] = requestedPoint;
   }
 
@@ -278,6 +281,10 @@ export default class DataState extends EventEmitter {
 
       // This is so data does not get requested again
       for (const timestamp of Utils.getAllTimestampsIn(start, end, timeframe)) {
+        if (!dataset.data[timestamp]) {
+          dataset.data[timestamp] = {};
+        }
+
         for (const dataModel of dataModels) {
           dataset.data[timestamp][dataModel] = null;
         }
