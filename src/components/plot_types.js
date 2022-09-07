@@ -350,6 +350,39 @@ const indicators = {
       }
     },
   },
+
+  ohlcChange: {
+    version: "1.0.0",
+    name: "OHLC Change",
+    dependencies: ["ohlc"],
+    draw({ open, high, low, close, plotBox }) {
+      const up = Math.max(high - open, 0);
+      const down = Math.min(low - open, 0);
+      const delta = close - open;
+
+      plotBox({
+        top: up,
+        bottom: 0,
+        width: 0.9,
+        center: true,
+        color: "#C4FF4966",
+      });
+      plotBox({
+        top: 0,
+        bottom: down,
+        width: 0.9,
+        center: true,
+        color: "#FE3A6466",
+      });
+      plotBox({
+        top: delta,
+        bottom: 0,
+        width: 0.9,
+        center: true,
+        color: delta > 0 ? "#C4FF49" : "#FE3A64",
+      });
+    },
+  },
 };
 
 const types = {
