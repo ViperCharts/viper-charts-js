@@ -1,10 +1,37 @@
 import EventEmitter from "../../events/event_emitter";
 
-export default class Orders extends EventEmitter {
-  constructor() {
+export default class OrdersState extends EventEmitter {
+  constructor({ $global }) {
     super();
 
+    this.$global = $global;
+
     this.datasets = {};
+
+    this.addOrUpdateOrder("BINANCE:BTCUSDT", {
+      orderId: 1,
+      side: "buy",
+      price: 27000,
+      quantity: 0.097,
+    });
+    this.addOrUpdateOrder("BINANCE:BTCUSDT", {
+      orderId: 2,
+      side: "sell",
+      price: 28000,
+      quantity: 0.04,
+    });
+    this.addOrUpdateOrder("BINANCE:BTCUSDT", {
+      orderId: 3,
+      side: "sell",
+      price: 290000,
+      quantity: 0.3,
+    });
+    this.addOrUpdateOrder("BINANCE:BTCUSDT", {
+      orderId: 4,
+      side: "sell",
+      price: 30000,
+      quantity: 1.1,
+    });
   }
 
   addOrUpdateOrder(

@@ -285,6 +285,39 @@ export default class RenderingEngine {
         }
       }
 
+      // Render all orders for active dataset
+      ORDERS: {
+        const { datasetGroups, selectedDatasetGroup } = this.$state.chart;
+        const datasetGroup = datasetGroups[selectedDatasetGroup];
+
+        if (!datasetGroup.visible) break ORDERS;
+
+        const { source, name } = datasetGroup.datasets[0];
+
+        // Check if any orders exist for dataset on OrdersState
+        const orders = this.$state.global.orders.datasets[`${source}:${name}`];
+        if (typeof orders !== "object") break ORDERS;
+
+        for (const orderId in orders) {
+          const order = orders[orderId];
+
+          const { price, side, quantity } = order;
+          const y = this.$state.chart.getYCoordByPrice(price);
+          const x = chartDimensions.yScale.width;
+          const w = chartDimensions.xScale.width;
+          const h = 20;
+
+          const color = side === "buy" ? "#C4FF49" : "#FE3A64";
+
+          // Draw order price line
+          this.canvas.drawLine(color, [0, y, w, y], 1);
+
+          // Draw order text
+          const text = `${side} ${quantity} at ${price}`;
+          this.canvas.drawText("#FFF", [w - text.length * 5, y + h / 2], text);
+        }
+      }
+
       // Render all label plots
       for (const id of ids) {
         if (!instructions.plots[id]) continue;
