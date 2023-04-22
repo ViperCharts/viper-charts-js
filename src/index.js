@@ -8,8 +8,6 @@ import ViperCharts from "./viper";
 
 const db = createDB();
 
-let Viper;
-
 main();
 async function main() {
   // The sources available to ViperCharts
@@ -42,11 +40,12 @@ async function main() {
     return sources;
   }
 
-  Viper = new ViperCharts({
+  window.Viper = new ViperCharts({
     element: document.getElementById("chart"),
     sources,
     settings: JSON.parse(localStorage.getItem("settings")) || {},
     onRequestHistoricalData,
+    onRequestOrders,
     onSaveViperSettings,
     onRequestTemplates,
     onSaveTemplate,
@@ -90,6 +89,22 @@ async function onRequestHistoricalData({ requests }) {
         Viper.addData({ source, name, timeframe, dataModel }, data);
       }
     }
+  }
+}
+
+async function onRequestOrders(datasetId) {
+  // Generate some dummy orders for testing purposes
+  for (let i = 0; i < 100; i++) {
+    const side = Math.random() > 0.5 ? "buy" : "sell";
+    const price = Math.random() * 50000;
+    const quantity = Math.random() * 100;
+
+    Viper.addOrUpdateOrder(datasetId, {
+      orderId: i,
+      side,
+      price,
+      quantity,
+    });
   }
 }
 

@@ -138,7 +138,7 @@ export default class Viper extends EventEmitter {
    * @param {number} order.quantity
    */
   addOrUpdateOrder(timeframeAgnosticDatasetId, order) {
-    this.orders.addOrUpdateOrder(timeframeAgnosticDatasetId, order);
+    this.$global.orders.addOrUpdateOrder(timeframeAgnosticDatasetId, order);
   }
 
   /**
