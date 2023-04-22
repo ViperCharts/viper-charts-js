@@ -328,6 +328,9 @@ export default class DataState extends EventEmitter {
         end -= timeframe * maxItemsPerRequest;
       }
 
+      // Fetch orders for dataset if not fetched
+      this.$global.orders.requestOrdersIfNeeded(`${source}:${name}`);
+
       dataset.fireEvent("pending-requests", dataset.pendingRequests);
     }
 

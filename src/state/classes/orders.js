@@ -7,31 +7,16 @@ export default class OrdersState extends EventEmitter {
     this.$global = $global;
 
     this.datasets = {};
+  }
 
-    this.addOrUpdateOrder("BINANCE:BTCUSDT", {
-      orderId: 1,
-      side: "buy",
-      price: 27000,
-      quantity: 0.097,
-    });
-    this.addOrUpdateOrder("BINANCE:BTCUSDT", {
-      orderId: 2,
-      side: "sell",
-      price: 28000,
-      quantity: 0.04,
-    });
-    this.addOrUpdateOrder("BINANCE:BTCUSDT", {
-      orderId: 3,
-      side: "sell",
-      price: 290000,
-      quantity: 0.3,
-    });
-    this.addOrUpdateOrder("BINANCE:BTCUSDT", {
-      orderId: 4,
-      side: "sell",
-      price: 30000,
-      quantity: 1.1,
-    });
+  requestOrdersIfNeeded(timeframeAgnosticDatasetId) {
+    if (this.datasets[timeframeAgnosticDatasetId] === undefined) {
+      // Assign to null to avoid duplicate requests
+      this.datasets[timeframeAgnosticDatasetId] = null;
+
+      // Fire request in background (not depended on it being resolved)
+      this.$global.api.onRequestOrders(timeframeAgnosticDatasetId);
+    }
   }
 
   addOrUpdateOrder(
@@ -48,8 +33,8 @@ export default class OrdersState extends EventEmitter {
     orders[orderId] = {
       orderId,
       side,
-      price,
-      quantity,
+      price: +price,
+      quantity: +quantity,
     };
 
     // If quantity is 0, remove order
@@ -58,11 +43,3 @@ export default class OrdersState extends EventEmitter {
     }
   }
 }
-
-/**
- * Represents a single limit order for a dataset
- * @param {string} id
- * @param {'buy'|'sell'} side
- * @param {number} price
- * @param {number} quantity
- */

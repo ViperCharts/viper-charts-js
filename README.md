@@ -33,6 +33,7 @@ type ViperParams = {
   sources?: SourcesObject; // Dataset sources map / object
   settings?: { [key: string]: any }; // Settings
   onRequestHistoricalData?: Function; // Resolve requests for historical data
+  addOrUpdateOrder?: Function; // Resolve requests for Orders belonging to a specific dataset (market)
   onSaveViperSettings?: Function; // Called when viper settings (layout, charts, indicators) udpates (same layout as settings object)
 };
 
