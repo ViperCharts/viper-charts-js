@@ -6,43 +6,7 @@ import EventEmitter from "./events/event_emitter";
 import Constants from "./constants";
 import PlotTypes from "./components/plot_types.js";
 
-// type DatasetSource = {
-//   source: string; // Dataset source (ex: COINBASE, FTX)
-//   name: string; // Ticker (ex: BTC-USD, BTC-PERP)
-//   maxItemsPerRequest: number; // Max candles to fetch per request (rate limiting)
-//   timeframes: [number]; // Array of timeframes in milliseconds supported by dataset
-// };
-
-// type DatasetSourceMap = {
-//   [key: string]: DatasetSource;
-// };
-
-// type Settings = {
-//   layout: [any];
-//   charts: { [key: string]: object };
-//   global: {
-//     maxCharts: number; // Max charts per layout
-//     gridEdit: boolean; // Enable or disable grid edit feature
-//   };
-// };
-
-// type ViperParams = {
-//   element: HTMLElement; // The container element for Viper
-//   sources?: DatasetSourceMap; // Dataset sources map / object
-//   settings?: Settings; // Initial settings
-//   onRequestHistoricalData?: ({ requests: [any], callback: Function }) => void; // Resolve requests for historical data
-//   onRemoveDatasetModel?: Function // called when a user no longer requests data from this dataset:dataModel:timeframe
-//   onSaveViperSettings?: Function; //
-// };
-
 export default class Viper extends EventEmitter {
-  // element: HTMLElement;
-  // $global: any;
-  // onRequestHistoricalData: Function;
-  // onSaveViperSettings: Function;
-  // Constants: object;
-  // Indicators: object;
-
   constructor(params) {
     super();
 
@@ -55,6 +19,7 @@ export default class Viper extends EventEmitter {
       sources,
       settings = {},
       onRequestHistoricalData = async () => {},
+      onRequestOrders = async () => {},
       onRemoveDatasetModel = () => {},
       onSaveViperSettings = () => {},
       onRequestTemplates = () => {},
@@ -74,6 +39,7 @@ export default class Viper extends EventEmitter {
     this.$global = new GlobalState();
     this.$global.api = this;
     this.onRequestHistoricalData = onRequestHistoricalData;
+    this.onRequestOrders = onRequestOrders;
     this.onRemoveDatasetModel = onRemoveDatasetModel;
     this.onSaveViperSettings = onSaveViperSettings;
     this.onRequestTemplates = onRequestTemplates;
@@ -160,6 +126,19 @@ export default class Viper extends EventEmitter {
         // dataset.subscribers[chartId].setVisibleRange({})
       }
     }
+  }
+
+  /**
+   * Add, update, or remove an Order for a Dataset (market)
+   * @param {string} timeframeAgnosticDatasetId
+   * @param {object} order
+   * @param {string|number} order.orderId
+   * @param {'buy'|'sell'} order.side
+   * @param {number} order.price
+   * @param {number} order.quantity
+   */
+  addOrUpdateOrder(timeframeAgnosticDatasetId, order) {
+    this.$global.orders.addOrUpdateOrder(timeframeAgnosticDatasetId, order);
   }
 
   /**

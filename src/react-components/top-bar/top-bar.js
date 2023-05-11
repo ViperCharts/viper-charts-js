@@ -14,10 +14,6 @@ export default class TopBar extends React.Component {
       selectedChart: null,
       timeframe: 0,
       timeframes: [
-        Constants.SECOND,
-        Constants.SECOND * 5,
-        Constants.SECOND * 15,
-        Constants.SECOND * 30,
         Constants.MINUTE,
         Constants.MINUTE5,
         Constants.MINUTE15,

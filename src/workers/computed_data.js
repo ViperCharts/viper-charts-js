@@ -73,6 +73,7 @@ export default class ComputedData extends EventEmitter {
     this.queue = new Map();
     this.sets = {};
     this.computedState = {};
+    this.instructions = Instructions;
 
     this.max = -Infinity;
     this.min = Infinity;

@@ -5,11 +5,14 @@ import Utils from "../../utils";
 class Dataset extends EventEmitter {
   constructor($global, source, name, timeframe, data) {
     super();
+
     this.$global = $global;
+
     this.source = source;
     this.name = name;
     this.timeframe = timeframe;
     this.data = data;
+
     this.pendingRequests = {};
     this.subscribers = {};
     this.minTime = Infinity;
@@ -78,6 +81,7 @@ class Dataset extends EventEmitter {
             data: this.data,
             minTime: this.minTime,
             maxTime: this.maxTime,
+            orders: this.orders,
           },
         });
       }
@@ -323,6 +327,9 @@ export default class DataState extends EventEmitter {
 
         end -= timeframe * maxItemsPerRequest;
       }
+
+      // Fetch orders for dataset if not fetched
+      this.$global.orders.requestOrdersIfNeeded(`${source}:${name}`);
 
       dataset.fireEvent("pending-requests", dataset.pendingRequests);
     }

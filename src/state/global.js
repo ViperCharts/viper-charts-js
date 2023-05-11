@@ -8,6 +8,7 @@ import DataState from "./classes/data";
 import EventsState from "./classes/events";
 import SettingsState from "./classes/settings";
 import WorkerState from "./classes/workers";
+import OrdersState from "./classes/orders";
 
 export default class GlobalState extends EventEmitter {
   constructor() {
@@ -27,6 +28,7 @@ export default class GlobalState extends EventEmitter {
     this.data = new DataState({ $global: this });
     this.events = new EventsState({ $global: this });
     this.workers = new WorkerState({ $global: this });
+    this.orders = new OrdersState({ $global: this });
   }
 
   async init() {
