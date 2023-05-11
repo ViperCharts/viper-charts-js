@@ -290,7 +290,7 @@ export default class RenderingEngine {
         const { datasetGroups, selectedDatasetGroup } = this.$state.chart;
         const datasetGroup = datasetGroups[selectedDatasetGroup];
 
-        if (!datasetGroup.visible) break ORDERS;
+        if (!datasetGroup?.visible) break ORDERS;
 
         const { source, name } = datasetGroup.datasets[0];
 
